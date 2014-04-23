@@ -52,6 +52,10 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 
 	@Override
 	public void devirtualize(final OVXSwitch sw) {
+		
+		this.log.warn("magic0x2014 {} ----------------------------------------", sw.getName());
+		this.log.warn("magic0x2014 before ------------------------------ {}", this);
+		
 		/* Drop LLDP-matching messages sent by some applications */
 		if (this.match.getDataLayerType() == Ethernet.TYPE_LLDP) {
 			return;
@@ -114,6 +118,8 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 		} else {
 			prepAndSendSouth(ovxInPort, pflag);
 		}
+		
+		this.log.warn("magic0x2014 after  ------------------------------ {}", this);
 	}
 
 	private void prepAndSendSouth(OVXPort inPort, boolean pflag) {

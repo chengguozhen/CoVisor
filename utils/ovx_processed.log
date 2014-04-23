@@ -1,0 +1,564 @@
+2014-04-22 09:01:13,239 DEBUG Generated plugins in 0.000029000 seconds
+2014-04-22 09:01:13,240 DEBUG Generated plugins in 0.000018000 seconds
+2014-04-22 09:01:13,240 DEBUG Generated plugins in 0.000019000 seconds
+2014-04-22 09:01:13,241 DEBUG Generated plugins in 0.000018000 seconds
+2014-04-22 09:01:13,241 DEBUG Generated plugins in 0.000017000 seconds
+2014-04-22 09:01:13,242 DEBUG Generated plugins in 0.000018000 seconds
+2014-04-22 09:01:13,258 DEBUG Calling createLayout on class org.apache.logging.log4j.core.layout.PatternLayout for element PatternLayout with params(pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{1} - %msg%n", Configuration(/Users/xinjin/Documents/FlowMaster/OpenVirteX/config/log4j2.xml), null, charset="null", suppressExceptions="null")
+2014-04-22 09:01:13,259 DEBUG Generated plugins in 0.000028000 seconds
+2014-04-22 09:01:13,262 DEBUG Calling createAppender on class org.apache.logging.log4j.core.appender.ConsoleAppender for element Console with params(PatternLayout(%d{HH:mm:ss.SSS} [%t] %-5level %logger{1} - %msg%n), null, target="SYSTEM_OUT", name="Console", follow="null", suppressExceptions="null")
+2014-04-22 09:01:13,264 DEBUG Calling createAppenders on class org.apache.logging.log4j.core.config.plugins.AppendersPlugin for element appenders with params(appenders={Console})
+2014-04-22 09:01:13,264 DEBUG Generated plugins in 0.000030000 seconds
+2014-04-22 09:01:13,267 DEBUG Calling createAppenderRef on class org.apache.logging.log4j.core.config.AppenderRef for element appender-ref with params(ref="Console", level="null", null)
+2014-04-22 09:01:13,269 DEBUG Calling createLogger on class org.apache.logging.log4j.core.config.LoggerConfig$RootLogger for element root with params(additivity="null", level="INFO", includeLocation="false", appender-ref={org.apache.logging.log4j.core.config.AppenderRef@53058579}, properties={}, Configuration(/Users/xinjin/Documents/FlowMaster/OpenVirteX/config/log4j2.xml), null)
+2014-04-22 09:01:13,271 DEBUG Calling createLoggers on class org.apache.logging.log4j.core.config.plugins.LoggersPlugin for element loggers with params(loggers={root})
+2014-04-22 09:01:13,272 DEBUG Reconfiguration completed
+09:01:13.677 [main] INFO  OpenVirteX - Starting OpenVirteX...
+09:01:13.716 [main] INFO  PhysicalNetwork - Starting network discovery...
+09:01:13.729 [main] INFO  MongoConnection - Connecting to MongoDB at 127.0.0.1:27017
+09:01:13.827 [main] ERROR MongoConnection - Error connecting to database
+09:01:13.836 [main] ERROR DBManager - Failed to set database index: null
+09:01:13.845 [main] ERROR DBManager - Failed to load virtual networks from db: Read operation to server /127.0.0.1:27017 failed on database OVX
+09:01:14.282 [main] INFO  JettyServer - Initializing API WebServer on port 8080
+09:01:14.453 [Thread-4] INFO  Server - jetty-9.0.5.v20130815
+09:01:14.510 [Thread-4] INFO  ServerConnector - Started ServerConnector@4eb525a6{HTTP/1.1}{0.0.0.0:8080}
+09:01:14.787 [Thread-4] INFO  ServerConnector - Started ServerConnector@5e2cd950{SSL-http/1.1}{0.0.0.0:8443}
+09:01:29.368 [pool-5-thread-3] ERROR SwitchChannelHandler - Channel for sw DPID -> ?(/127.0.0.1:50208) already closed; switch needs to reconnect
+09:01:29.380 [pool-5-thread-22] ERROR SwitchChannelHandler - Channel for sw DPID -> ?(/127.0.0.1:50209) already closed; switch needs to reconnect
+09:01:29.380 [pool-5-thread-21] ERROR SwitchChannelHandler - Channel for sw DPID -> ?(/127.0.0.1:50210) already closed; switch needs to reconnect
+09:01:29.381 [pool-5-thread-22] ERROR SwitchChannelHandler - Channel for sw DPID -> ?(/127.0.0.1:50209) already closed; switch needs to reconnect
+09:01:29.622 [pool-5-thread-27] WARN  SwitchChannelHandler - Switch: [DPID -> 00:00:00:00:00:00:05:00(/127.0.0.1:50212)], State: [WAIT_CONFIG_REPLY], received: [PACKET_IN], details: Received unhandled message; moving swiftly along...
+09:01:29.622 [pool-5-thread-30] WARN  SwitchChannelHandler - Switch: [DPID -> 00:00:00:00:00:00:01:00(/127.0.0.1:50217)], State: [WAIT_DESCRIPTION_STAT_REPLY], received: [PACKET_IN], details: Received unhandled message; moving swiftly along...
+09:01:29.622 [pool-5-thread-6] WARN  SwitchChannelHandler - Switch: [DPID -> 00:00:00:00:00:00:03:00(/127.0.0.1:50214)], State: [WAIT_DESCRIPTION_STAT_REPLY], received: [PACKET_IN], details: Received unhandled message; moving swiftly along...
+09:01:29.747 [pool-5-thread-19] INFO  PhysicalSwitch - Switch connected with dpid 2816, name 00:00:00:00:00:00:0b:00 and type Open vSwitch
+09:01:29.747 [pool-5-thread-16] INFO  PhysicalSwitch - Switch connected with dpid 2304, name 00:00:00:00:00:00:09:00 and type Open vSwitch
+09:01:29.747 [pool-5-thread-6] INFO  PhysicalSwitch - Switch connected with dpid 768, name 00:00:00:00:00:00:03:00 and type Open vSwitch
+09:01:29.747 [pool-5-thread-23] INFO  PhysicalSwitch - Switch connected with dpid 2048, name 00:00:00:00:00:00:08:00 and type Open vSwitch
+09:01:29.748 [pool-5-thread-30] INFO  PhysicalSwitch - Switch connected with dpid 256, name 00:00:00:00:00:00:01:00 and type Open vSwitch
+09:01:29.747 [pool-5-thread-13] INFO  PhysicalSwitch - Switch connected with dpid 2560, name 00:00:00:00:00:00:0a:00 and type Open vSwitch
+09:01:29.748 [pool-5-thread-11] INFO  PhysicalSwitch - Switch connected with dpid 512, name 00:00:00:00:00:00:02:00 and type Open vSwitch
+09:01:29.747 [pool-5-thread-14] INFO  PhysicalSwitch - Switch connected with dpid 1280, name 00:00:00:00:00:00:05:00 and type Open vSwitch
+09:01:29.748 [pool-5-thread-2] INFO  PhysicalSwitch - Switch connected with dpid 1536, name 00:00:00:00:00:00:06:00 and type Open vSwitch
+09:01:29.747 [pool-5-thread-18] INFO  PhysicalSwitch - Switch connected with dpid 1024, name 00:00:00:00:00:00:04:00 and type Open vSwitch
+09:01:29.811 [pool-5-thread-16] INFO  StatisticsManager - Starting Stats collection thread for 00:00:00:00:00:00:09:00
+09:01:29.813 [pool-5-thread-16] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:08:00/7 and 00:00:00:00:00:00:09:00/5
+09:01:29.817 [pool-5-thread-18] INFO  StatisticsManager - Starting Stats collection thread for 00:00:00:00:00:00:04:00
+09:01:29.818 [pool-5-thread-23] INFO  StatisticsManager - Starting Stats collection thread for 00:00:00:00:00:00:08:00
+09:01:29.819 [pool-5-thread-14] INFO  StatisticsManager - Starting Stats collection thread for 00:00:00:00:00:00:05:00
+09:01:29.821 [pool-5-thread-19] INFO  StatisticsManager - Starting Stats collection thread for 00:00:00:00:00:00:0b:00
+09:01:29.821 [pool-5-thread-13] INFO  StatisticsManager - Starting Stats collection thread for 00:00:00:00:00:00:0a:00
+09:01:29.821 [pool-5-thread-30] INFO  StatisticsManager - Starting Stats collection thread for 00:00:00:00:00:00:01:00
+09:01:29.821 [pool-5-thread-2] INFO  StatisticsManager - Starting Stats collection thread for 00:00:00:00:00:00:06:00
+09:01:29.822 [pool-5-thread-11] INFO  StatisticsManager - Starting Stats collection thread for 00:00:00:00:00:00:02:00
+09:01:29.822 [pool-5-thread-6] INFO  StatisticsManager - Starting Stats collection thread for 00:00:00:00:00:00:03:00
+09:01:29.823 [pool-5-thread-6] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:0b:00/5 and 00:00:00:00:00:00:03:00/7
+09:01:29.823 [pool-5-thread-6] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:02:00/6 and 00:00:00:00:00:00:03:00/5
+09:01:29.827 [pool-5-thread-10] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:02:00/5 and 00:00:00:00:00:00:01:00/5
+09:01:29.827 [pool-5-thread-4] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:03:00/5 and 00:00:00:00:00:00:02:00/6
+09:01:29.828 [pool-5-thread-12] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:04:00/6 and 00:00:00:00:00:00:09:00/6
+09:01:29.828 [pool-5-thread-4] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:01:00/5 and 00:00:00:00:00:00:02:00/5
+09:01:29.829 [pool-5-thread-12] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:0a:00/5 and 00:00:00:00:00:00:09:00/7
+09:01:29.837 [pool-5-thread-13] WARN  OVXPacketIn - PacketIn packetIn:bufferId=256ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:29.837 [pool-5-thread-2] WARN  OVXPacketIn - PacketIn packetIn:bufferId=256ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:29.837 [pool-5-thread-14] WARN  OVXPacketIn - PacketIn packetIn:bufferId=257ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:29.837 [pool-5-thread-19] WARN  OVXPacketIn - PacketIn packetIn:bufferId=256ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:29.837 [pool-5-thread-23] WARN  OVXPacketIn - PacketIn packetIn:bufferId=256ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:29.838 [pool-5-thread-18] WARN  OVXPacketIn - PacketIn packetIn:bufferId=256ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:29.839 [pool-5-thread-18] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:05:00/5 and 00:00:00:00:00:00:04:00/7
+09:01:29.839 [pool-5-thread-2] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:05:00/7 and 00:00:00:00:00:00:06:00/6
+09:01:29.840 [pool-5-thread-23] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:09:00/5 and 00:00:00:00:00:00:08:00/7
+09:01:29.840 [pool-5-thread-13] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:09:00/7 and 00:00:00:00:00:00:0a:00/5
+09:01:29.840 [pool-5-thread-14] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:04:00/7 and 00:00:00:00:00:00:05:00/5
+09:01:29.841 [pool-5-thread-19] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:04:00/5 and 00:00:00:00:00:00:0b:00/7
+09:01:29.841 [pool-5-thread-14] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:0a:00/6 and 00:00:00:00:00:00:05:00/6
+09:01:29.841 [pool-5-thread-13] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:05:00/6 and 00:00:00:00:00:00:0a:00/6
+09:01:29.842 [pool-5-thread-23] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:0b:00/6 and 00:00:00:00:00:00:08:00/6
+09:01:29.842 [pool-5-thread-2] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:0a:00/7 and 00:00:00:00:00:00:06:00/5
+09:01:29.842 [pool-5-thread-18] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:09:00/6 and 00:00:00:00:00:00:04:00/6
+09:01:29.842 [pool-5-thread-13] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:06:00/5 and 00:00:00:00:00:00:0a:00/7
+09:01:29.843 [pool-5-thread-14] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:06:00/6 and 00:00:00:00:00:00:05:00/7
+09:01:29.843 [pool-5-thread-19] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:03:00/7 and 00:00:00:00:00:00:0b:00/5
+09:01:29.843 [pool-5-thread-18] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:0b:00/7 and 00:00:00:00:00:00:04:00/5
+09:01:29.843 [pool-5-thread-19] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:08:00/6 and 00:00:00:00:00:00:0b:00/6
+09:01:29.850 [pool-5-thread-24] WARN  OVXPacketIn - PacketIn packetIn:bufferId=258ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:29.850 [pool-5-thread-20] WARN  OVXPacketIn - PacketIn packetIn:bufferId=259ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:29.859 [pool-5-thread-3] WARN  OVXPacketIn - PacketIn packetIn:bufferId=260ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:29.865 [pool-5-thread-7] INFO  PhysicalSwitch - Switch connected with dpid 1792, name 00:00:00:00:00:00:07:00 and type Open vSwitch
+09:01:29.867 [pool-5-thread-7] INFO  StatisticsManager - Starting Stats collection thread for 00:00:00:00:00:00:07:00
+09:01:29.873 [pool-5-thread-15] WARN  OVXPacketIn - PacketIn packetIn:bufferId=259ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:29.874 [pool-5-thread-8] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:07:00/5 and 00:00:00:00:00:00:01:00/6
+09:01:29.881 [pool-5-thread-16] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:07:00/6 and 00:00:00:00:00:00:03:00/6
+09:01:29.883 [pool-5-thread-30] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:07:00/7 and 00:00:00:00:00:00:08:00/5
+09:01:29.883 [pool-5-thread-11] WARN  OVXPacketIn - PacketIn packetIn:bufferId=261ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:29.902 [pool-5-thread-10] WARN  OVXPacketIn - PacketIn packetIn:bufferId=260ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:29.905 [pool-5-thread-12] WARN  OVXPacketIn - PacketIn packetIn:bufferId=258ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:29.905 [pool-5-thread-23] WARN  OVXPacketIn - PacketIn packetIn:bufferId=259ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:29.905 [pool-5-thread-2] WARN  OVXPacketIn - PacketIn packetIn:bufferId=260ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:29.929 [pool-5-thread-19] WARN  OVXPacketIn - PacketIn packetIn:bufferId=260ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:29.950 [pool-5-thread-26] WARN  OVXPacketIn - PacketIn packetIn:bufferId=261ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:29.970 [pool-5-thread-20] WARN  OVXPacketIn - PacketIn packetIn:bufferId=261ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:29.973 [pool-5-thread-22] WARN  OVXPacketIn - PacketIn packetIn:bufferId=260ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:29.982 [pool-5-thread-28] WARN  OVXPacketIn - PacketIn packetIn:bufferId=262ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:29.982 [pool-5-thread-31] WARN  OVXPacketIn - PacketIn packetIn:bufferId=261ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:30.002 [pool-5-thread-5] WARN  OVXPacketIn - PacketIn packetIn:bufferId=260ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:30.002 [pool-5-thread-1] WARN  OVXPacketIn - PacketIn packetIn:bufferId=256ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:30.010 [pool-5-thread-7] WARN  OVXPacketIn - PacketIn packetIn:bufferId=259ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:30.030 [pool-5-thread-17] WARN  OVXPacketIn - PacketIn packetIn:bufferId=261ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:30.062 [pool-5-thread-16] WARN  OVXPacketIn - PacketIn packetIn:bufferId=262ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:30.066 [pool-5-thread-11] WARN  OVXPacketIn - PacketIn packetIn:bufferId=261ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:30.070 [pool-5-thread-10] WARN  OVXPacketIn - PacketIn packetIn:bufferId=260ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:30.079 [pool-5-thread-12] WARN  OVXPacketIn - PacketIn packetIn:bufferId=262ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:30.081 [pool-5-thread-13] WARN  OVXPacketIn - PacketIn packetIn:bufferId=261ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:30.114 [pool-5-thread-14] WARN  OVXPacketIn - PacketIn packetIn:bufferId=262ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:30.149 [pool-5-thread-19] WARN  OVXPacketIn - PacketIn packetIn:bufferId=261ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:30.174 [pool-5-thread-26] WARN  OVXPacketIn - PacketIn packetIn:bufferId=257ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:30.186 [pool-5-thread-20] WARN  OVXPacketIn - PacketIn packetIn:bufferId=262ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:30.222 [pool-5-thread-22] WARN  OVXPacketIn - PacketIn packetIn:bufferId=258ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:30.282 [pool-5-thread-28] WARN  OVXPacketIn - PacketIn packetIn:bufferId=260ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:31.398 [pool-5-thread-8] WARN  OVXPacketIn - PacketIn packetIn:bufferId=266ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:31.526 [pool-5-thread-30] WARN  OVXPacketIn - PacketIn packetIn:bufferId=264ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:31.678 [pool-5-thread-6] WARN  OVXPacketIn - PacketIn packetIn:bufferId=266ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:31.710 [pool-5-thread-4] WARN  OVXPacketIn - PacketIn packetIn:bufferId=265ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:32.022 [pool-5-thread-13] WARN  OVXPacketIn - PacketIn packetIn:bufferId=259ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:32.110 [pool-5-thread-14] WARN  OVXPacketIn - PacketIn packetIn:bufferId=270ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:32.198 [pool-5-thread-19] WARN  OVXPacketIn - PacketIn packetIn:bufferId=269ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:32.486 [pool-5-thread-26] WARN  OVXPacketIn - PacketIn packetIn:bufferId=268ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:32.694 [pool-5-thread-20] WARN  OVXPacketIn - PacketIn packetIn:bufferId=267ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.047 [pool-5-thread-24] WARN  OVXPacketIn - PacketIn packetIn:bufferId=271ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.047 [pool-5-thread-22] WARN  OVXPacketIn - PacketIn packetIn:bufferId=265ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.094 [pool-5-thread-31] WARN  OVXPacketIn - PacketIn packetIn:bufferId=271ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.173 [pool-5-thread-1] WARN  OVXPacketIn - PacketIn packetIn:bufferId=273ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.238 [pool-5-thread-27] WARN  OVXPacketIn - PacketIn packetIn:bufferId=272ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.261 [pool-5-thread-15] WARN  OVXPacketIn - PacketIn packetIn:bufferId=270ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.317 [pool-5-thread-8] WARN  OVXPacketIn - PacketIn packetIn:bufferId=272ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.342 [pool-5-thread-16] WARN  OVXPacketIn - PacketIn packetIn:bufferId=270ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.366 [pool-5-thread-6] WARN  OVXPacketIn - PacketIn packetIn:bufferId=271ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.400 [pool-5-thread-4] WARN  OVXPacketIn - PacketIn packetIn:bufferId=273ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.413 [pool-5-thread-23] WARN  OVXPacketIn - PacketIn packetIn:bufferId=268ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.429 [pool-5-thread-2] WARN  OVXPacketIn - PacketIn packetIn:bufferId=273ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.542 [pool-5-thread-18] WARN  OVXPacketIn - PacketIn packetIn:bufferId=269ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.558 [pool-5-thread-26] WARN  OVXPacketIn - PacketIn packetIn:bufferId=273ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.558 [pool-5-thread-25] WARN  OVXPacketIn - PacketIn packetIn:bufferId=269ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.573 [pool-5-thread-24] WARN  OVXPacketIn - PacketIn packetIn:bufferId=260ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.606 [pool-5-thread-29] WARN  OVXPacketIn - PacketIn packetIn:bufferId=274ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.638 [pool-5-thread-31] WARN  OVXPacketIn - PacketIn packetIn:bufferId=274ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.654 [pool-5-thread-32] WARN  OVXPacketIn - PacketIn packetIn:bufferId=274ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.669 [pool-5-thread-1] WARN  OVXPacketIn - PacketIn packetIn:bufferId=272ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.750 [pool-5-thread-27] WARN  OVXPacketIn - PacketIn packetIn:bufferId=274ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.782 [pool-5-thread-15] WARN  OVXPacketIn - PacketIn packetIn:bufferId=271ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.862 [pool-5-thread-8] WARN  OVXPacketIn - PacketIn packetIn:bufferId=275ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.862 [pool-5-thread-30] WARN  OVXPacketIn - PacketIn packetIn:bufferId=275ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.862 [pool-5-thread-16] WARN  OVXPacketIn - PacketIn packetIn:bufferId=270ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.877 [pool-5-thread-4] WARN  OVXPacketIn - PacketIn packetIn:bufferId=276ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.877 [pool-5-thread-12] WARN  OVXPacketIn - PacketIn packetIn:bufferId=272ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.894 [pool-5-thread-2] WARN  OVXPacketIn - PacketIn packetIn:bufferId=275ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.910 [pool-5-thread-26] WARN  OVXPacketIn - PacketIn packetIn:bufferId=274ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.911 [pool-5-thread-18] WARN  OVXPacketIn - PacketIn packetIn:bufferId=274ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.911 [pool-5-thread-19] WARN  OVXPacketIn - PacketIn packetIn:bufferId=270ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.911 [pool-5-thread-25] WARN  OVXPacketIn - PacketIn packetIn:bufferId=275ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.941 [pool-5-thread-28] WARN  OVXPacketIn - PacketIn packetIn:bufferId=276ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.941 [pool-5-thread-29] WARN  OVXPacketIn - PacketIn packetIn:bufferId=276ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.941 [pool-5-thread-31] WARN  OVXPacketIn - PacketIn packetIn:bufferId=271ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.982 [pool-5-thread-1] WARN  OVXPacketIn - PacketIn packetIn:bufferId=273ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.989 [pool-5-thread-27] WARN  OVXPacketIn - PacketIn packetIn:bufferId=276ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:33.989 [pool-5-thread-7] WARN  OVXPacketIn - PacketIn packetIn:bufferId=277ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:34.006 [pool-5-thread-8] WARN  OVXPacketIn - PacketIn packetIn:bufferId=261ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:34.006 [pool-5-thread-30] WARN  OVXPacketIn - PacketIn packetIn:bufferId=275ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:34.021 [pool-5-thread-6] WARN  OVXPacketIn - PacketIn packetIn:bufferId=271ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:34.038 [pool-5-thread-12] WARN  OVXPacketIn - PacketIn packetIn:bufferId=272ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:34.038 [pool-5-thread-4] WARN  OVXPacketIn - PacketIn packetIn:bufferId=275ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:34.070 [pool-5-thread-2] WARN  OVXPacketIn - PacketIn packetIn:bufferId=276ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:34.070 [pool-5-thread-14] WARN  OVXPacketIn - PacketIn packetIn:bufferId=277ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:34.078 [pool-5-thread-19] WARN  OVXPacketIn - PacketIn packetIn:bufferId=273ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:34.086 [pool-5-thread-20] WARN  OVXPacketIn - PacketIn packetIn:bufferId=272ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:34.086 [pool-5-thread-21] WARN  OVXPacketIn - PacketIn packetIn:bufferId=276ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:34.117 [pool-5-thread-24] WARN  OVXPacketIn - PacketIn packetIn:bufferId=279ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:34.183 [pool-5-thread-29] WARN  OVXPacketIn - PacketIn packetIn:bufferId=262ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:34.183 [pool-5-thread-31] WARN  OVXPacketIn - PacketIn packetIn:bufferId=274ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:34.183 [pool-5-thread-29] WARN  OVXPacketIn - PacketIn packetIn:bufferId=263ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:34.197 [pool-5-thread-5] WARN  OVXPacketIn - PacketIn packetIn:bufferId=278ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:34.230 [pool-5-thread-7] WARN  OVXPacketIn - PacketIn packetIn:bufferId=264ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:34.294 [pool-5-thread-15] WARN  OVXPacketIn - PacketIn packetIn:bufferId=275ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:34.582 [pool-5-thread-8] WARN  OVXPacketIn - PacketIn packetIn:bufferId=276ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:35.286 [pool-5-thread-30] WARN  OVXPacketIn - PacketIn packetIn:bufferId=276ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:35.306 [pool-5-thread-3] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:03:00/6 and 00:00:00:00:00:00:07:00/6
+09:01:35.309 [pool-5-thread-30] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:01:00/6 and 00:00:00:00:00:00:07:00/5
+09:01:35.310 [pool-5-thread-6] INFO  PhysicalNetwork - Adding physical link between 00:00:00:00:00:00:08:00/5 and 00:00:00:00:00:00:07:00/7
+09:01:35.767 [pool-5-thread-4] WARN  OVXPacketIn - PacketIn packetIn:bufferId=283ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:35.798 [pool-5-thread-13] WARN  OVXPacketIn - PacketIn packetIn:bufferId=280ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:35.830 [pool-5-thread-14] WARN  OVXPacketIn - PacketIn packetIn:bufferId=279ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:35.925 [pool-5-thread-18] WARN  OVXPacketIn - PacketIn packetIn:bufferId=281ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:36.118 [pool-5-thread-25] WARN  OVXPacketIn - PacketIn packetIn:bufferId=282ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:36.230 [pool-5-thread-22] WARN  OVXPacketIn - PacketIn packetIn:bufferId=284ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:36.439 [pool-5-thread-5] WARN  OVXPacketIn - PacketIn packetIn:bufferId=288ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:36.566 [pool-5-thread-1] WARN  OVXPacketIn - PacketIn packetIn:bufferId=271ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:36.855 [pool-5-thread-27] WARN  OVXPacketIn - PacketIn packetIn:bufferId=288ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.103 [pool-5-thread-8] WARN  OVXPacketIn - PacketIn packetIn:bufferId=286ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.246 [pool-5-thread-30] WARN  OVXPacketIn - PacketIn packetIn:bufferId=287ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.271 [pool-5-thread-16] WARN  OVXPacketIn - PacketIn packetIn:bufferId=280ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.327 [pool-5-thread-10] WARN  OVXPacketIn - PacketIn packetIn:bufferId=286ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.350 [pool-5-thread-4] WARN  OVXPacketIn - PacketIn packetIn:bufferId=286ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.374 [pool-5-thread-13] WARN  OVXPacketIn - PacketIn packetIn:bufferId=287ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.406 [pool-5-thread-3] WARN  OVXPacketIn - PacketIn packetIn:bufferId=289ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.550 [pool-5-thread-28] WARN  OVXPacketIn - PacketIn packetIn:bufferId=283ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.565 [pool-5-thread-29] WARN  OVXPacketIn - PacketIn packetIn:bufferId=290ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.565 [pool-5-thread-32] WARN  OVXPacketIn - PacketIn packetIn:bufferId=284ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.582 [pool-5-thread-1] WARN  OVXPacketIn - PacketIn packetIn:bufferId=275ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.613 [pool-5-thread-7] WARN  OVXPacketIn - PacketIn packetIn:bufferId=292ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.645 [pool-5-thread-15] WARN  OVXPacketIn - PacketIn packetIn:bufferId=291ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.662 [pool-5-thread-17] WARN  OVXPacketIn - PacketIn packetIn:bufferId=293ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.677 [pool-5-thread-30] WARN  OVXPacketIn - PacketIn packetIn:bufferId=291ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.758 [pool-5-thread-6] WARN  OVXPacketIn - PacketIn packetIn:bufferId=290ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.790 [pool-5-thread-12] WARN  OVXPacketIn - PacketIn packetIn:bufferId=283ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.870 [pool-5-thread-23] WARN  OVXPacketIn - PacketIn packetIn:bufferId=292ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.870 [pool-5-thread-13] WARN  OVXPacketIn - PacketIn packetIn:bufferId=293ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.870 [pool-5-thread-2] WARN  OVXPacketIn - PacketIn packetIn:bufferId=285ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.886 [pool-5-thread-19] WARN  OVXPacketIn - PacketIn packetIn:bufferId=284ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.901 [pool-5-thread-21] WARN  OVXPacketIn - PacketIn packetIn:bufferId=294ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.918 [pool-5-thread-28] WARN  OVXPacketIn - PacketIn packetIn:bufferId=291ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.918 [pool-5-thread-20] WARN  OVXPacketIn - PacketIn packetIn:bufferId=290ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.918 [pool-5-thread-24] WARN  OVXPacketIn - PacketIn packetIn:bufferId=284ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.918 [pool-5-thread-31] WARN  OVXPacketIn - PacketIn packetIn:bufferId=291ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.949 [pool-5-thread-1] WARN  OVXPacketIn - PacketIn packetIn:bufferId=286ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.989 [pool-5-thread-7] WARN  OVXPacketIn - PacketIn packetIn:bufferId=285ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.997 [pool-5-thread-8] WARN  OVXPacketIn - PacketIn packetIn:bufferId=295ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:37.997 [pool-5-thread-15] WARN  OVXPacketIn - PacketIn packetIn:bufferId=292ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:38.014 [pool-5-thread-30] WARN  OVXPacketIn - PacketIn packetIn:bufferId=291ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:38.014 [pool-5-thread-16] WARN  OVXPacketIn - PacketIn packetIn:bufferId=276ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:38.029 [pool-5-thread-12] WARN  OVXPacketIn - PacketIn packetIn:bufferId=285ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:38.046 [pool-5-thread-13] WARN  OVXPacketIn - PacketIn packetIn:bufferId=292ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:38.070 [pool-5-thread-2] WARN  OVXPacketIn - PacketIn packetIn:bufferId=286ofmsg:v=1;t=PACKET_IN;l=108;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:38.078 [pool-5-thread-14] WARN  OVXPacketIn - PacketIn packetIn:bufferId=293ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:38.078 [pool-5-thread-18] WARN  OVXPacketIn - PacketIn packetIn:bufferId=294ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:38.085 [pool-5-thread-21] WARN  OVXPacketIn - PacketIn packetIn:bufferId=292ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:38.094 [pool-5-thread-28] WARN  OVXPacketIn - PacketIn packetIn:bufferId=287ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:38.094 [pool-5-thread-20] WARN  OVXPacketIn - PacketIn packetIn:bufferId=292ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:38.126 [pool-5-thread-32] WARN  OVXPacketIn - PacketIn packetIn:bufferId=295ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:38.190 [pool-5-thread-5] WARN  OVXPacketIn - PacketIn packetIn:bufferId=277ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:38.205 [pool-5-thread-1] WARN  OVXPacketIn - PacketIn packetIn:bufferId=293ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:38.238 [pool-5-thread-7] WARN  OVXPacketIn - PacketIn packetIn:bufferId=278ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:38.301 [pool-5-thread-8] WARN  OVXPacketIn - PacketIn packetIn:bufferId=286ofmsg:v=1;t=PACKET_IN;l=88;x=0 does not belong to any virtual network; dropping and installing a temporary drop rule
+09:01:59.750 [qtp68881864-91] ERROR DBManager - Failed to insert document into database: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:01:59.751 [qtp68881864-91] INFO  CreateOVXNetwork - Created virtual network 1
+09:02:00.001 [qtp68881864-43] ERROR DBManager - Failed to update database: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:02:00.001 [qtp68881864-43] INFO  CreateOVXSwitch - Created virtual switch 00:a4:23:05:00:00:00:01 in virtual network 1
+09:02:00.091 [qtp68881864-92] ERROR DBManager - Failed to update database: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:02:00.091 [qtp68881864-92] INFO  CreateOVXSwitch - Created virtual switch 00:a4:23:05:00:00:00:02 in virtual network 1
+09:02:00.178 [qtp68881864-91] ERROR DBManager - Failed to update database: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:02:00.178 [qtp68881864-91] INFO  CreateOVXSwitch - Created virtual switch 00:a4:23:05:00:00:00:03 in virtual network 1
+09:02:00.266 [qtp68881864-43] ERROR DBManager - Failed to update database: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:02:00.266 [qtp68881864-43] INFO  CreateOVXSwitch - Created virtual switch 00:a4:23:05:00:00:00:04 in virtual network 1
+09:02:00.407 [qtp68881864-92] ERROR DBManager - Failed to update database: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:02:00.407 [qtp68881864-92] INFO  CreateOVXPort - Created virtual port 1 on virtual switch 00:a4:23:05:00:00:00:01 in virtual network 1
+09:02:00.493 [qtp68881864-91] ERROR DBManager - Failed to update database: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:02:00.493 [qtp68881864-91] INFO  CreateOVXPort - Created virtual port 2 on virtual switch 00:a4:23:05:00:00:00:01 in virtual network 1
+09:02:00.582 [qtp68881864-43] ERROR DBManager - Failed to update database: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:02:00.583 [qtp68881864-43] INFO  CreateOVXPort - Created virtual port 1 on virtual switch 00:a4:23:05:00:00:00:02 in virtual network 1
+09:02:00.668 [qtp68881864-92] ERROR DBManager - Failed to update database: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:02:00.668 [qtp68881864-92] INFO  CreateOVXPort - Created virtual port 2 on virtual switch 00:a4:23:05:00:00:00:02 in virtual network 1
+09:02:00.752 [qtp68881864-91] ERROR DBManager - Failed to update database: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:02:00.752 [qtp68881864-91] INFO  CreateOVXPort - Created virtual port 1 on virtual switch 00:a4:23:05:00:00:00:03 in virtual network 1
+09:02:00.840 [qtp68881864-43] ERROR DBManager - Failed to update database: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:02:00.840 [qtp68881864-43] INFO  CreateOVXPort - Created virtual port 2 on virtual switch 00:a4:23:05:00:00:00:03 in virtual network 1
+09:02:00.925 [qtp68881864-92] ERROR DBManager - Failed to update database: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:02:00.925 [qtp68881864-92] INFO  CreateOVXPort - Created virtual port 1 on virtual switch 00:a4:23:05:00:00:00:04 in virtual network 1
+09:02:01.008 [qtp68881864-43] ERROR DBManager - Failed to update database: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:02:01.009 [qtp68881864-43] INFO  CreateOVXPort - Created virtual port 2 on virtual switch 00:a4:23:05:00:00:00:04 in virtual network 1
+09:02:01.099 [qtp68881864-91] ERROR DBManager - Failed to update database: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:02:01.101 [qtp68881864-91] ERROR DBManager - Failed to update database: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:02:01.101 [qtp68881864-91] INFO  OVXNetwork - Created bi-directional virtual link 1 between ports 00:a4:23:05:00:00:00:01/2 - 00:a4:23:05:00:00:00:02/1 in virtual network 1
+09:02:01.102 [qtp68881864-91] INFO  ConnectOVXLink - Created bi-directional virtual link 1 between ports 00:a4:23:05:00:00:00:01/2 - 00:a4:23:05:00:00:00:02/1 in virtual network 1
+09:02:01.192 [qtp68881864-92] ERROR DBManager - Failed to update database: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:02:01.194 [qtp68881864-92] ERROR DBManager - Failed to update database: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:02:01.194 [qtp68881864-92] INFO  OVXNetwork - Created bi-directional virtual link 2 between ports 00:a4:23:05:00:00:00:02/2 - 00:a4:23:05:00:00:00:03/1 in virtual network 1
+09:02:01.194 [qtp68881864-92] INFO  ConnectOVXLink - Created bi-directional virtual link 2 between ports 00:a4:23:05:00:00:00:02/2 - 00:a4:23:05:00:00:00:03/1 in virtual network 1
+09:02:01.286 [qtp68881864-43] ERROR DBManager - Failed to update database: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:02:01.288 [qtp68881864-43] ERROR DBManager - Failed to update database: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:02:01.288 [qtp68881864-43] INFO  OVXNetwork - Created bi-directional virtual link 3 between ports 00:a4:23:05:00:00:00:03/2 - 00:a4:23:05:00:00:00:04/1 in virtual network 1
+09:02:01.288 [qtp68881864-43] INFO  ConnectOVXLink - Created bi-directional virtual link 3 between ports 00:a4:23:05:00:00:00:03/2 - 00:a4:23:05:00:00:00:04/1 in virtual network 1
+09:02:01.422 [qtp68881864-91] ERROR DBManager - Failed to update database: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:02:01.423 [qtp68881864-91] INFO  ConnectHost - Connected host with id 1 and mac 00:00:00:00:01:01 to virtual port 1 on virtual switch 00:a4:23:05:00:00:00:01 in virtual network 1
+09:02:01.510 [qtp68881864-92] ERROR DBManager - Failed to update database: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:02:01.511 [qtp68881864-92] INFO  ConnectHost - Connected host with id 2 and mac 00:00:00:00:07:02 to virtual port 2 on virtual switch 00:a4:23:05:00:00:00:04 in virtual network 1
+09:02:01.703 [qtp68881864-91] INFO  StartOVXNetwork - Booted virtual network 1
+09:02:01.753 [pool-4-thread-16] INFO  ControllerChannelHandler - Connected dpid 00:a4:23:05:00:00:00:02 to controller /192.168.56.101:10000
+09:02:01.753 [pool-4-thread-17] INFO  ControllerChannelHandler - Connected dpid 00:a4:23:05:00:00:00:04 to controller /192.168.56.101:10000
+09:02:01.754 [pool-4-thread-19] INFO  ControllerChannelHandler - Connected dpid 00:a4:23:05:00:00:00:03 to controller /192.168.56.101:10000
+09:02:01.754 [pool-4-thread-20] INFO  ControllerChannelHandler - Connected dpid 00:a4:23:05:00:00:00:01 to controller /192.168.56.101:10000
+09:02:01.757 [pool-4-thread-22] INFO  OVXSetConfig - Setting miss send length to -1 for OVXSwitch 00:a4:23:05:00:00:00:02
+09:02:01.759 [pool-4-thread-24] INFO  OVXSetConfig - Setting miss send length to -1 for OVXSwitch 00:a4:23:05:00:00:00:03
+09:02:01.768 [pool-4-thread-27] INFO  OVXSetConfig - Setting miss send length to -1 for OVXSwitch 00:a4:23:05:00:00:00:01
+09:02:01.770 [pool-4-thread-31] INFO  OVXSetConfig - Setting miss send length to -1 for OVXSwitch 00:a4:23:05:00:00:00:04
+09:07:13.058 [pool-5-thread-1] INFO  PhysicalNetwork - removing port 1
+09:07:13.059 [pool-5-thread-1] INFO  PhysicalNetwork - removing port 2
+09:07:13.059 [pool-5-thread-1] INFO  PhysicalNetwork - removing port 3
+09:07:13.059 [pool-5-thread-1] INFO  PhysicalNetwork - removing port 4
+09:07:13.059 [pool-5-thread-1] INFO  PhysicalNetwork - removing port 5
+09:07:13.059 [pool-5-thread-1] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:04:00/5 and 00:00:00:00:00:00:0b:00/7
+09:07:13.059 [pool-5-thread-1] INFO  PhysicalNetwork - removing port 6
+09:07:13.059 [pool-5-thread-1] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:04:00/6 and 00:00:00:00:00:00:09:00/6
+09:07:13.059 [pool-5-thread-1] INFO  PhysicalNetwork - removing port 7
+09:07:13.060 [pool-5-thread-1] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:04:00/7 and 00:00:00:00:00:00:05:00/5
+09:07:13.060 [pool-5-thread-1] INFO  PhysicalNetwork - removing port -2
+09:07:13.060 [pool-5-thread-1] WARN  SwitchDiscoveryManager - tried to dynamically remove non-existing port -2
+09:07:13.060 [pool-5-thread-1] INFO  PhysicalSwitch - Switch disconnected 1024 
+09:07:13.060 [pool-5-thread-1] INFO  StatisticsManager - Stopping Stats collection thread for 00:00:00:00:00:00:04:00
+09:07:13.154 [pool-5-thread-7] INFO  PhysicalNetwork - removing port 1
+09:07:13.154 [pool-5-thread-7] INFO  PhysicalNetwork - removing port 2
+09:07:13.154 [pool-5-thread-7] INFO  PhysicalNetwork - removing port 3
+09:07:13.154 [pool-5-thread-7] INFO  PhysicalNetwork - removing port 4
+09:07:13.154 [pool-5-thread-7] INFO  PhysicalNetwork - removing port 5
+09:07:13.154 [pool-5-thread-7] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:0a:00/5 and 00:00:00:00:00:00:09:00/7
+09:07:13.154 [pool-5-thread-7] INFO  PhysicalNetwork - removing port 6
+09:07:13.154 [pool-5-thread-7] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:0a:00/6 and 00:00:00:00:00:00:05:00/6
+09:07:13.155 [pool-5-thread-7] INFO  PhysicalNetwork - removing port 7
+09:07:13.155 [pool-5-thread-7] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:0a:00/7 and 00:00:00:00:00:00:06:00/5
+09:07:13.155 [pool-5-thread-7] INFO  PhysicalNetwork - removing port -2
+09:07:13.155 [pool-5-thread-7] WARN  SwitchDiscoveryManager - tried to dynamically remove non-existing port -2
+09:07:13.155 [pool-5-thread-7] INFO  PhysicalSwitch - Switch disconnected 2560 
+09:07:13.155 [pool-5-thread-7] INFO  StatisticsManager - Stopping Stats collection thread for 00:00:00:00:00:00:0a:00
+09:07:13.158 [pool-5-thread-31] INFO  OVXPortStatus - Received OVXPortStatus: reason[OFPPR_DELETE] port[6] from switch 2304
+09:07:13.158 [pool-5-thread-32] INFO  OVXPortStatus - Received OVXPortStatus: reason[OFPPR_MODIFY] port[7] from switch 2816
+09:07:13.158 [pool-5-thread-9] INFO  OVXPortStatus - Received OVXPortStatus: reason[OFPPR_DELETE] port[5] from switch 1280
+09:07:13.158 [pool-5-thread-32] INFO  OVXPortStatus - Received OVXPortStatus: reason[OFPPR_DELETE] port[7] from switch 2816
+09:07:13.255 [pool-5-thread-8] INFO  OVXPortStatus - Received OVXPortStatus: reason[OFPPR_MODIFY] port[7] from switch 2304
+09:07:13.256 [pool-5-thread-15] INFO  OVXPortStatus - Received OVXPortStatus: reason[OFPPR_DELETE] port[7] from switch 2304
+09:07:13.268 [pool-5-thread-17] INFO  OVXPortStatus - Received OVXPortStatus: reason[OFPPR_DELETE] port[6] from switch 1280
+09:07:13.282 [pool-5-thread-11] INFO  OVXPortStatus - Received OVXPortStatus: reason[OFPPR_MODIFY] port[5] from switch 1536
+09:07:13.284 [pool-5-thread-6] INFO  OVXPortStatus - Received OVXPortStatus: reason[OFPPR_DELETE] port[5] from switch 1536
+09:07:13.301 [pool-5-thread-4] INFO  PhysicalNetwork - removing port 1
+09:07:13.302 [pool-5-thread-4] INFO  PhysicalNetwork - removing port 2
+09:07:13.302 [pool-5-thread-4] INFO  PhysicalNetwork - removing port 3
+09:07:13.302 [pool-5-thread-4] INFO  PhysicalNetwork - removing port 4
+09:07:13.302 [pool-5-thread-4] INFO  PhysicalNetwork - removing port 5
+09:07:13.302 [pool-5-thread-4] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:06:00/5 and 00:00:00:00:00:00:0a:00/7
+09:07:13.302 [pool-5-thread-4] INFO  PhysicalNetwork - removing port 6
+09:07:13.302 [pool-5-thread-4] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:06:00/6 and 00:00:00:00:00:00:05:00/7
+09:07:13.302 [pool-5-thread-4] INFO  PhysicalNetwork - removing port -2
+09:07:13.302 [pool-5-thread-4] WARN  SwitchDiscoveryManager - tried to dynamically remove non-existing port -2
+09:07:13.303 [pool-5-thread-4] INFO  PhysicalSwitch - Switch disconnected 1536 
+09:07:13.303 [pool-5-thread-4] INFO  StatisticsManager - Stopping Stats collection thread for 00:00:00:00:00:00:06:00
+09:07:13.428 [pool-5-thread-31] INFO  OVXPortStatus - Received OVXPortStatus: reason[OFPPR_MODIFY] port[7] from switch 1280
+09:07:13.429 [pool-5-thread-9] INFO  OVXPortStatus - Received OVXPortStatus: reason[OFPPR_DELETE] port[7] from switch 1280
+09:07:13.438 [pool-5-thread-32] INFO  PhysicalNetwork - removing port 1
+09:07:13.438 [pool-5-thread-32] INFO  PhysicalNetwork - removing port 2
+09:07:13.438 [pool-5-thread-32] INFO  PhysicalNetwork - removing port 3
+09:07:13.438 [pool-5-thread-32] INFO  PhysicalNetwork - removing port 4
+09:07:13.438 [pool-5-thread-32] INFO  PhysicalNetwork - removing port 5
+09:07:13.438 [pool-5-thread-32] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:05:00/5 and 00:00:00:00:00:00:04:00/7
+09:07:13.439 [pool-5-thread-32] INFO  PhysicalNetwork - removing port 6
+09:07:13.439 [pool-5-thread-32] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:05:00/6 and 00:00:00:00:00:00:0a:00/6
+09:07:13.439 [pool-5-thread-32] INFO  PhysicalNetwork - removing port 7
+09:07:13.439 [pool-5-thread-32] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:05:00/7 and 00:00:00:00:00:00:06:00/6
+09:07:13.439 [pool-5-thread-32] INFO  PhysicalNetwork - removing port -2
+09:07:13.439 [pool-5-thread-32] WARN  SwitchDiscoveryManager - tried to dynamically remove non-existing port -2
+09:07:13.439 [pool-5-thread-32] INFO  PhysicalSwitch - Switch disconnected 1280 
+09:07:13.439 [pool-5-thread-32] INFO  StatisticsManager - Stopping Stats collection thread for 00:00:00:00:00:00:05:00
+09:07:13.537 [pool-5-thread-15] INFO  PhysicalNetwork - removing port 1
+09:07:13.538 [pool-5-thread-15] INFO  PhysicalNetwork - removing port 2
+09:07:13.538 [pool-5-thread-15] INFO  PhysicalNetwork - removing port 3
+09:07:13.538 [pool-5-thread-15] INFO  PhysicalNetwork - removing port 4
+09:07:13.538 [pool-5-thread-15] INFO  PhysicalNetwork - removing port 5
+09:07:13.538 [pool-5-thread-15] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:0b:00/5 and 00:00:00:00:00:00:03:00/7
+09:07:13.538 [pool-5-thread-15] INFO  PhysicalNetwork - removing port 6
+09:07:13.538 [pool-5-thread-15] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:0b:00/6 and 00:00:00:00:00:00:08:00/6
+09:07:13.538 [pool-5-thread-15] INFO  PhysicalNetwork - removing port 7
+09:07:13.538 [pool-5-thread-15] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:0b:00/7 and 00:00:00:00:00:00:04:00/5
+09:07:13.538 [pool-5-thread-15] INFO  PhysicalNetwork - removing port -2
+09:07:13.538 [pool-5-thread-15] WARN  SwitchDiscoveryManager - tried to dynamically remove non-existing port -2
+09:07:13.539 [pool-5-thread-15] INFO  PhysicalSwitch - Switch disconnected 2816 
+09:07:13.539 [pool-5-thread-15] INFO  StatisticsManager - Stopping Stats collection thread for 00:00:00:00:00:00:0b:00
+09:07:13.608 [pool-5-thread-17] INFO  OVXPortStatus - Received OVXPortStatus: reason[OFPPR_MODIFY] port[7] from switch 768
+09:07:13.609 [pool-5-thread-11] INFO  OVXPortStatus - Received OVXPortStatus: reason[OFPPR_DELETE] port[7] from switch 768
+09:07:13.622 [pool-5-thread-6] INFO  OVXPortStatus - Received OVXPortStatus: reason[OFPPR_MODIFY] port[6] from switch 2048
+09:07:13.623 [pool-5-thread-12] INFO  OVXPortStatus - Received OVXPortStatus: reason[OFPPR_DELETE] port[6] from switch 2048
+09:07:13.659 [pool-5-thread-10] INFO  PhysicalNetwork - removing port 1
+09:07:13.659 [pool-5-thread-10] INFO  PhysicalNetwork - removing port 2
+09:07:13.659 [pool-5-thread-10] INFO  PhysicalNetwork - removing port 3
+09:07:13.659 [pool-5-thread-10] INFO  PhysicalNetwork - removing port 4
+09:07:13.660 [pool-5-thread-10] INFO  PhysicalNetwork - removing port 5
+09:07:13.660 [pool-5-thread-10] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:03:00/5 and 00:00:00:00:00:00:02:00/6
+09:07:13.661 [pool-5-thread-10] INFO  PhysicalNetwork - removing port 6
+09:07:13.661 [pool-5-thread-10] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:03:00/6 and 00:00:00:00:00:00:07:00/6
+09:07:13.661 [pool-5-thread-10] INFO  PhysicalNetwork - removing port 7
+09:07:13.661 [pool-5-thread-10] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:03:00/7 and 00:00:00:00:00:00:0b:00/5
+09:07:13.661 [pool-5-thread-10] INFO  PhysicalNetwork - removing port -2
+09:07:13.661 [pool-5-thread-10] WARN  SwitchDiscoveryManager - tried to dynamically remove non-existing port -2
+09:07:13.661 [pool-5-thread-10] INFO  PhysicalSwitch - Switch disconnected 768 
+09:07:13.662 [pool-5-thread-10] INFO  StatisticsManager - Stopping Stats collection thread for 00:00:00:00:00:00:03:00
+09:07:13.668 [Thread-41] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:13.671 [Thread-41] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:13.673 [Thread-41] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:13.674 [Thread-41] INFO  OVXPort - Cleaning up flowmods for sw 00:00:00:00:00:00:02:00 port 6
+09:07:13.674 [Thread-41] INFO  OVXPort - Cleaning up flowmods for sw 00:00:00:00:00:00:03:00 port 5
+09:07:13.676 [Thread-41] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:13.676 [Thread-41] INFO  OVXPort - Cleaning up flowmods for sw 00:00:00:00:00:00:03:00 port 5
+09:07:13.678 [Thread-41] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:13.679 [Thread-41] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:13.679 [Thread-41] INFO  OVXPort - Cleaning up flowmods for sw 00:00:00:00:00:00:07:00 port 6
+09:07:13.679 [Thread-41] INFO  OVXPort - Cleaning up flowmods for sw 00:00:00:00:00:00:03:00 port 6
+09:07:13.681 [Thread-41] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:13.681 [Thread-41] INFO  OVXPort - Cleaning up flowmods for sw 00:00:00:00:00:00:03:00 port 6
+09:07:13.681 [Thread-41] INFO  OVXSwitch - Cleaning up flowmods
+09:07:13.682 [Thread-41] INFO  OVXSwitch - Cleaning up flowmods
+09:07:13.756 [pool-5-thread-13] INFO  OVXPortStatus - Received OVXPortStatus: reason[OFPPR_MODIFY] port[6] from switch 512
+09:07:13.756 [pool-5-thread-13] INFO  OVXPort - Sending OVXPortStatus: reason[OFPPR_MODIFY] port[6] as OVXSwitch 46200400562356226
+09:07:13.757 [pool-5-thread-13] INFO  OVXPortStatus - Received OVXPortStatus: reason[OFPPR_DELETE] port[6] from switch 512
+09:07:13.759 [pool-5-thread-13] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:13.761 [pool-5-thread-13] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:13.761 [pool-5-thread-13] INFO  OVXPort - Sending OVXPortStatus: reason[OFPPR_DELETE] port[6] as OVXSwitch 46200400562356226
+09:07:13.764 [pool-5-thread-13] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:13.766 [pool-5-thread-13] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:13.767 [pool-5-thread-13] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:13.768 [pool-5-thread-13] INFO  OVXPort - Cleaning up flowmods for sw 00:00:00:00:00:00:02:00 port 6
+09:07:13.768 [pool-5-thread-13] INFO  PhysicalNetwork - removing port 6
+09:07:13.768 [pool-5-thread-13] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:02:00/6 and 00:00:00:00:00:00:03:00/5
+09:07:13.772 [pool-5-thread-19] INFO  OVXPortStatus - Received OVXPortStatus: reason[OFPPR_MODIFY] port[6] from switch 1792
+09:07:13.773 [pool-5-thread-19] INFO  OVXPort - Sending OVXPortStatus: reason[OFPPR_MODIFY] port[6] as OVXSwitch 46200400562356228
+09:07:13.773 [pool-5-thread-2] INFO  OVXPortStatus - Received OVXPortStatus: reason[OFPPR_DELETE] port[6] from switch 1792
+09:07:13.776 [pool-5-thread-2] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:13.778 [pool-5-thread-2] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:13.778 [pool-5-thread-2] INFO  OVXPort - Sending OVXPortStatus: reason[OFPPR_DELETE] port[6] as OVXSwitch 46200400562356228
+09:07:13.780 [pool-5-thread-2] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:13.782 [pool-5-thread-2] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:13.784 [pool-5-thread-2] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:13.785 [pool-5-thread-2] INFO  OVXPort - Cleaning up flowmods for sw 00:00:00:00:00:00:07:00 port 6
+09:07:13.785 [pool-5-thread-2] INFO  PhysicalNetwork - removing port 6
+09:07:13.785 [pool-5-thread-2] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:07:00/6 and 00:00:00:00:00:00:03:00/6
+09:07:13.812 [pool-5-thread-4] INFO  PhysicalNetwork - removing port 1
+09:07:13.812 [pool-5-thread-4] INFO  PhysicalNetwork - removing port 2
+09:07:13.812 [pool-5-thread-4] INFO  PhysicalNetwork - removing port 3
+09:07:13.812 [pool-5-thread-4] INFO  PhysicalNetwork - removing port 4
+09:07:13.812 [pool-5-thread-4] INFO  PhysicalNetwork - removing port 5
+09:07:13.812 [pool-5-thread-4] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:08:00/5 and 00:00:00:00:00:00:07:00/7
+09:07:13.812 [pool-5-thread-4] INFO  PhysicalNetwork - removing port 6
+09:07:13.812 [pool-5-thread-4] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:08:00/6 and 00:00:00:00:00:00:0b:00/6
+09:07:13.812 [pool-5-thread-4] INFO  PhysicalNetwork - removing port 7
+09:07:13.813 [pool-5-thread-4] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:08:00/7 and 00:00:00:00:00:00:09:00/5
+09:07:13.813 [pool-5-thread-4] INFO  PhysicalNetwork - removing port -2
+09:07:13.813 [pool-5-thread-4] WARN  SwitchDiscoveryManager - tried to dynamically remove non-existing port -2
+09:07:13.813 [pool-5-thread-4] INFO  PhysicalSwitch - Switch disconnected 2048 
+09:07:13.813 [pool-5-thread-4] INFO  StatisticsManager - Stopping Stats collection thread for 00:00:00:00:00:00:08:00
+09:07:13.891 [pool-5-thread-21] INFO  OVXPortStatus - Received OVXPortStatus: reason[OFPPR_MODIFY] port[7] from switch 1792
+09:07:13.891 [pool-5-thread-22] INFO  OVXPortStatus - Received OVXPortStatus: reason[OFPPR_DELETE] port[7] from switch 1792
+09:07:13.916 [pool-5-thread-28] INFO  OVXPortStatus - Received OVXPortStatus: reason[OFPPR_MODIFY] port[5] from switch 2304
+09:07:13.917 [pool-5-thread-29] INFO  OVXPortStatus - Received OVXPortStatus: reason[OFPPR_DELETE] port[5] from switch 2304
+09:07:13.927 [pool-5-thread-24] INFO  PhysicalNetwork - removing port 1
+09:07:13.928 [pool-5-thread-24] INFO  PhysicalNetwork - removing port 2
+09:07:13.928 [pool-5-thread-24] INFO  PhysicalNetwork - removing port 3
+09:07:13.928 [pool-5-thread-24] INFO  PhysicalNetwork - removing port 4
+09:07:13.928 [pool-5-thread-24] INFO  PhysicalNetwork - removing port 5
+09:07:13.928 [pool-5-thread-24] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:09:00/5 and 00:00:00:00:00:00:08:00/7
+09:07:13.928 [pool-5-thread-24] INFO  PhysicalNetwork - removing port 6
+09:07:13.928 [pool-5-thread-24] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:09:00/6 and 00:00:00:00:00:00:04:00/6
+09:07:13.928 [pool-5-thread-24] INFO  PhysicalNetwork - removing port 7
+09:07:13.928 [pool-5-thread-24] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:09:00/7 and 00:00:00:00:00:00:0a:00/5
+09:07:13.928 [pool-5-thread-24] INFO  PhysicalNetwork - removing port -2
+09:07:13.928 [pool-5-thread-24] WARN  SwitchDiscoveryManager - tried to dynamically remove non-existing port -2
+09:07:13.928 [pool-5-thread-24] INFO  PhysicalSwitch - Switch disconnected 2304 
+09:07:13.928 [pool-5-thread-24] INFO  StatisticsManager - Stopping Stats collection thread for 00:00:00:00:00:00:09:00
+09:07:14.012 [pool-5-thread-5] INFO  PhysicalNetwork - removing port 1
+09:07:14.013 [pool-5-thread-5] INFO  PhysicalNetwork - removing port 2
+09:07:14.013 [pool-5-thread-5] INFO  PhysicalNetwork - removing port 3
+09:07:14.013 [pool-5-thread-5] INFO  PhysicalNetwork - removing port 4
+09:07:14.013 [pool-5-thread-5] INFO  PhysicalNetwork - removing port 5
+09:07:14.013 [pool-5-thread-5] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:01:00/5 and 00:00:00:00:00:00:02:00/5
+09:07:14.013 [pool-5-thread-5] INFO  PhysicalNetwork - removing port 6
+09:07:14.013 [pool-5-thread-5] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:01:00/6 and 00:00:00:00:00:00:07:00/5
+09:07:14.013 [pool-5-thread-5] INFO  PhysicalNetwork - removing port -2
+09:07:14.013 [pool-5-thread-5] WARN  SwitchDiscoveryManager - tried to dynamically remove non-existing port -2
+09:07:14.014 [pool-5-thread-5] INFO  PhysicalSwitch - Switch disconnected 256 
+09:07:14.014 [pool-5-thread-5] INFO  StatisticsManager - Stopping Stats collection thread for 00:00:00:00:00:00:01:00
+09:07:14.014 [Thread-44] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:14.016 [Thread-44] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:14.017 [Thread-44] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:14.017 [Thread-44] INFO  OVXPort - Cleaning up flowmods for sw 00:00:00:00:00:00:01:00 port 1
+09:07:14.018 [Thread-44] INFO  OVXPort - Cleaning up flowmods for sw 00:00:00:00:00:00:01:00 port 1
+09:07:14.019 [Thread-44] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:14.021 [Thread-44] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:14.021 [Thread-44] INFO  OVXPort - Cleaning up flowmods for sw 00:00:00:00:00:00:02:00 port 5
+09:07:14.021 [Thread-44] INFO  OVXPort - Cleaning up flowmods for sw 00:00:00:00:00:00:01:00 port 5
+09:07:14.022 [Thread-44] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:14.022 [Thread-44] INFO  OVXPort - Cleaning up flowmods for sw 00:00:00:00:00:00:01:00 port 5
+09:07:14.022 [Thread-44] INFO  OVXSwitch - Cleaning up flowmods
+09:07:14.023 [Thread-44] INFO  OVXSwitch - Cleaning up flowmods
+09:07:14.088 [pool-5-thread-7] INFO  OVXPortStatus - Received OVXPortStatus: reason[OFPPR_MODIFY] port[5] from switch 512
+09:07:14.088 [pool-5-thread-7] INFO  OVXPort - Sending OVXPortStatus: reason[OFPPR_MODIFY] port[5] as OVXSwitch 46200400562356226
+09:07:14.088 [pool-5-thread-7] INFO  OVXPortStatus - Received OVXPortStatus: reason[OFPPR_DELETE] port[5] from switch 512
+09:07:14.090 [pool-5-thread-7] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:14.091 [pool-5-thread-7] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:14.091 [pool-5-thread-7] INFO  OVXPort - Sending OVXPortStatus: reason[OFPPR_DELETE] port[5] as OVXSwitch 46200400562356226
+09:07:14.092 [pool-5-thread-7] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:14.094 [pool-5-thread-7] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:14.095 [pool-5-thread-7] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:14.095 [pool-5-thread-7] INFO  OVXPort - Cleaning up flowmods for sw 00:00:00:00:00:00:02:00 port 5
+09:07:14.096 [pool-5-thread-7] INFO  PhysicalNetwork - removing port 5
+09:07:14.096 [pool-5-thread-7] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:02:00/5 and 00:00:00:00:00:00:01:00/5
+09:07:14.102 [pool-5-thread-9] INFO  OVXPortStatus - Received OVXPortStatus: reason[OFPPR_MODIFY] port[5] from switch 1792
+09:07:14.102 [pool-5-thread-32] INFO  OVXPortStatus - Received OVXPortStatus: reason[OFPPR_DELETE] port[5] from switch 1792
+09:07:14.145 [pool-5-thread-3] INFO  PhysicalNetwork - removing port 1
+09:07:14.145 [pool-5-thread-3] INFO  PhysicalNetwork - removing port 2
+09:07:14.145 [pool-5-thread-3] INFO  PhysicalNetwork - removing port 3
+09:07:14.145 [pool-5-thread-3] INFO  PhysicalNetwork - removing port 4
+09:07:14.145 [pool-5-thread-3] INFO  PhysicalNetwork - removing port -2
+09:07:14.145 [pool-5-thread-3] WARN  SwitchDiscoveryManager - tried to dynamically remove non-existing port -2
+09:07:14.146 [pool-5-thread-3] INFO  PhysicalSwitch - Switch disconnected 512 
+09:07:14.146 [pool-5-thread-3] INFO  StatisticsManager - Stopping Stats collection thread for 00:00:00:00:00:00:02:00
+09:07:14.147 [Thread-45] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:14.147 [Thread-45] INFO  OVXSwitch - Cleaning up flowmods
+09:07:14.148 [Thread-45] INFO  OVXSwitch - Cleaning up flowmods
+09:07:14.223 [pool-5-thread-16] INFO  PhysicalNetwork - removing port 1
+09:07:14.223 [pool-5-thread-16] INFO  PhysicalNetwork - removing port 2
+09:07:14.223 [pool-5-thread-16] INFO  PhysicalNetwork - removing port 3
+09:07:14.223 [pool-5-thread-16] INFO  PhysicalNetwork - removing port 4
+09:07:14.223 [pool-5-thread-16] INFO  PhysicalNetwork - removing port 5
+09:07:14.223 [pool-5-thread-16] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:07:00/5 and 00:00:00:00:00:00:01:00/6
+09:07:14.223 [pool-5-thread-16] INFO  PhysicalNetwork - removing port 7
+09:07:14.223 [pool-5-thread-16] INFO  PhysicalNetwork - Removing physical link between 00:00:00:00:00:00:07:00/7 and 00:00:00:00:00:00:08:00/5
+09:07:14.223 [pool-5-thread-16] INFO  PhysicalNetwork - removing port -2
+09:07:14.223 [pool-5-thread-16] WARN  SwitchDiscoveryManager - tried to dynamically remove non-existing port -2
+09:07:14.224 [pool-5-thread-16] INFO  PhysicalSwitch - Switch disconnected 1792 
+09:07:14.224 [pool-5-thread-16] INFO  StatisticsManager - Stopping Stats collection thread for 00:00:00:00:00:00:07:00
+09:07:14.225 [Thread-46] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:14.226 [Thread-46] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:14.228 [Thread-46] ERROR DBManager - Failed to remove from db: Write operation to server /127.0.0.1:27017 failed on database OVX
+09:07:14.228 [Thread-46] INFO  OVXPort - Cleaning up flowmods for sw 00:00:00:00:00:00:07:00 port 2
+09:07:14.228 [Thread-46] INFO  OVXPort - Cleaning up flowmods for sw 00:00:00:00:00:00:07:00 port 2
+09:07:14.228 [Thread-46] INFO  OVXSwitch - Cleaning up flowmods
+09:07:14.229 [Thread-46] INFO  OVXSwitch - Cleaning up flowmods
+09:04:27.918 [pool-4-thread-184] WARN  OVXFlowMod - magic0x2014 00:a4:23:05:00:00:00:03:46200400562356227 ----------------------------------------
+09:04:27.919 [pool-4-thread-184] WARN  OVXFlowMod - magic0x2014 before ------------------------------ OFFlowMod [actionFactory=net.onrc.openvirtex.messages.OVXMessageFactory@716ab511, actions=[OUTPUT[2]], bufferId=-1, command=0, cookie=20000000000000, flags=0, hardTimeout=0, idleTimeout=5, match=OFMatch[in_port=1,dl_dst=00:00:00:00:07:02,dl_src=00:00:00:00:01:01,dl_vlan=0xffff,nw_dst=10.0.0.2,nw_src=10.0.0.1], outPort=0, priority=0, length=80, type=FLOW_MOD, version=1, xid=263]
+09:04:27.927 [pool-4-thread-184] WARN  OVXFlowMod - magic0x2014 after  ------------------------------ OFFlowMod [actionFactory=net.onrc.openvirtex.messages.OVXMessageFactory@716ab511, actions=[SET_DL_SRC[A4:23:05:01:00:00], SET_DL_DST[A4:23:05:30:00:02], OUTPUT[6]], bufferId=-1, command=0, cookie=100000003, flags=1, hardTimeout=0, idleTimeout=5, match=OFMatch[in_port=5,dl_dst=a4:23:05:20:00:02,dl_src=a4:23:05:01:00:00,dl_vlan=0xffff,nw_dst=1.0.0.8,nw_src=1.0.0.7], outPort=0, priority=0, length=112, type=FLOW_MOD, version=1, xid=259]
+09:04:27.919 [pool-4-thread-185] WARN  OVXFlowMod - magic0x2014 00:a4:23:05:00:00:00:04:46200400562356228 ----------------------------------------
+09:04:27.919 [pool-4-thread-185] WARN  OVXFlowMod - magic0x2014 before ------------------------------ OFFlowMod [actionFactory=net.onrc.openvirtex.messages.OVXMessageFactory@716ab511, actions=[OUTPUT[2]], bufferId=-1, command=0, cookie=20000000000000, flags=0, hardTimeout=0, idleTimeout=5, match=OFMatch[in_port=1,dl_dst=00:00:00:00:07:02,dl_src=00:00:00:00:01:01,dl_vlan=0xffff,nw_dst=10.0.0.2,nw_src=10.0.0.1], outPort=0, priority=0, length=80, type=FLOW_MOD, version=1, xid=263]
+09:04:27.921 [pool-4-thread-185] WARN  OVXFlowMod - magic0x2014 after  ------------------------------ OFFlowMod [actionFactory=net.onrc.openvirtex.messages.OVXMessageFactory@716ab511, actions=[SET_NW_SRC[10.0.0.1], SET_NW_DST[10.0.0.2], SET_DL_SRC[00:00:00:00:01:01], SET_DL_DST[00:00:00:00:07:02], OUTPUT[2]], bufferId=-1, command=0, cookie=100000003, flags=1, hardTimeout=0, idleTimeout=5, match=OFMatch[in_port=6,dl_dst=a4:23:05:30:00:02,dl_src=a4:23:05:01:00:00,dl_vlan=0xffff,nw_dst=1.0.0.8,nw_src=1.0.0.7], outPort=0, priority=0, length=128, type=FLOW_MOD, version=1, xid=260]
+09:04:27.755 [pool-4-thread-173] WARN  OVXFlowMod - magic0x2014 00:a4:23:05:00:00:00:01:46200400562356225 ----------------------------------------
+09:04:27.756 [pool-4-thread-173] WARN  OVXFlowMod - magic0x2014 before ------------------------------ OFFlowMod [actionFactory=net.onrc.openvirtex.messages.OVXMessageFactory@716ab511, actions=[OUTPUT[1]], bufferId=-1, command=0, cookie=20000000000000, flags=0, hardTimeout=0, idleTimeout=5, match=OFMatch[in_port=2,dl_dst=00:00:00:00:01:01,dl_src=00:00:00:00:07:02,dl_vlan=0xffff,nw_dst=10.0.0.1,nw_src=10.0.0.2], outPort=0, priority=0, length=80, type=FLOW_MOD, version=1, xid=261]
+09:04:27.869 [pool-4-thread-173] WARN  OVXFlowMod - magic0x2014 after  ------------------------------ OFFlowMod [actionFactory=net.onrc.openvirtex.messages.OVXMessageFactory@716ab511, actions=[SET_NW_SRC[10.0.0.2], SET_NW_DST[10.0.0.1], SET_DL_SRC[00:00:00:00:07:02], SET_DL_DST[00:00:00:00:01:01], OUTPUT[1]], bufferId=-1, command=0, cookie=100000002, flags=1, hardTimeout=0, idleTimeout=5, match=OFMatch[in_port=5,dl_dst=a4:23:05:10:00:04,dl_src=a4:23:05:01:00:00,dl_vlan=0xffff,nw_dst=1.0.0.7,nw_src=1.0.0.8], outPort=0, priority=0, length=128, type=FLOW_MOD, version=1, xid=258]
+09:04:27.918 [pool-4-thread-183] WARN  OVXFlowMod - magic0x2014 00:a4:23:05:00:00:00:01:46200400562356225 ----------------------------------------
+09:04:27.919 [pool-4-thread-183] WARN  OVXFlowMod - magic0x2014 before ------------------------------ OFFlowMod [actionFactory=net.onrc.openvirtex.messages.OVXMessageFactory@716ab511, actions=[OUTPUT[2]], bufferId=-1, command=0, cookie=20000000000000, flags=0, hardTimeout=0, idleTimeout=5, match=OFMatch[in_port=1,dl_dst=00:00:00:00:07:02,dl_src=00:00:00:00:01:01,dl_vlan=0xffff,nw_dst=10.0.0.2,nw_src=10.0.0.1], outPort=0, priority=0, length=80, type=FLOW_MOD, version=1, xid=263]
+09:04:27.926 [pool-4-thread-183] WARN  OVXFlowMod - magic0x2014 after  ------------------------------ OFFlowMod [actionFactory=net.onrc.openvirtex.messages.OVXMessageFactory@716ab511, actions=[SET_NW_DST[1.0.0.8], SET_NW_SRC[1.0.0.7], SET_DL_SRC[A4:23:05:01:00:00], SET_DL_DST[A4:23:05:10:00:02], OUTPUT[5]], bufferId=-1, command=0, cookie=100000003, flags=1, hardTimeout=0, idleTimeout=5, match=OFMatch[in_port=1,dl_dst=00:00:00:00:07:02,dl_src=00:00:00:00:01:01,dl_vlan=0xffff,nw_dst=10.0.0.2,nw_src=10.0.0.1], outPort=0, priority=0, length=128, type=FLOW_MOD, version=1, xid=260]
+09:02:01.777 [pool-4-thread-2] WARN  OVXFlowMod - magic0x2014 00:a4:23:05:00:00:00:03:46200400562356227 ----------------------------------------
+09:02:01.778 [pool-4-thread-2] WARN  OVXFlowMod - magic0x2014 before ------------------------------ OFFlowMod [actionFactory=net.onrc.openvirtex.messages.OVXMessageFactory@716ab511, actions=[], bufferId=0, command=3, cookie=0, flags=0, hardTimeout=0, idleTimeout=0, match=OFMatch[], outPort=-1, priority=0, length=72, type=FLOW_MOD, version=1, xid=259]
+09:02:01.801 [pool-4-thread-2] WARN  OVXFlowMod - magic0x2014 after  ------------------------------ OFFlowMod [actionFactory=net.onrc.openvirtex.messages.OVXMessageFactory@716ab511, actions=[], bufferId=-1, command=3, cookie=100000001, flags=0, hardTimeout=0, idleTimeout=0, match=OFMatch[in_port=6], outPort=-1, priority=0, length=72, type=FLOW_MOD, version=1, xid=257]
+09:02:01.830 [pool-4-thread-20] WARN  OVXFlowMod - magic0x2014 00:a4:23:05:00:00:00:01:46200400562356225 ----------------------------------------
+09:02:01.830 [pool-4-thread-20] WARN  OVXFlowMod - magic0x2014 before ------------------------------ OFFlowMod [actionFactory=net.onrc.openvirtex.messages.OVXMessageFactory@716ab511, actions=[], bufferId=0, command=3, cookie=0, flags=0, hardTimeout=0, idleTimeout=0, match=OFMatch[], outPort=-1, priority=0, length=72, type=FLOW_MOD, version=1, xid=259]
+09:02:01.830 [pool-4-thread-20] WARN  OVXFlowMod - magic0x2014 after  ------------------------------ OFFlowMod [actionFactory=net.onrc.openvirtex.messages.OVXMessageFactory@716ab511, actions=[], bufferId=-1, command=3, cookie=100000001, flags=0, hardTimeout=0, idleTimeout=0, match=OFMatch[in_port=5], outPort=-1, priority=0, length=72, type=FLOW_MOD, version=1, xid=257]
+09:04:27.756 [pool-4-thread-176] WARN  OVXFlowMod - magic0x2014 00:a4:23:05:00:00:00:02:46200400562356226 ----------------------------------------
+09:04:27.756 [pool-4-thread-176] WARN  OVXFlowMod - magic0x2014 before ------------------------------ OFFlowMod [actionFactory=net.onrc.openvirtex.messages.OVXMessageFactory@716ab511, actions=[OUTPUT[1]], bufferId=-1, command=0, cookie=20000000000000, flags=0, hardTimeout=0, idleTimeout=5, match=OFMatch[in_port=2,dl_dst=00:00:00:00:01:01,dl_src=00:00:00:00:07:02,dl_vlan=0xffff,nw_dst=10.0.0.1,nw_src=10.0.0.2], outPort=0, priority=0, length=80, type=FLOW_MOD, version=1, xid=261]
+09:04:27.876 [pool-4-thread-176] WARN  OVXFlowMod - magic0x2014 after  ------------------------------ OFFlowMod [actionFactory=net.onrc.openvirtex.messages.OVXMessageFactory@716ab511, actions=[SET_DL_SRC[A4:23:05:01:00:00], SET_DL_DST[A4:23:05:10:00:04], OUTPUT[5]], bufferId=-1, command=0, cookie=100000002, flags=1, hardTimeout=0, idleTimeout=5, match=OFMatch[in_port=6,dl_dst=a4:23:05:20:00:04,dl_src=a4:23:05:01:00:00,dl_vlan=0xffff,nw_dst=1.0.0.7,nw_src=1.0.0.8], outPort=0, priority=0, length=112, type=FLOW_MOD, version=1, xid=258]
+09:02:01.786 [pool-4-thread-5] WARN  OVXFlowMod - magic0x2014 00:a4:23:05:00:00:00:04:46200400562356228 ----------------------------------------
+09:02:01.786 [pool-4-thread-5] WARN  OVXFlowMod - magic0x2014 before ------------------------------ OFFlowMod [actionFactory=net.onrc.openvirtex.messages.OVXMessageFactory@716ab511, actions=[], bufferId=0, command=3, cookie=0, flags=0, hardTimeout=0, idleTimeout=0, match=OFMatch[], outPort=-1, priority=0, length=72, type=FLOW_MOD, version=1, xid=259]
+09:02:01.801 [pool-4-thread-5] WARN  OVXFlowMod - magic0x2014 after  ------------------------------ OFFlowMod [actionFactory=net.onrc.openvirtex.messages.OVXMessageFactory@716ab511, actions=[], bufferId=-1, command=3, cookie=100000001, flags=0, hardTimeout=0, idleTimeout=0, match=OFMatch[in_port=2], outPort=-1, priority=0, length=72, type=FLOW_MOD, version=1, xid=257]
+09:02:01.785 [pool-4-thread-8] WARN  OVXFlowMod - magic0x2014 00:a4:23:05:00:00:00:02:46200400562356226 ----------------------------------------
+09:02:01.785 [pool-4-thread-8] WARN  OVXFlowMod - magic0x2014 before ------------------------------ OFFlowMod [actionFactory=net.onrc.openvirtex.messages.OVXMessageFactory@716ab511, actions=[], bufferId=0, command=3, cookie=0, flags=0, hardTimeout=0, idleTimeout=0, match=OFMatch[], outPort=-1, priority=0, length=72, type=FLOW_MOD, version=1, xid=259]
+09:02:01.801 [pool-4-thread-8] WARN  OVXFlowMod - magic0x2014 after  ------------------------------ OFFlowMod [actionFactory=net.onrc.openvirtex.messages.OVXMessageFactory@716ab511, actions=[], bufferId=-1, command=3, cookie=100000001, flags=0, hardTimeout=0, idleTimeout=0, match=OFMatch[in_port=6], outPort=-1, priority=0, length=72, type=FLOW_MOD, version=1, xid=257]
+09:04:27.755 [pool-4-thread-175] WARN  OVXFlowMod - magic0x2014 00:a4:23:05:00:00:00:04:46200400562356228 ----------------------------------------
+09:04:27.756 [pool-4-thread-175] WARN  OVXFlowMod - magic0x2014 before ------------------------------ OFFlowMod [actionFactory=net.onrc.openvirtex.messages.OVXMessageFactory@716ab511, actions=[OUTPUT[1]], bufferId=-1, command=0, cookie=20000000000000, flags=0, hardTimeout=0, idleTimeout=5, match=OFMatch[in_port=2,dl_dst=00:00:00:00:01:01,dl_src=00:00:00:00:07:02,dl_vlan=0xffff,nw_dst=10.0.0.1,nw_src=10.0.0.2], outPort=0, priority=0, length=80, type=FLOW_MOD, version=1, xid=261]
+09:04:27.875 [pool-4-thread-175] WARN  OVXFlowMod - magic0x2014 after  ------------------------------ OFFlowMod [actionFactory=net.onrc.openvirtex.messages.OVXMessageFactory@716ab511, actions=[SET_NW_DST[1.0.0.7], SET_NW_SRC[1.0.0.8], SET_DL_SRC[A4:23:05:01:00:00], SET_DL_DST[A4:23:05:30:00:04], OUTPUT[6]], bufferId=-1, command=0, cookie=100000002, flags=1, hardTimeout=0, idleTimeout=5, match=OFMatch[in_port=2,dl_dst=00:00:00:00:01:01,dl_src=00:00:00:00:07:02,dl_vlan=0xffff,nw_dst=10.0.0.1,nw_src=10.0.0.2], outPort=0, priority=0, length=128, type=FLOW_MOD, version=1, xid=259]
+09:04:27.755 [pool-4-thread-174] WARN  OVXFlowMod - magic0x2014 00:a4:23:05:00:00:00:03:46200400562356227 ----------------------------------------
+09:04:27.756 [pool-4-thread-174] WARN  OVXFlowMod - magic0x2014 before ------------------------------ OFFlowMod [actionFactory=net.onrc.openvirtex.messages.OVXMessageFactory@716ab511, actions=[OUTPUT[1]], bufferId=-1, command=0, cookie=20000000000000, flags=0, hardTimeout=0, idleTimeout=5, match=OFMatch[in_port=2,dl_dst=00:00:00:00:01:01,dl_src=00:00:00:00:07:02,dl_vlan=0xffff,nw_dst=10.0.0.1,nw_src=10.0.0.2], outPort=0, priority=0, length=80, type=FLOW_MOD, version=1, xid=261]
+09:04:27.879 [pool-4-thread-174] WARN  OVXFlowMod - magic0x2014 after  ------------------------------ OFFlowMod [actionFactory=net.onrc.openvirtex.messages.OVXMessageFactory@716ab511, actions=[SET_DL_SRC[A4:23:05:01:00:00], SET_DL_DST[A4:23:05:20:00:04], OUTPUT[5]], bufferId=-1, command=0, cookie=100000002, flags=1, hardTimeout=0, idleTimeout=5, match=OFMatch[in_port=6,dl_dst=a4:23:05:30:00:04,dl_src=a4:23:05:01:00:00,dl_vlan=0xffff,nw_dst=1.0.0.7,nw_src=1.0.0.8], outPort=0, priority=0, length=112, type=FLOW_MOD, version=1, xid=258]
+09:04:27.919 [pool-4-thread-186] WARN  OVXFlowMod - magic0x2014 00:a4:23:05:00:00:00:02:46200400562356226 ----------------------------------------
+09:04:27.919 [pool-4-thread-186] WARN  OVXFlowMod - magic0x2014 before ------------------------------ OFFlowMod [actionFactory=net.onrc.openvirtex.messages.OVXMessageFactory@716ab511, actions=[OUTPUT[2]], bufferId=-1, command=0, cookie=20000000000000, flags=0, hardTimeout=0, idleTimeout=5, match=OFMatch[in_port=1,dl_dst=00:00:00:00:07:02,dl_src=00:00:00:00:01:01,dl_vlan=0xffff,nw_dst=10.0.0.2,nw_src=10.0.0.1], outPort=0, priority=0, length=80, type=FLOW_MOD, version=1, xid=263]
+09:04:27.926 [pool-4-thread-186] WARN  OVXFlowMod - magic0x2014 after  ------------------------------ OFFlowMod [actionFactory=net.onrc.openvirtex.messages.OVXMessageFactory@716ab511, actions=[SET_DL_SRC[A4:23:05:01:00:00], SET_DL_DST[A4:23:05:20:00:02], OUTPUT[6]], bufferId=-1, command=0, cookie=100000003, flags=1, hardTimeout=0, idleTimeout=5, match=OFMatch[in_port=5,dl_dst=a4:23:05:10:00:02,dl_src=a4:23:05:01:00:00,dl_vlan=0xffff,nw_dst=1.0.0.8,nw_src=1.0.0.7], outPort=0, priority=0, length=112, type=FLOW_MOD, version=1, xid=259]
