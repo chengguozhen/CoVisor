@@ -1,39 +1,76 @@
 /*******************************************************************************
- * Copyright (c) 2013 Open Networking Laboratory.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Public License v2.0
- * which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+ * Copyright 2014 Open Networking Laboratory
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  ******************************************************************************/
 package net.onrc.openvirtex.elements.datapath;
 
 /**
- * Based on XidPair by capveg
+ * Stores a switch and a transaction ID.
+ * Based on XidPair by capveg.
+ *
+ * @param <T> generic switch type
  */
 public class XidPair<T> {
 
-	int xid;
-	T sw;
+    private int xid;
+    private T sw;
 
-	public XidPair(final int x, final T sw) {
-		this.xid = x;
-		this.sw = sw;
-	}
+    /**
+     * Creates an instance for a given XID and switch.
+     *
+     * @param x the XID
+     * @param sw the switch
+     */
+    public XidPair(final int x, final T sw) {
+        this.xid = x;
+        this.sw = sw;
+    }
 
-	public void setXid(final int x) {
-		this.xid = x;
-	}
+    /**
+     * Sets the transaction ID.
+     *
+     * @param x the XID
+     */
+    public void setXid(final int x) {
+        this.xid = x;
+    }
 
-	public int getXid() {
-		return this.xid;
-	}
+    /**
+     * Gets the transaction ID.
+     *
+     * @return the XID
+     */
+    public int getXid() {
+        return this.xid;
+    }
 
-	public void setSwitch(final T sw) {
-		this.sw = sw;
-	}
+    /**
+     * Sets the switch.
+     *
+     * @param sw the switch
+     */
+    public void setSwitch(final T sw) {
+        this.sw = sw;
+    }
 
-	public T getSwitch() {
-		return this.sw;
-	}
+    /**
+     * Gets the switch.
+     *
+     * @return the switch
+     */
+    public T getSwitch() {
+        return this.sw;
+    }
 
 }
