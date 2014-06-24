@@ -24,6 +24,7 @@ import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXNetwork;
 import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXPort;
 import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXSwitch;
 import net.onrc.openvirtex.api.service.handlers.tenant.ConnectOVXRoute;
+import net.onrc.openvirtex.api.service.handlers.tenant.CreatePolicy;
 import net.onrc.openvirtex.api.service.handlers.tenant.DisconnectHost;
 import net.onrc.openvirtex.api.service.handlers.tenant.DisconnectOVXLink;
 import net.onrc.openvirtex.api.service.handlers.tenant.RemoveOVXNetwork;
@@ -172,6 +173,8 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
             this.put("stopNetwork", new StopOVXNetwork());
             this.put("stopSwitch", new StopOVXSwitch());
             this.put("stopPort", new StopOVXPort());
+            
+            this.put("createPolicy", new CreatePolicy());
         }
     };
 

@@ -566,6 +566,21 @@ def translate_path(path_string):
         path.rstrip(",")
     return path
 
+def pa_createPolicy(args, cmd):
+    usage = "%s <policy>" % USAGE.format(cmd)
+    (sdesc, ldesc) = DESCS[cmd]
+    parser = OptionParser(usage=usage, description=ldesc)
+    return parser.parse_args(args)
+
+def do_createPolicy(gopts, opts, args):
+    if len(args) != 1:
+        print ("connectLink : Must specify a policy") 
+        sys.exit()
+    req = { "policy" : args[0] }
+    result = connect(gopts, "tenant", "createPolicy", data=req, passwd=getPasswd(gopts))
+    print "Policy '%s' has been created" % args[0] 
+
+
 def pa_help(args, cmd):
     usage = "%s <cmd>" % USAGE.format(cmd)
     parser = OptionParser(usage=usage)
@@ -668,6 +683,8 @@ CMDS = {
     'getVirtualLinkMapping': (pa_getVirtualLinkMapping, do_getVirtualLinkMapping),
     'getVirtualSwitchMapping': (pa_getVirtualSwitchMapping, do_getVirtualSwitchMapping),
     'getVirtualTopology': (pa_getVirtualTopology, do_getVirtualTopology),
+
+    'createPolicy': (pa_createPolicy, do_createPolicy),
     
     'help' : (pa_help, do_help)
 }
@@ -776,7 +793,10 @@ DESCS = {
                                "\nExample: getVirtualSwitchMapping 1")),
     'getVirtualTopology' : ("Get the virtual topology",
                                  ("Get the virtual topology. Must specify a tenant_id.",
-                               "\nExample: getVirtualTopology 1"))
+                               "\nExample: getVirtualTopology 1")),
+    'createPolicy' : ("Create controller policy",
+                                ("Create controller policy. Must specify a policy.",
+                                "\nExample: createPolicy 1+2"))
 }
 
 USAGE="%prog {}"
