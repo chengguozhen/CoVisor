@@ -34,11 +34,16 @@ import net.onrc.openvirtex.messages.statistics.OVXPortStatisticsReply;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jboss.netty.channel.Channel;
+import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFMessage;
 import org.openflow.protocol.OFPhysicalPort;
 import org.openflow.protocol.OFPort;
+import org.openflow.protocol.OFType;
 import org.openflow.protocol.OFVendor;
 import org.openflow.protocol.statistics.OFStatistics;
+
+import edu.princeton.cs.policy.PolicyTree;
+import edu.princeton.cs.policy.PolicyUpdateTable;
 
 /**
  * The Class PhysicalSwitch.
@@ -51,6 +56,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     private StatisticsManager statsMan = null;
     private AtomicReference<Map<Short, OVXPortStatisticsReply>> portStats;
     private AtomicReference<Map<Integer, List<OVXFlowStatisticsReply>>> flowStats;
+    private PolicyTree policyTree;
 
     /**
      * Unregisters OVXSwitches and associated virtual elements mapped to this
@@ -100,6 +106,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
         this.portStats = new AtomicReference<Map<Short, OVXPortStatisticsReply>>();
         this.flowStats = new AtomicReference<Map<Integer, List<OVXFlowStatisticsReply>>>();
         this.statsMan = new StatisticsManager(this);
+        this.policyTree = null;
     }
 
     /**
@@ -217,9 +224,22 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 
     @Override
     public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
-        if ((this.channel.isOpen()) && (this.isConnected)) {
+    	
+    	if (msg.getType() == OFType.FLOW_MOD) {
+    		PolicyUpdateTable updateTable = policyTree.update((OFFlowMod) msg, ((OVXSwitch) from).getTenantId());
+			if ((this.channel.isOpen()) && (this.isConnected)) {
+				for (OFFlowMod fm : updateTable.addFlowMods) {
+					this.channel.write(Collections.singletonList(fm));
+				}
+			}
+    	}
+    	else if ((this.channel.isOpen()) && (this.isConnected)) {
             this.channel.write(Collections.singletonList(msg));
         }
+    	
+        /*if ((this.channel.isOpen()) && (this.isConnected)) {
+            this.channel.write(Collections.singletonList(msg));
+        }*/
     }
 
     /*

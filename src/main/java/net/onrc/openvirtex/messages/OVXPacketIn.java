@@ -65,14 +65,44 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
         port = sw.getPort(inport);
         Mappable map = sw.getMap();
 
+		final OFMatch match = new OFMatch();
+		match.loadFromPacket(this.getPacketData(), inport);
+
+		this.tenantId = this.fetchTenantId(match, map, true);
+		if (this.tenantId == null) {
+			this.log.warn(
+					"PacketIn {} does not belong to any virtual network; "
+							+ "dropping and installing a temporary drop rule",
+					this);
+			this.installDropRule(sw, match);
+			return;
+		}
+
+		/*
+		 * Checks on vSwitch and the virtual port done in swndPkt.
+		 */
+		vSwitch = this.fetchOVXSwitch(sw, vSwitch, map);
+		this.ovxPort = this.port.getOVXPort(this.tenantId, 0);
+		this.sendPkt(vSwitch, match, sw);
+		this.learnHostIP(match, map);
+		this.learnAddresses(match, map);
+		this.log.debug("Edge PacketIn {} sent to virtual network {}", this,
+				this.tenantId);
+           
+    }
+    
+    /*@Override
+    public void virtualize(final PhysicalSwitch sw) {
+
+        OVXSwitch vSwitch = OVXMessageUtil.untranslateXid(this, sw);
+
+        short inport = this.getInPort();
+        port = sw.getPort(inport);
+        Mappable map = sw.getMap();
+
         final OFMatch match = new OFMatch();
         match.loadFromPacket(this.getPacketData(), inport);
-        /*
-         * Check whether this packet arrived on an edge port.
-         *
-         * if it did we do not need to rewrite anything, but just find which
-         * controller this should be send to.
-         */
+        
         if (this.port.isEdge()) {
             this.tenantId = this.fetchTenantId(match, map, true);
             if (this.tenantId == null) {
@@ -84,9 +114,7 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
                 return;
             }
 
-            /*
-             * Checks on vSwitch and the virtual port done in swndPkt.
-             */
+            
             vSwitch = this.fetchOVXSwitch(sw, vSwitch, map);
             this.ovxPort = this.port.getOVXPort(this.tenantId, 0);
             this.sendPkt(vSwitch, match, sw);
@@ -97,17 +125,7 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
             return;
         }
 
-        /*
-         * Below handles packets traveling in the core.
-         *
-         *
-         * The idea here si to rewrite the packets such that the controller is
-         * able to recognize them.
-         *
-         * For IPv4 packets and ARP packets this means rewriting the IP fields
-         * and possibly the mac address fields if these packets are at the
-         * egress point of a virtual link.
-         */
+        
 
         if (match.getDataLayerType() == Ethernet.TYPE_IPV4
                 || match.getDataLayerType() == Ethernet.TYPE_ARP) {
@@ -229,7 +247,7 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
         this.sendPkt(vSwitch, match, sw);
         this.log.debug("Layer2 PacketIn {} sent to virtual network {}", this,
                 this.tenantId);
-    }
+    }*/
 
     private void learnHostIP(OFMatch match, Mappable map) {
         if (!match.getWildcardObj().isWildcarded(Flag.NW_SRC)) {
