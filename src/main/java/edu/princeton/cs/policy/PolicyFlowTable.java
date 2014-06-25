@@ -64,4 +64,14 @@ public class PolicyFlowTable {
 	public List<OFFlowMod> getFlowMods() {
 		return this.flowMods;
 	}
+	
+	@Override
+    public String toString() {
+		String str = "Flow Table:\n";
+		for (OFFlowMod fm : this.flowMods) {
+			str = str + fm.toString() + "\n";
+		}
+		return str;
+	}
+	
 }

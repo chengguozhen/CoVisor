@@ -30,7 +30,7 @@ public class PolicyTree {
 		this.operator = PolicyOperator.Invalid;
 		this.leftChild = null;
 		this.rightChild = null;
-		this.flowTable = null;
+		this.flowTable = new PolicyFlowTable();
 		this.tenantId = -1;
 	}
 	
@@ -50,7 +50,7 @@ public class PolicyTree {
 			break;
 		case Invalid: // this is leaf, directly add to flow table
 			if (tenantId == this.tenantId) {
-				updateTable = flowTable.update(fm);
+				updateTable = this.flowTable.update(fm);
 			}
 			break;
 		default:
@@ -76,7 +76,12 @@ public class PolicyTree {
 			}
 		}
 		
-		return null;
+		PolicyUpdateTable updateTable = new PolicyUpdateTable();
+		for (OFFlowMod ofm : this.flowTable.getFlowMods()) {
+			updateTable.addFlowMods.add(ofm);
+		}
+		
+		return updateTable;
 	}
 	
 }

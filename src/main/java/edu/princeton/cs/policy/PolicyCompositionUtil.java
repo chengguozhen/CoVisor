@@ -98,7 +98,7 @@ public class PolicyCompositionUtil {
 				int wcard = match.getWildcards() & (Math.min(mask1, mask2) | ~OFMatch.OFPFW_NW_SRC_MASK);
 				match.setWildcards(wcard);
 				
-				int ip = mask1 <= mask2 ? m1.getNetworkSource() : m2.getNetworkDestination();
+				int ip = mask1 <= mask2 ? m1.getNetworkSource() : m2.getNetworkSource();
 				setMatchField(match, OFMatch.OFPFW_NW_SRC_ALL, ip);
 			}
 			else {
@@ -116,7 +116,7 @@ public class PolicyCompositionUtil {
 				int wcard = match.getWildcards() & (Math.min(mask1, mask2) | ~OFMatch.OFPFW_NW_DST_MASK);
 				match.setWildcards(wcard);
 				
-				int ip = mask1 <= mask2 ? m1.getNetworkSource() : m2.getNetworkDestination();
+				int ip = mask1 <= mask2 ? m1.getNetworkDestination() : m2.getNetworkDestination();
 				setMatchField(match, OFMatch.OFPFW_NW_DST_ALL, ip);
 			}
 			else {
@@ -143,7 +143,7 @@ public class PolicyCompositionUtil {
 		if ((wcard1 & field) == 0 && (wcard2 & field) == 0) {
 			wcard = wcard & (~field);
 			match.setWildcards(wcard);
-			if (val1 == val2) {
+			if (val1.equals(val2)) {
 				setMatchField(match, field, val1);
 				return true;
 			}

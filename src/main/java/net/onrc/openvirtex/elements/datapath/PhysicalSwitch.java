@@ -230,7 +230,16 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
     	
     	if (msg.getType() == OFType.FLOW_MOD) {
+    		
+    		log.error("---------- New FlowMod ----------");
+    		log.error(msg.toString());
+    		
     		PolicyUpdateTable updateTable = policyTree.update((OFFlowMod) msg, ((OVXSwitch) from).getTenantId());
+    		
+    		log.error(policyTree.flowTable.toString());
+    		log.error(policyTree.leftChild.flowTable.toString());;
+    		log.error(policyTree.rightChild.flowTable.toString());
+    		
 			if ((this.channel.isOpen()) && (this.isConnected)) {
 				for (OFFlowMod fm : updateTable.addFlowMods) {
 					this.channel.write(Collections.singletonList(fm));
