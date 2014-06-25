@@ -15,6 +15,7 @@
  ******************************************************************************/
 package net.onrc.openvirtex;
 
+import edu.princeton.cs.policy.BasePolicyTests;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import net.onrc.openvirtex.api.service.handlers.tenant.APITests;
@@ -38,11 +39,12 @@ public final class AllTests {
     public static Test suite() {
         final TestSuite suite = new TestSuite(AllTests.class.getName());
         // $JUnit-BEGIN$
-        suite.addTest(BaseCtrlTests.suite());
+        suite.addTest(BasePolicyTests.suite());
+        /*suite.addTest(BaseCtrlTests.suite());
         suite.addTest(BaseMapTests.suite());
         suite.addTest(BaseIPTests.suite());
         suite.addTest(BaseTranslatorTests.suite());
-        suite.addTest(APITests.suite());
+        suite.addTest(APITests.suite());*/
         // $JUnit-END$
         return suite;
     }

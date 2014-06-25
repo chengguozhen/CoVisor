@@ -88,6 +88,10 @@ public final class OVXMap implements Mappable {
         this.macMap = new ConcurrentRadixTree<Integer>(
                 new DefaultCharArrayNodeFactory());
     }
+    
+    public ConcurrentHashMap<PhysicalSwitch, ConcurrentHashMap<Integer, OVXSwitch>> getPhysicalSwitchMap() {
+    	return this.physicalSwitchMap;
+    }
 
     /**
      * Gets the instance of the class and if this already exists

@@ -108,6 +108,10 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
         this.statsMan = new StatisticsManager(this);
         this.policyTree = null;
     }
+    
+    public void ConfigurePolicy(PolicyTree policyTree) {
+    	this.policyTree = policyTree;
+    }
 
     /**
      * Gets the OVX port number.

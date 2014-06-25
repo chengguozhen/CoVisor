@@ -20,11 +20,11 @@ public class PolicyTree {
 	}
 	
 	
-	private PolicyOperator operator;
-	private PolicyTree leftChild;
-	private PolicyTree rightChild;
-	private PolicyFlowTable flowTable;
-	private Integer tenantId;
+	public PolicyOperator operator;
+	public PolicyTree leftChild;
+	public PolicyTree rightChild;
+	public PolicyFlowTable flowTable;
+	public Integer tenantId; // only meaningful when operator is Invalid
 	
 	public PolicyTree() {
 		this.operator = PolicyOperator.Invalid;
@@ -70,7 +70,9 @@ public class PolicyTree {
 		for (OFFlowMod fm1 : this.leftChild.flowTable.getFlowMods()) {
 			for (OFFlowMod fm2 : this.rightChild.flowTable.getFlowMods()) {
 				OFFlowMod composedFm = PolicyCompositionUtil.parallelComposition(fm1, fm2);
-				this.flowTable.addFlowMod(composedFm);
+				if (composedFm != null) {
+					this.flowTable.addFlowMod(composedFm);
+				}
 			}
 		}
 		
