@@ -34,7 +34,7 @@ public class OVXActionDataLayerSource extends OFActionDataLayerSource implements
     public void virtualize(final OVXSwitch sw,
             final List<OFAction> approvedActions, final OVXMatch match)
             throws ActionVirtualizationDenied {
-        final MACAddress mac = MACAddress.valueOf(this.dataLayerAddress);
+        /*final MACAddress mac = MACAddress.valueOf(this.dataLayerAddress);
         try {
             final Integer tid = sw.getMap().getMAC(mac);
             if (tid != sw.getTenantId()) {
@@ -47,7 +47,8 @@ public class OVXActionDataLayerSource extends OFActionDataLayerSource implements
             throw new ActionVirtualizationDenied("Target mac " + mac
                     + " is not in virtual network " + sw.getTenantId(),
                     OFBadActionCode.OFPBAC_EPERM);
-        }
+        }*/
+        approvedActions.add(this);
     }
 
 }

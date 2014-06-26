@@ -58,8 +58,8 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
     @Override
     public void devirtualize(final OVXSwitch sw) {
     	
-    	//this.log.warn("magic0x2014 {} ----------------------------------------", sw.getName());
-		//this.log.warn("magic0x2014 before ------------------------------ {}", this);
+    	this.log.warn("magic0x2014 {} ----------------------------------------", sw.getName());
+		this.log.warn("magic0x2014 before ------------------------------ {}", this);
     	
         /* Drop LLDP-matching messages sent by some applications */
         if (this.match.getDataLayerType() == Ethernet.TYPE_LLDP) {
@@ -73,7 +73,7 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
         if (sw.getFromBufferMap(this.bufferId) != null) {
             bufferId = sw.getFromBufferMap(this.bufferId).getBufferId();
         }
-        final short inport = this.getMatch().getInputPort();
+        this.setBufferId(bufferId);
 
         /* let flow table process FlowMod, generate cookie as needed */
         boolean pflag = ft.handleFlowMods(this.clone());
@@ -102,31 +102,30 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
             }
         }
 
-        final OVXPort ovxInPort = sw.getPort(inport);
-        this.setBufferId(bufferId);
-
-        if (ovxInPort == null) {
-            if (this.match.getWildcardObj().isWildcarded(Flag.IN_PORT)) {
-                /* expand match to all ports */
-                for (OVXPort iport : sw.getPorts().values()) {
-                    int wcard = this.match.getWildcards()
-                            & (~OFMatch.OFPFW_IN_PORT);
-                    this.match.setWildcards(wcard);
-                    prepAndSendSouth(iport, pflag);
-                }
-            } else {
-                this.log.error(
-                        "Unknown virtual port id {}; dropping flowmod {}",
-                        inport, this);
-                sw.sendMsg(OVXMessageUtil.makeErrorMsg(
-                        OFFlowModFailedCode.OFPFMFC_EPERM, this), sw);
-                return;
-            }
-        } else {
-            prepAndSendSouth(ovxInPort, pflag);
-        }
+        final short inport = this.getMatch().getInputPort();
+        OVXPort ovxInPort = sw.getPort(inport);
         
-        //this.log.warn("magic0x2014 after  ------------------------------ {}", this);
+        if (ovxInPort != null) {
+        	this.getMatch().setInputPort(ovxInPort.getPhysicalPortNumber());
+		} else {
+			if (this.match.getWildcardObj().isWildcarded(Flag.IN_PORT)) {
+				for (OVXPort iport : sw.getPorts().values()) {
+					ovxInPort = iport;
+					break;
+				}
+			} else {
+				this.log.error(
+						"Unknown virtual port id {}; dropping flowmod {}",
+						inport, this);
+				sw.sendMsg(OVXMessageUtil.makeErrorMsg(
+						OFFlowModFailedCode.OFPFMFC_EPERM, this), sw);
+				return;
+			}
+
+		}
+        prepAndSendSouth(ovxInPort, pflag);
+        
+        this.log.warn("magic0x2014 after  ------------------------------ {}", this);
     }
     
     private void prepAndSendSouth(OVXPort inPort, boolean pflag) {
@@ -136,7 +135,6 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
                     sw.getSwitchName());
             return;
         }
-        this.getMatch().setInputPort(inPort.getPhysicalPortNumber());
         OVXMessageUtil.translateXid(this, inPort);
         
         this.computeLength();

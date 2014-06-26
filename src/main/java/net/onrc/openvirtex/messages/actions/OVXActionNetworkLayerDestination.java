@@ -39,10 +39,10 @@ public class OVXActionNetworkLayerDestination extends
             final List<OFAction> approvedActions, final OVXMatch match)
             throws ActionVirtualizationDenied {
 
-        this.networkAddress = IPMapper.getPhysicalIp(sw.getTenantId(),
+        /*this.networkAddress = IPMapper.getPhysicalIp(sw.getTenantId(),
                 this.networkAddress);
         log.debug("Allocating Physical IP {}", new PhysicalIPAddress(
-                networkAddress));
+                networkAddress));*/
         approvedActions.add(this);
     }
 

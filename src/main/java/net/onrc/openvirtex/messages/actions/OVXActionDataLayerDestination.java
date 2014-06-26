@@ -37,7 +37,7 @@ public class OVXActionDataLayerDestination extends OFActionDataLayerDestination
     public void virtualize(final OVXSwitch sw,
             final List<OFAction> approvedActions, final OVXMatch match)
             throws ActionVirtualizationDenied {
-        final MACAddress mac = MACAddress.valueOf(this.dataLayerAddress);
+        /*final MACAddress mac = MACAddress.valueOf(this.dataLayerAddress);
         final int tid;
         try {
             tid = sw.getMap().getMAC(mac);
@@ -50,7 +50,8 @@ public class OVXActionDataLayerDestination extends OFActionDataLayerDestination
         } catch (AddressMappingException e) {
             throw new ActionVirtualizationDenied("Target mac " + mac
                     + " is invalid ", OFBadActionCode.OFPBAC_EPERM);
-        }
+        }*/
+    	approvedActions.add(this);
     }
 
 }

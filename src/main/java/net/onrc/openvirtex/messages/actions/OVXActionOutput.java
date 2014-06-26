@@ -151,7 +151,7 @@ public class OVXActionOutput extends OFActionOutput implements
                     }
                 } else {
                     
-                    if (inPort.getPhysicalPortNumber() != outPort
+                    if (inPort == null || inPort.getPhysicalPortNumber() != outPort
                             .getPhysicalPortNumber()) {
                         approvedActions.add(new OFActionOutput(outPort
                                 .getPhysicalPortNumber()));
