@@ -14,16 +14,15 @@ import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionNetworkLayerDestination;
 import org.openflow.protocol.action.OFActionOutput;
 
-import edu.princeton.cs.policy.PolicyTree.PolicyOperator;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-public class PolicyTreeTest extends TestCase {
+public class SequentialCompositionTest extends TestCase {
 
-	private static Logger log = LogManager.getLogger(PolicyTreeTest.class.getName());
-	
-    public PolicyTreeTest(final String name) {
+	private static Logger log = LogManager.getLogger(SequentialCompositionTest.class.getName());
+
+    public SequentialCompositionTest(final String name) {
         super(name);
     }
 
@@ -31,43 +30,42 @@ public class PolicyTreeTest extends TestCase {
      * @return the suite of tests being tested
      */
     public static TestSuite suite() {
-        return new TestSuite(PolicyTreeTest.class);
+        return new TestSuite(SequentialCompositionTest.class);
     }
-
-    // parallel composition case: M + R
+    
     public void test1() {
-    	PolicyTree leftTree = new PolicyTree();
-    	leftTree.tenantId = 1;
     	
-    	PolicyTree rightTree = new PolicyTree();
-    	rightTree.tenantId = 2;
-    	
-    	PolicyTree policyTree = new PolicyTree();
-    	policyTree.operator = PolicyOperator.Parallel;
-    	policyTree.leftChild = leftTree;
-    	policyTree.rightChild = rightTree;
-    	
-    	OFFlowMod fm0 = new OFFlowMod();
-		{
+    	OFFlowMod fm1 = new OFFlowMod();
+    	{
 			OFFlowMod fm = new OFFlowMod();
 			fm.setCommand(OFFlowMod.OFPFC_ADD);
 			fm.setIdleTimeout((short) 0);
 			fm.setHardTimeout((short) 0);
 			fm.setBufferId(OFPacketOut.BUFFER_ID_NONE);
 			fm.setCookie(0);
-			fm.setPriority((short) 0);
+			fm.setPriority((short) 3);
 
 			OFMatch m = new OFMatch();
+			int wcards = OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_TYPE
+					& (30 << OFMatch.OFPFW_NW_SRC_SHIFT | ~OFMatch.OFPFW_NW_SRC_MASK)
+					& ~OFMatch.OFPFW_NW_DST_MASK;
+			m.setWildcards(wcards);
+			m.setDataLayerType((short) 2048);
+			m.setNetworkSource((new PhysicalIPAddress("0.0.0.0")).getIp());
+			m.setNetworkDestination((new PhysicalIPAddress("3.0.0.0")).getIp());
 			fm.setMatch(m);
 
+			OFActionNetworkLayerDestination action = new OFActionNetworkLayerDestination();
+			action.setNetworkAddress((new PhysicalIPAddress("2.0.0.1")).getIp());
 			List<OFAction> actions = new ArrayList<OFAction>();
+			actions.add(action);
 			fm.setActions(actions);
-			fm.setLengthU(fm.getLengthU());
+			fm.setLengthU(fm.getLengthU() + action.getLengthU());
 			
-			fm0 = fm;
+			fm1 = fm;
 		}
     	
-    	OFFlowMod fm1 = new OFFlowMod();
+		OFFlowMod fm2 = new OFFlowMod();
 		{
 			OFFlowMod fm = new OFFlowMod();
 			fm.setCommand(OFFlowMod.OFPFC_ADD);
@@ -78,11 +76,78 @@ public class PolicyTreeTest extends TestCase {
 			fm.setPriority((short) 1);
 
 			OFMatch m = new OFMatch();
-			int wcards = OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_TYPE
-					& (8 << OFMatch.OFPFW_NW_SRC_SHIFT | ~OFMatch.OFPFW_NW_SRC_MASK);
+			int wcards = OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_TYPE & ~OFMatch.OFPFW_NW_DST_MASK;
 			m.setWildcards(wcards);
 			m.setDataLayerType((short) 2048);
-			m.setNetworkSource((new PhysicalIPAddress("1.0.0.0")).getIp());
+			m.setNetworkDestination((new PhysicalIPAddress("2.0.0.1")).getIp());
+			fm.setMatch(m);
+
+			OFActionOutput action = new OFActionOutput();
+			action.setPort((short) 1);
+			List<OFAction> actions = new ArrayList<OFAction>();
+			actions.add(action);
+			fm.setActions(actions);
+			fm.setLengthU(fm.getLengthU() + action.getLengthU());
+			
+			fm2 = fm;
+		}
+		
+		OFFlowMod fm3 = new OFFlowMod();
+		{
+			OFFlowMod fm = new OFFlowMod();
+			fm.setCommand(OFFlowMod.OFPFC_ADD);
+			fm.setIdleTimeout((short) 0);
+			fm.setHardTimeout((short) 0);
+			fm.setBufferId(OFPacketOut.BUFFER_ID_NONE);
+			fm.setCookie(0);
+			fm.setPriority((short) 25);
+
+			OFMatch m = new OFMatch();
+			int wcards = OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_TYPE
+					& (30 << OFMatch.OFPFW_NW_SRC_SHIFT | ~OFMatch.OFPFW_NW_SRC_MASK)
+					& ~OFMatch.OFPFW_NW_DST_MASK;
+			m.setWildcards(wcards);
+			m.setDataLayerType((short) 2048);
+			m.setNetworkSource((new PhysicalIPAddress("0.0.0.0")).getIp());
+			m.setNetworkDestination((new PhysicalIPAddress("3.0.0.0")).getIp());
+			fm.setMatch(m);
+
+			OFActionNetworkLayerDestination action1 = new OFActionNetworkLayerDestination();
+			action1.setNetworkAddress((new PhysicalIPAddress("2.0.0.1")).getIp());
+			OFActionOutput action2 = new OFActionOutput();
+			action2.setPort((short) 1);
+			List<OFAction> actions = new ArrayList<OFAction>();
+			actions.add(action1);
+			actions.add(action2);
+			fm.setActions(actions);
+			fm.setLengthU(fm.getLengthU() + action1.getLengthU() + action2.getLengthU());
+			
+			fm3 = fm;
+		}
+		
+		OFFlowMod composedFm = PolicyCompositionUtil.sequentialComposition(fm1, fm2);
+    	
+    	log.error("test1");
+    	log.error("fm1:   {}", fm1);
+    	log.error("fm2:   {}", fm2);
+    	log.error("fm3:   {}", fm3);
+    	log.error("fm1+2: {}", composedFm);
+    	Assert.assertEquals(composedFm, fm3);
+    }
+    
+    public void test2() {
+    	
+    	OFFlowMod fm1 = new OFFlowMod();
+    	{
+    		OFFlowMod fm = new OFFlowMod();
+			fm.setCommand(OFFlowMod.OFPFC_ADD);
+			fm.setIdleTimeout((short) 0);
+			fm.setHardTimeout((short) 0);
+			fm.setBufferId(OFPacketOut.BUFFER_ID_NONE);
+			fm.setCookie(0);
+			fm.setPriority((short) 0);
+
+			OFMatch m = new OFMatch();
 			fm.setMatch(m);
 
 			List<OFAction> actions = new ArrayList<OFAction>();
@@ -127,60 +192,6 @@ public class PolicyTreeTest extends TestCase {
 			fm.setHardTimeout((short) 0);
 			fm.setBufferId(OFPacketOut.BUFFER_ID_NONE);
 			fm.setCookie(0);
-			fm.setPriority((short) 1);
-
-			OFMatch m = new OFMatch();
-			int wcards = OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_TYPE &~OFMatch.OFPFW_NW_DST_MASK;
-			m.setWildcards(wcards);
-			m.setDataLayerType((short) 2048);
-			m.setNetworkDestination((new PhysicalIPAddress("2.0.0.2")).getIp());
-			fm.setMatch(m);
-
-			OFActionOutput action = new OFActionOutput();
-			action.setPort((short) 2);
-			List<OFAction> actions = new ArrayList<OFAction>();
-			actions.add(action);
-			fm.setActions(actions);
-			fm.setLengthU(fm.getLengthU() + action.getLengthU());
-			
-			fm3 = fm;
-		}
-		
-		policyTree.update(fm0, 1);
-		policyTree.update(fm1, 1);
-		policyTree.update(fm0, 2);
-		policyTree.update(fm2, 2);
-		policyTree.update(fm3, 2);
-		
-		log.error("policy tree test 1: parallel composition M + R");
-		for (OFFlowMod fm : policyTree.flowTable.getFlowMods()) {
-			log.error(fm);
-		}
-		
-		Assert.assertEquals(1, 1);
-    }
-    
-    // sequential composition case: LB >> R
-    public void test2() {
-    	PolicyTree leftTree = new PolicyTree();
-    	leftTree.tenantId = 1;
-    	
-    	PolicyTree rightTree = new PolicyTree();
-    	rightTree.tenantId = 2;
-    	
-    	PolicyTree policyTree = new PolicyTree();
-    	policyTree.operator = PolicyOperator.Sequential;
-    	policyTree.leftChild = leftTree;
-    	policyTree.rightChild = rightTree;
-    	
-    	OFFlowMod fm0 = new OFFlowMod();
-		{
-			OFFlowMod fm = new OFFlowMod();
-			fm.setCommand(OFFlowMod.OFPFC_ADD);
-			fm.setIdleTimeout((short) 0);
-			fm.setHardTimeout((short) 0);
-			fm.setBufferId(OFPacketOut.BUFFER_ID_NONE);
-			fm.setCookie(0);
 			fm.setPriority((short) 0);
 
 			OFMatch m = new OFMatch();
@@ -190,10 +201,22 @@ public class PolicyTreeTest extends TestCase {
 			fm.setActions(actions);
 			fm.setLengthU(fm.getLengthU());
 			
-			fm0 = fm;
+			fm3 = fm;
 		}
 		
-		OFFlowMod fm1 = new OFFlowMod();
+		OFFlowMod composedFm = PolicyCompositionUtil.sequentialComposition(fm1, fm2);
+    	
+    	log.error("test2");
+    	log.error("fm1:   {}", fm1);
+    	log.error("fm2:   {}", fm2);
+    	log.error("fm3:   {}", fm3);
+    	log.error("fm1+2: {}", composedFm);
+    	Assert.assertEquals(composedFm, fm3);
+    }
+    
+    public void test3() {
+    	
+    	OFFlowMod fm1 = new OFFlowMod();
     	{
 			OFFlowMod fm = new OFFlowMod();
 			fm.setCommand(OFFlowMod.OFPFC_ADD);
@@ -223,29 +246,22 @@ public class PolicyTreeTest extends TestCase {
 			fm1 = fm;
 		}
     	
-    	OFFlowMod fm2 = new OFFlowMod();
-    	{
+		OFFlowMod fm2 = new OFFlowMod();
+		{
 			OFFlowMod fm = new OFFlowMod();
 			fm.setCommand(OFFlowMod.OFPFC_ADD);
 			fm.setIdleTimeout((short) 0);
 			fm.setHardTimeout((short) 0);
 			fm.setBufferId(OFPacketOut.BUFFER_ID_NONE);
 			fm.setCookie(0);
-			fm.setPriority((short) 1);
+			fm.setPriority((short) 0);
 
 			OFMatch m = new OFMatch();
-			int wcards = OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_TYPE & ~OFMatch.OFPFW_NW_DST_MASK;
-			m.setWildcards(wcards);
-			m.setDataLayerType((short) 2048);
-			m.setNetworkDestination((new PhysicalIPAddress("3.0.0.0")).getIp());
 			fm.setMatch(m);
 
-			OFActionNetworkLayerDestination action = new OFActionNetworkLayerDestination();
-			action.setNetworkAddress((new PhysicalIPAddress("2.0.0.2")).getIp());
 			List<OFAction> actions = new ArrayList<OFAction>();
-			actions.add(action);
 			fm.setActions(actions);
-			fm.setLengthU(fm.getLengthU() + action.getLengthU());
+			fm.setLengthU(fm.getLengthU());
 			
 			fm2 = fm;
 		}
@@ -258,17 +274,20 @@ public class PolicyTreeTest extends TestCase {
 			fm.setHardTimeout((short) 0);
 			fm.setBufferId(OFPacketOut.BUFFER_ID_NONE);
 			fm.setCookie(0);
-			fm.setPriority((short) 1);
+			fm.setPriority((short) 24);
 
 			OFMatch m = new OFMatch();
-			int wcards = OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_TYPE & ~OFMatch.OFPFW_NW_DST_MASK;
+			int wcards = OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_TYPE
+					& (30 << OFMatch.OFPFW_NW_SRC_SHIFT | ~OFMatch.OFPFW_NW_SRC_MASK)
+					& ~OFMatch.OFPFW_NW_DST_MASK;
 			m.setWildcards(wcards);
 			m.setDataLayerType((short) 2048);
-			m.setNetworkDestination((new PhysicalIPAddress("2.0.0.1")).getIp());
+			m.setNetworkSource((new PhysicalIPAddress("0.0.0.0")).getIp());
+			m.setNetworkDestination((new PhysicalIPAddress("3.0.0.0")).getIp());
 			fm.setMatch(m);
 
-			OFActionOutput action = new OFActionOutput();
-			action.setPort((short) 1);
+			OFActionNetworkLayerDestination action = new OFActionNetworkLayerDestination();
+			action.setNetworkAddress((new PhysicalIPAddress("2.0.0.1")).getIp());
 			List<OFAction> actions = new ArrayList<OFAction>();
 			actions.add(action);
 			fm.setActions(actions);
@@ -277,7 +296,49 @@ public class PolicyTreeTest extends TestCase {
 			fm3 = fm;
 		}
 		
-		OFFlowMod fm4 = new OFFlowMod();
+		OFFlowMod composedFm = PolicyCompositionUtil.sequentialComposition(fm1, fm2);
+    	
+    	log.error("test3");
+    	log.error("fm1:   {}", fm1);
+    	log.error("fm2:   {}", fm2);
+    	log.error("fm3:   {}", fm3);
+    	log.error("fm1+2: {}", composedFm);
+    	Assert.assertEquals(composedFm, fm3);
+    }
+    
+    public void test4() {
+    	
+    	OFFlowMod fm1 = new OFFlowMod();
+    	{
+			OFFlowMod fm = new OFFlowMod();
+			fm.setCommand(OFFlowMod.OFPFC_ADD);
+			fm.setIdleTimeout((short) 0);
+			fm.setHardTimeout((short) 0);
+			fm.setBufferId(OFPacketOut.BUFFER_ID_NONE);
+			fm.setCookie(0);
+			fm.setPriority((short) 3);
+
+			OFMatch m = new OFMatch();
+			int wcards = OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_TYPE
+					& (30 << OFMatch.OFPFW_NW_SRC_SHIFT | ~OFMatch.OFPFW_NW_SRC_MASK)
+					& ~OFMatch.OFPFW_NW_DST_MASK;
+			m.setWildcards(wcards);
+			m.setDataLayerType((short) 2048);
+			m.setNetworkSource((new PhysicalIPAddress("0.0.0.0")).getIp());
+			m.setNetworkDestination((new PhysicalIPAddress("3.0.0.0")).getIp());
+			fm.setMatch(m);
+
+			OFActionNetworkLayerDestination action = new OFActionNetworkLayerDestination();
+			action.setNetworkAddress((new PhysicalIPAddress("2.0.0.1")).getIp());
+			List<OFAction> actions = new ArrayList<OFAction>();
+			actions.add(action);
+			fm.setActions(actions);
+			fm.setLengthU(fm.getLengthU() + action.getLengthU());
+			
+			fm1 = fm;
+		}
+    	
+		OFFlowMod fm2 = new OFFlowMod();
 		{
 			OFFlowMod fm = new OFFlowMod();
 			fm.setCommand(OFFlowMod.OFPFC_ADD);
@@ -288,35 +349,32 @@ public class PolicyTreeTest extends TestCase {
 			fm.setPriority((short) 1);
 
 			OFMatch m = new OFMatch();
-			int wcards = OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_TYPE &~OFMatch.OFPFW_NW_DST_MASK;
+			int wcards = OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_TYPE & ~OFMatch.OFPFW_NW_DST_MASK;
 			m.setWildcards(wcards);
 			m.setDataLayerType((short) 2048);
 			m.setNetworkDestination((new PhysicalIPAddress("2.0.0.2")).getIp());
 			fm.setMatch(m);
 
 			OFActionOutput action = new OFActionOutput();
-			action.setPort((short) 2);
+			action.setPort((short) 1);
 			List<OFAction> actions = new ArrayList<OFAction>();
 			actions.add(action);
 			fm.setActions(actions);
 			fm.setLengthU(fm.getLengthU() + action.getLengthU());
 			
-			fm4 = fm;
+			fm2 = fm;
 		}
 		
-		policyTree.update(fm0, 1);
-		policyTree.update(fm1, 1);
-		policyTree.update(fm2, 1);
-		policyTree.update(fm0, 2);
-		policyTree.update(fm3, 2);
-		policyTree.update(fm4, 2);
+		OFFlowMod fm3 = null;
 		
-		log.error("policy tree test 2: sequential composition LB >> R");
-		for (OFFlowMod fm : policyTree.flowTable.getFlowMods()) {
-			log.error(fm);
-		}
-		
-		Assert.assertEquals(1, 1);
+		OFFlowMod composedFm = PolicyCompositionUtil.sequentialComposition(fm1, fm2);
+    	
+    	log.error("test4");
+    	log.error("fm1:   {}", fm1);
+    	log.error("fm2:   {}", fm2);
+    	log.error("fm3:   {}", fm3);
+    	log.error("fm1+2: {}", composedFm);
+    	Assert.assertEquals(composedFm, fm3);
     }
 
     @Override

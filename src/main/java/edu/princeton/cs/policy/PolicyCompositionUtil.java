@@ -9,8 +9,12 @@ import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFPacketOut;
 import org.openflow.protocol.action.OFAction;
+import org.openflow.protocol.action.OFActionNetworkLayerDestination;
+import org.openflow.protocol.action.OFActionOutput;
 
 public class PolicyCompositionUtil {
+	
+	public static short SEQUENTIAL_MAX = 8;
 
 	public static OFFlowMod parallelComposition(OFFlowMod fm1, OFFlowMod fm2) {
 		
@@ -50,7 +54,95 @@ public class PolicyCompositionUtil {
 		return composedFm;
 	}
 	
+	public static OFFlowMod sequentialComposition(OFFlowMod fm1, OFFlowMod fm2) {
+		
+		// check fm1 actions, if fwd or drop, stop
+		boolean flag = false;
+		if (fm1.getActions().isEmpty()) {
+			flag = true;
+		}
+		for (OFAction action : fm1.getActions()) {
+			if (action instanceof OFActionOutput) {
+				flag = true;
+				break;
+			}
+		}
+		if (flag) {
+			OFFlowMod composedFm = null;
+			try {
+				composedFm = fm1.clone();
+				composedFm.setPriority(
+						(short) (fm1.getPriority() * PolicyCompositionUtil.SEQUENTIAL_MAX));
+			} catch (CloneNotSupportedException e) {
+				e.printStackTrace();
+			}
+			return composedFm;
+		}
+		
+		// compose logic
+		OFFlowMod composedFm = new OFFlowMod();
+		composedFm.setCommand(OFFlowMod.OFPFC_ADD);
+		composedFm.setIdleTimeout((short)0);
+		composedFm.setHardTimeout((short)0);
+		composedFm.setBufferId(OFPacketOut.BUFFER_ID_NONE);
+		composedFm.setCookie(0);
+		
+		// priority
+		composedFm.setPriority(
+				(short) (fm1.getPriority() * PolicyCompositionUtil.SEQUENTIAL_MAX + fm2.getPriority()));
+		
+		// match
+		OFMatch match = intersectMatch(fm1.getMatch(), actRevertMatch(fm2.getMatch(), fm1.getActions()));
+		if (match != null) {
+			composedFm.setMatch(match);
+		}
+		else {
+			return null;
+		}
+		
+		// action
+		List<OFAction> actions = new ArrayList<OFAction>();
+		int length = OFFlowMod.MINIMUM_LENGTH;
+		for (OFAction action : fm1.getActions()) {
+			actions.add(action);
+			length += action.getLengthU();
+		}
+		for (OFAction action : fm2.getActions()) {
+			actions.add(action);
+			length += action.getLengthU();
+		}
+		composedFm.setActions(actions);
+		composedFm.setLengthU(length);
+		
+		return composedFm;
+	}
+	
+	private static OFMatch actRevertMatch(OFMatch match, List<OFAction> actions) {
+		OFMatch m = match.clone();
+		for (OFAction action : actions) {
+			if (action instanceof OFActionNetworkLayerDestination) {
+				OFActionNetworkLayerDestination modNwDst = (OFActionNetworkLayerDestination) action;
+				int mask = m.getWildcards() & OFMatch.OFPFW_NW_DST_MASK;
+				int shift = Math.min(mask >> OFMatch.OFPFW_NW_DST_SHIFT, 32);
+				int ip1 = (m.getNetworkDestination() >> shift) << shift;
+				int ip2 = (modNwDst.getNetworkAddress() >> shift) << shift;
+				if (shift == 32 || ip1 == ip2) {
+					m.setWildcards(m.getWildcards() | OFMatch.OFPFW_NW_DST_ALL);
+					m.setNetworkDestination(0);
+				}
+				else {
+					return null;
+				}
+			}
+		}
+		return m;
+	}
+
 	private static OFMatch intersectMatch (OFMatch m1, OFMatch m2) {
+		if (m1 == null || m2 == null) {
+			return null;
+		}
+		
 		OFMatch match = new OFMatch();
 		int wcard1 = m1.getWildcards();
 		int wcard2 = m2.getWildcards();

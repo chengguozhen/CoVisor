@@ -43,6 +43,7 @@ public class PolicyTree {
 			updateTable = updateParallelStrawman(fm, tenantId);
 			break;
 		case Sequential:
+			updateTable = updateSequentialStrawman(fm, tenantId);
 			break;
 		case Override:
 			break;
@@ -83,5 +84,29 @@ public class PolicyTree {
 		
 		return updateTable;
 	}
+	
+	// strawman solution: calculate a new cross product
+		private PolicyUpdateTable updateSequentialStrawman(OFFlowMod fm, Integer tenantId) {
+			
+			this.leftChild.update(fm, tenantId);
+			this.rightChild.update(fm, tenantId);
+			
+			this.flowTable.clearTable();
+			for (OFFlowMod fm1 : this.leftChild.flowTable.getFlowMods()) {
+				for (OFFlowMod fm2 : this.rightChild.flowTable.getFlowMods()) {
+					OFFlowMod composedFm = PolicyCompositionUtil.sequentialComposition(fm1, fm2);
+					if (composedFm != null) {
+						this.flowTable.addFlowMod(composedFm);
+					}
+				}
+			}
+			
+			PolicyUpdateTable updateTable = new PolicyUpdateTable();
+			for (OFFlowMod ofm : this.flowTable.getFlowMods()) {
+				updateTable.addFlowMods.add(ofm);
+			}
+			
+			return updateTable;
+		}
 	
 }

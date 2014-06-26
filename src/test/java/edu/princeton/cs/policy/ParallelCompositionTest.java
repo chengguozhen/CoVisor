@@ -17,9 +17,6 @@ import junit.framework.Assert;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-/**
- * Tests for policy.
- */
 public class ParallelCompositionTest extends TestCase {
 
 	private static Logger log = LogManager.getLogger(ParallelCompositionTest.class.getName());
