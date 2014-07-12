@@ -14,7 +14,25 @@ import org.openflow.protocol.action.OFActionOutput;
 
 public class PolicyCompositionUtil {
 	
-	public static short SEQUENTIAL_MAX = 8;
+	public static final short SEQUENTIAL_SHIFT = 8;
+	public static final short OVERRIDE_SHIFT = 8;
+	
+	public static List<OFFlowMod> diffFlowMods (List<OFFlowMod> flowMods1, List<OFFlowMod> flowMods2) {
+		List<OFFlowMod> flowModsDiff = new ArrayList<OFFlowMod>();
+		for (OFFlowMod fm1 : flowMods1){
+			boolean isContained = false;
+			for (OFFlowMod fm2 : flowMods2) {
+				if (fm1.getMatch().equals(fm2.getMatch()) && fm1.getPriority() == fm2.getPriority()) {
+					isContained = true;
+					break;
+				}
+			}
+			if (!isContained) {
+				flowModsDiff.add(fm1);
+			}
+		}
+		return flowModsDiff;
+	}
 
 	public static OFFlowMod parallelComposition(OFFlowMod fm1, OFFlowMod fm2) {
 		
@@ -72,7 +90,7 @@ public class PolicyCompositionUtil {
 			try {
 				composedFm = fm1.clone();
 				composedFm.setPriority(
-						(short) (fm1.getPriority() * PolicyCompositionUtil.SEQUENTIAL_MAX));
+						(short) (fm1.getPriority() * PolicyCompositionUtil.SEQUENTIAL_SHIFT));
 			} catch (CloneNotSupportedException e) {
 				e.printStackTrace();
 			}
@@ -89,7 +107,7 @@ public class PolicyCompositionUtil {
 		
 		// priority
 		composedFm.setPriority(
-				(short) (fm1.getPriority() * PolicyCompositionUtil.SEQUENTIAL_MAX + fm2.getPriority()));
+				(short) (fm1.getPriority() * PolicyCompositionUtil.SEQUENTIAL_SHIFT + fm2.getPriority()));
 		
 		// match
 		OFMatch match = intersectMatch(fm1.getMatch(), actRevertMatch(fm2.getMatch(), fm1.getActions()));

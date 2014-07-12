@@ -229,7 +229,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     @Override
     public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
     	
-    	if (msg.getType() == OFType.FLOW_MOD) {
+    	/*if (msg.getType() == OFType.FLOW_MOD) {
     		
     		log.error("---------- New FlowMod ----------");
     		log.error(msg.toString());
@@ -248,11 +248,11 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     	}
     	else if ((this.channel.isOpen()) && (this.isConnected)) {
             this.channel.write(Collections.singletonList(msg));
-        }
-    	
-        /*if ((this.channel.isOpen()) && (this.isConnected)) {
-            this.channel.write(Collections.singletonList(msg));
         }*/
+    	
+        if ((this.channel.isOpen()) && (this.isConnected)) {
+            this.channel.write(Collections.singletonList(msg));
+        }
     }
 
     /*

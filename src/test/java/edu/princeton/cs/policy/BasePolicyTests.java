@@ -18,8 +18,8 @@ public final class BasePolicyTests {
     public static Test suite() {
         final TestSuite suite = new TestSuite(BasePolicyTests.class.getName());
         // $JUnit-BEGIN$
-        suite.addTest(ParallelCompositionTest.suite());
-        suite.addTest(SequentialCompositionTest.suite());
+        //suite.addTest(ParallelCompositionTest.suite());
+        //suite.addTest(SequentialCompositionTest.suite());
         suite.addTest(PolicyTreeTest.suite());
         // $JUnit-END$
         return suite;
