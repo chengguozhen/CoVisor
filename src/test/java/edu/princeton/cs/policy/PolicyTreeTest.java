@@ -1,7 +1,9 @@
 package edu.princeton.cs.policy;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 
@@ -15,6 +17,7 @@ import org.openflow.protocol.action.OFActionNetworkLayerDestination;
 import org.openflow.protocol.action.OFActionOutput;
 
 import edu.princeton.cs.policy.PolicyTree.PolicyOperator;
+import edu.princeton.cs.policy.PolicyTree.PolicyUpdateMechanism;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -22,6 +25,7 @@ import junit.framework.TestSuite;
 public class PolicyTreeTest extends TestCase {
 
 	private static Logger log = LogManager.getLogger(PolicyTreeTest.class.getName());
+	private static Random rand = new Random();
 	
     public PolicyTreeTest(final String name) {
         super(name);
@@ -116,7 +120,7 @@ public class PolicyTreeTest extends TestCase {
     }
     
     // sequential composition case: LB >> R
-    public void test2() {
+    public void atest2() {
     	PolicyTree leftTree = new PolicyTree();
     	leftTree.tenantId = 1;
     	
@@ -195,12 +199,6 @@ public class PolicyTreeTest extends TestCase {
 		for (OFFlowMod fm : policyTree.flowTable.getFlowModsSorted()) {
 			log.error(fm);
 		}
-		{
-		OFFlowMod fm = generateLBRule(2, "0.0.0.0", 1, "3.0.0.0", "2.0.0.3", OFFlowMod.OFPFC_ADD);
-		fm = generateLBRule(2, "0.0.0.0", 2, "3.0.0.0", "2.0.0.3", OFFlowMod.OFPFC_ADD);
-		fm = generateLBRule(2, "0.0.0.0", 3, "3.0.0.0", "2.0.0.3", OFFlowMod.OFPFC_ADD);
-		fm = generateLBRule(2, "0.0.0.0", 0, "3.0.0.0", "2.0.0.3", OFFlowMod.OFPFC_ADD);
-		}
 		updateTable = policyTree.update(generateLBRule(2, "0.0.0.0", 1, "3.0.0.0", "2.0.0.3", OFFlowMod.OFPFC_ADD), 1);
 		log.error("policy tree test 2: after add");
 		for (OFFlowMod fm : policyTree.flowTable.getFlowModsSorted()) {
@@ -212,7 +210,38 @@ public class PolicyTreeTest extends TestCase {
 		log.error("add {}, delete {}", updateTable.addFlowMods.size(), updateTable.deleteFlowMods.size());		
     }
     
-    /*public void test2() {
+    // experiment: M + R
+    public void test3() {
+    	
+    	//int mInitial = 70;
+    	//int rInitial = 70;
+    	//int mUpdate = 100;
+    	
+    	// bootstrap expr
+    	/*System.out.println("Incremental:");
+    	for (int mInitial = 10, rInitial = 10; mInitial < 110; mInitial += 10, rInitial += 10) {
+    	    	runParallelCompositionExprBootstrap(mInitial, rInitial, PolicyUpdateMechanism.Incremental);
+    	}
+    	
+    	System.out.println("Strawman:");
+    	for (int mInitial = 10, rInitial = 10; mInitial < 110; mInitial += 10, rInitial += 10) {
+			runParallelCompositionExprBootstrap(mInitial, rInitial, PolicyUpdateMechanism.Strawman);
+    	}*/
+    	
+    	// update expr
+    	System.out.println("Incremental:");
+    	for (int mInitial = 10, rInitial = 10, mUpdate = 1; mInitial < 110; mInitial += 10, rInitial += 10) {
+    	    	runParallelCompositionExprUpdate(mInitial, rInitial, PolicyUpdateMechanism.Incremental, mUpdate);
+    	}
+    	
+    	System.out.println("Strawman:");
+    	for (int mInitial = 10, rInitial = 10, mUpdate = 1; mInitial < 110; mInitial += 10, rInitial += 10) {
+    	    	runParallelCompositionExprUpdate(mInitial, rInitial, PolicyUpdateMechanism.Strawman, mUpdate);
+    	}
+    	
+    }
+    
+    private void runParallelCompositionExprBootstrap(int mInitial, int rInitial, PolicyUpdateMechanism updateMechanism) {
     	PolicyTree leftTree = new PolicyTree();
     	leftTree.tenantId = 1;
     	
@@ -220,155 +249,116 @@ public class PolicyTreeTest extends TestCase {
     	rightTree.tenantId = 2;
     	
     	PolicyTree policyTree = new PolicyTree();
-    	policyTree.operator = PolicyOperator.Sequential;
+    	policyTree.operator = PolicyOperator.Parallel;
     	policyTree.leftChild = leftTree;
     	policyTree.rightChild = rightTree;
     	
-    	OFFlowMod fm0 = new OFFlowMod();
-		{
-			OFFlowMod fm = new OFFlowMod();
-			fm.setCommand(OFFlowMod.OFPFC_ADD);
-			fm.setIdleTimeout((short) 0);
-			fm.setHardTimeout((short) 0);
-			fm.setBufferId(OFPacketOut.BUFFER_ID_NONE);
-			fm.setCookie(0);
-			fm.setPriority((short) 0);
-
-			OFMatch m = new OFMatch();
-			fm.setMatch(m);
-
-			List<OFAction> actions = new ArrayList<OFAction>();
-			fm.setActions(actions);
-			fm.setLengthU(fm.getLengthU());
-			
-			fm0 = fm;
-		}
-		
-		OFFlowMod fm1 = new OFFlowMod();
-    	{
-			OFFlowMod fm = new OFFlowMod();
-			fm.setCommand(OFFlowMod.OFPFC_ADD);
-			fm.setIdleTimeout((short) 0);
-			fm.setHardTimeout((short) 0);
-			fm.setBufferId(OFPacketOut.BUFFER_ID_NONE);
-			fm.setCookie(0);
-			fm.setPriority((short) 3);
-
-			OFMatch m = new OFMatch();
-			int wcards = OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_TYPE
-					& (30 << OFMatch.OFPFW_NW_SRC_SHIFT | ~OFMatch.OFPFW_NW_SRC_MASK)
-					& ~OFMatch.OFPFW_NW_DST_MASK;
-			m.setWildcards(wcards);
-			m.setDataLayerType((short) 2048);
-			m.setNetworkSource((new PhysicalIPAddress("0.0.0.0")).getIp());
-			m.setNetworkDestination((new PhysicalIPAddress("3.0.0.0")).getIp());
-			fm.setMatch(m);
-
-			OFActionNetworkLayerDestination action = new OFActionNetworkLayerDestination();
-			action.setNetworkAddress((new PhysicalIPAddress("2.0.0.1")).getIp());
-			List<OFAction> actions = new ArrayList<OFAction>();
-			actions.add(action);
-			fm.setActions(actions);
-			fm.setLengthU(fm.getLengthU() + action.getLengthU());
-			
-			fm1 = fm;
+    	// initialize M
+		List<OFFlowMod> mRules = new ArrayList<OFFlowMod>();
+		mRules.add(generateDefaultRule());
+    	for (int i = 0; i < mInitial; i++) {
+    		mRules.add(generateMonotoringRule());
+    	}
+    	
+    	List<OFFlowMod> rRules = new ArrayList<OFFlowMod>();
+    	rRules.add(generateDefaultRule());
+    	for (int i = 0; i < rInitial; i++) {
+    		rRules.add(generateRoutingRule());
+    	}
+    	
+    	// add rules to policy
+    	PolicyTree.UPDATEMECHANISM = updateMechanism;
+    	//log.error("begin experiment m:{} r:{} update:{}", mInitial, rInitial, updateMechanism);
+    	long startTime = System.nanoTime();
+    	for (OFFlowMod fm : mRules) {
+    		policyTree.update(fm, 1);
+    	}
+    	for (OFFlowMod fm : rRules) {
+    		policyTree.update(fm, 2);
+    	}
+    	long elapseTime = System.nanoTime() - startTime;
+    	//log.error("elapse time:{}", elapseTime / (1e9));
+    	System.out.println(elapseTime / (1e9));
+    }
+    
+    private void runParallelCompositionExprUpdate(int mInitial, int rInitial,
+    		PolicyUpdateMechanism updateMechanism, int mUpdate) {
+    	PolicyTree leftTree = new PolicyTree();
+    	leftTree.tenantId = 1;
+    	
+    	PolicyTree rightTree = new PolicyTree();
+    	rightTree.tenantId = 2;
+    	
+    	PolicyTree policyTree = new PolicyTree();
+    	policyTree.operator = PolicyOperator.Parallel;
+    	policyTree.leftChild = leftTree;
+    	policyTree.rightChild = rightTree;
+    	
+    	// initialize M
+		List<OFFlowMod> mRules = new ArrayList<OFFlowMod>();
+		mRules.add(generateDefaultRule());
+    	for (int i = 0; i < mInitial; i++) {
+    		mRules.add(generateMonotoringRule());
+    	}
+    	
+    	List<OFFlowMod> rRules = new ArrayList<OFFlowMod>();
+    	rRules.add(generateDefaultRule());
+    	for (int i = 0; i < rInitial; i++) {
+    		rRules.add(generateRoutingRule());
+    	}
+    	
+    	PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Incremental;
+    	for (OFFlowMod fm : mRules) {
+    		policyTree.update(fm, 1);
+    	}
+    	for (OFFlowMod fm : rRules) {
+    		policyTree.update(fm, 2);
+    	}
+    	
+    	// generate update
+    	List<OFFlowMod> mUpdateRules = new ArrayList<OFFlowMod>();
+    	if (mUpdate == 1) {
+    		{
+				OFFlowMod fmDelete = null;
+				try {
+					fmDelete = mRules.get(1).clone();
+				} catch (CloneNotSupportedException e) {
+					e.printStackTrace();
+				}
+				fmDelete.setCommand(OFFlowMod.OFPFC_DELETE);
+				mUpdateRules.add(fmDelete);
+			}
+    		//mUpdateRules.add(generateMonotoringRule());
+		} else {
+			for (int i = 0; i < mUpdate / 2; i++) {
+				OFFlowMod fmDelete = null;
+				try {
+					fmDelete = mRules.get(i+1).clone();
+				} catch (CloneNotSupportedException e) {
+					e.printStackTrace();
+				}
+				fmDelete.setCommand(OFFlowMod.OFPFC_DELETE);
+				mUpdateRules.add(fmDelete);
+			}
+			for (int i = 0; i < mUpdate / 2; i++) {
+				mUpdateRules.add(generateMonotoringRule());
+			}
+			Collections.shuffle(mUpdateRules);
 		}
     	
-    	OFFlowMod fm2 = new OFFlowMod();
-    	{
-			OFFlowMod fm = new OFFlowMod();
-			fm.setCommand(OFFlowMod.OFPFC_ADD);
-			fm.setIdleTimeout((short) 0);
-			fm.setHardTimeout((short) 0);
-			fm.setBufferId(OFPacketOut.BUFFER_ID_NONE);
-			fm.setCookie(0);
-			fm.setPriority((short) 1);
-
-			OFMatch m = new OFMatch();
-			int wcards = OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_TYPE & ~OFMatch.OFPFW_NW_DST_MASK;
-			m.setWildcards(wcards);
-			m.setDataLayerType((short) 2048);
-			m.setNetworkDestination((new PhysicalIPAddress("3.0.0.0")).getIp());
-			fm.setMatch(m);
-
-			OFActionNetworkLayerDestination action = new OFActionNetworkLayerDestination();
-			action.setNetworkAddress((new PhysicalIPAddress("2.0.0.2")).getIp());
-			List<OFAction> actions = new ArrayList<OFAction>();
-			actions.add(action);
-			fm.setActions(actions);
-			fm.setLengthU(fm.getLengthU() + action.getLengthU());
-			
-			fm2 = fm;
-		}
-		
-		OFFlowMod fm3 = new OFFlowMod();
-		{
-			OFFlowMod fm = new OFFlowMod();
-			fm.setCommand(OFFlowMod.OFPFC_ADD);
-			fm.setIdleTimeout((short) 0);
-			fm.setHardTimeout((short) 0);
-			fm.setBufferId(OFPacketOut.BUFFER_ID_NONE);
-			fm.setCookie(0);
-			fm.setPriority((short) 1);
-
-			OFMatch m = new OFMatch();
-			int wcards = OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_TYPE & ~OFMatch.OFPFW_NW_DST_MASK;
-			m.setWildcards(wcards);
-			m.setDataLayerType((short) 2048);
-			m.setNetworkDestination((new PhysicalIPAddress("2.0.0.1")).getIp());
-			fm.setMatch(m);
-
-			OFActionOutput action = new OFActionOutput();
-			action.setPort((short) 1);
-			List<OFAction> actions = new ArrayList<OFAction>();
-			actions.add(action);
-			fm.setActions(actions);
-			fm.setLengthU(fm.getLengthU() + action.getLengthU());
-			
-			fm3 = fm;
-		}
-		
-		OFFlowMod fm4 = new OFFlowMod();
-		{
-			OFFlowMod fm = new OFFlowMod();
-			fm.setCommand(OFFlowMod.OFPFC_ADD);
-			fm.setIdleTimeout((short) 0);
-			fm.setHardTimeout((short) 0);
-			fm.setBufferId(OFPacketOut.BUFFER_ID_NONE);
-			fm.setCookie(0);
-			fm.setPriority((short) 1);
-
-			OFMatch m = new OFMatch();
-			int wcards = OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_TYPE &~OFMatch.OFPFW_NW_DST_MASK;
-			m.setWildcards(wcards);
-			m.setDataLayerType((short) 2048);
-			m.setNetworkDestination((new PhysicalIPAddress("2.0.0.2")).getIp());
-			fm.setMatch(m);
-
-			OFActionOutput action = new OFActionOutput();
-			action.setPort((short) 2);
-			List<OFAction> actions = new ArrayList<OFAction>();
-			actions.add(action);
-			fm.setActions(actions);
-			fm.setLengthU(fm.getLengthU() + action.getLengthU());
-			
-			fm4 = fm;
-		}
-		
-		policyTree.update(fm0, 1);
-		policyTree.update(fm1, 1);
-		policyTree.update(fm2, 1);
-		policyTree.update(fm0, 2);
-		policyTree.update(fm3, 2);
-		policyTree.update(fm4, 2);
-		
-		log.error("policy tree test 2: sequential composition LB >> R");
-		for (OFFlowMod fm : policyTree.flowTable.getFlowMods()) {
-			log.error(fm);
-		}
-		
-		Assert.assertEquals(1, 1);
-    }*/
+    	// add rules to policy
+    	PolicyTree.UPDATEMECHANISM = updateMechanism;
+    	int totalFlowMods = 0;
+    	long startTime = System.nanoTime();
+    	for (OFFlowMod fm : mUpdateRules) {
+    		PolicyUpdateTable updateTable = policyTree.update(fm, 1);
+    		totalFlowMods += updateTable.addFlowMods.size();
+    		totalFlowMods += updateTable.deleteFlowMods.size();
+    		//log.error("{} {} {}", fm.getCommand(), updateTable.addFlowMods.size(), updateTable.deleteFlowMods.size());
+    	}
+    	long elapseTime = System.nanoTime() - startTime;
+    	System.out.println(elapseTime / (1e9) + "\t" + totalFlowMods);
+    }
     
     private OFFlowMod generateDefaultRule() {
     	OFFlowMod fm = new OFFlowMod();
@@ -387,6 +377,12 @@ public class PolicyTreeTest extends TestCase {
 		fm.setLengthU(fm.getLengthU());
 		
 		return fm;
+    }
+    
+    private OFFlowMod generateMonotoringRule() {
+    	String srcIp = String.format("%d.%d.%d.%d", getRandomNumber(0, 256), getRandomNumber(0, 256),
+    			getRandomNumber(0, 256), getRandomNumber(0, 256));
+    	return generateMonotoringRule(getRandomNumber(1, 60000), srcIp, getRandomNumber(0, 32), OFFlowMod.OFPFC_ADD);
     }
     
     private OFFlowMod generateMonotoringRule(int priority, String srcIp, int srcPrefix, short command) {
@@ -414,6 +410,12 @@ public class PolicyTreeTest extends TestCase {
 		return fm;
     }
     
+    private OFFlowMod generateRoutingRule() {
+    	String dstIp = String.format("%d.%d.%d.%d", getRandomNumber(0, 256), getRandomNumber(0, 256),
+    			getRandomNumber(0, 256), getRandomNumber(0, 256));
+    	return generateRoutingRule(1, dstIp, getRandomNumber(0, 48), OFFlowMod.OFPFC_ADD);
+    }
+    
     private OFFlowMod generateRoutingRule(int priority, String dstIp, int outPort, short command) {
     	OFFlowMod fm = new OFFlowMod();
 		fm.setCommand(command);
@@ -438,6 +440,17 @@ public class PolicyTreeTest extends TestCase {
 		fm.setLengthU(fm.getLengthU() + action.getLengthU());
 		
 		return fm;
+    }
+    
+    private OFFlowMod generateLBRule() {
+    	String srcIp = String.format("%d.%d.%d.%d", getRandomNumber(0, 256), getRandomNumber(0, 256),
+    			getRandomNumber(0, 256), getRandomNumber(0, 256));
+    	String dstIp = String.format("%d.%d.%d.%d", getRandomNumber(0, 256), getRandomNumber(0, 256),
+    			getRandomNumber(0, 256), getRandomNumber(0, 256));
+    	String setDstIp = String.format("%d.%d.%d.%d", getRandomNumber(0, 256), getRandomNumber(0, 256),
+    			getRandomNumber(0, 256), getRandomNumber(0, 256));
+    	return generateLBRule(getRandomNumber(1, 60000), srcIp, getRandomNumber(0, 32),
+    			dstIp, setDstIp, OFFlowMod.OFPFC_ADD);
     }
     
     private OFFlowMod generateLBRule(int priority, String srcIp, int srcPrefix, String dstIp, String setDstIp, short command) {
@@ -474,6 +487,11 @@ public class PolicyTreeTest extends TestCase {
 		
 		return fm;
     	
+    }
+    
+    // get random number in [min, max)
+    private int getRandomNumber(int min, int max) {
+    	return rand.nextInt(max - min) + min;
     }
 
     @Override

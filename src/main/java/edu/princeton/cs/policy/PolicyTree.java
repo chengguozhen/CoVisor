@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.openflow.protocol.OFFlowMod;
+import org.openflow.protocol.action.OFAction;
+import org.openflow.protocol.action.OFActionOutput;
 
 
 public class PolicyTree {
@@ -22,7 +24,7 @@ public class PolicyTree {
 		Strawman
 	}
 	
-	private static final PolicyUpdateMechanism UPDATEMECHANISM = PolicyUpdateMechanism.Strawman;
+	public static PolicyUpdateMechanism UPDATEMECHANISM = PolicyUpdateMechanism.Incremental;
 	
 	public PolicyOperator operator;
 	public PolicyTree leftChild;
@@ -80,6 +82,32 @@ public class PolicyTree {
 		if (this.operator == PolicyOperator.Parallel || this.operator == PolicyOperator.Sequential) {
 			
 			for (OFFlowMod fm1 : this.leftChild.flowTable.getFlowModsSorted()) {
+				
+				if (this.operator == PolicyOperator.Sequential) {
+					boolean flag = false;
+					if (fm1.getActions().isEmpty()) {
+						flag = true;
+					}
+					for (OFAction action : fm1.getActions()) {
+						if (action instanceof OFActionOutput) {
+							flag = true;
+							break;
+						}
+					}
+					if (flag) {
+						OFFlowMod composedFm = null;
+						try {
+							composedFm = fm1.clone();
+							composedFm.setPriority(
+									(short) (fm1.getPriority() * PolicyCompositionUtil.SEQUENTIAL_SHIFT));
+						} catch (CloneNotSupportedException e) {
+							e.printStackTrace();
+						}
+						newFlowMods.add(composedFm);
+						continue;
+					}
+				}
+				
 				for (OFFlowMod fm2 : this.rightChild.flowTable.getFlowModsSorted()) {
 					
 					OFFlowMod composedFm = null;
@@ -139,6 +167,34 @@ public class PolicyTree {
 			
 			// add
 			for (OFFlowMod fm1 : leftUpdateTable.addFlowMods) {
+				
+				if (this.operator == PolicyOperator.Sequential) {
+					boolean flag = false;
+					if (fm1.getActions().isEmpty()) {
+						flag = true;
+					}
+					for (OFAction action : fm1.getActions()) {
+						if (action instanceof OFActionOutput) {
+							flag = true;
+							break;
+						}
+					}
+					if (flag) {
+						OFFlowMod composedFm = null;
+						try {
+							composedFm = fm1.clone();
+							composedFm.setPriority(
+									(short) (fm1.getPriority() * PolicyCompositionUtil.SEQUENTIAL_SHIFT));
+						} catch (CloneNotSupportedException e) {
+							e.printStackTrace();
+						}
+						this.flowTable.addFlowMod(composedFm);
+						leftChild.flowTable.addGeneratedParentFlowMod(fm1, composedFm);
+						updateTable.addFlowMods.add(composedFm);
+						continue;
+					}
+				}
+				
 				for (OFFlowMod fm2: rightChild.flowTable.getFlowMods()) {
 					
 					OFFlowMod composedFm = null;
@@ -159,6 +215,22 @@ public class PolicyTree {
 			List<OFFlowMod> leftTableWithoutAdd = PolicyCompositionUtil
 					.diffFlowMods(leftChild.flowTable.getFlowMods(), leftUpdateTable.addFlowMods);
 			for (OFFlowMod fm1 : leftTableWithoutAdd) {
+				if (this.operator == PolicyOperator.Sequential) {
+					boolean flag = false;
+					if (fm1.getActions().isEmpty()) {
+						flag = true;
+					}
+					for (OFAction action : fm1.getActions()) {
+						if (action instanceof OFActionOutput) {
+							flag = true;
+							break;
+						}
+					}
+					if (flag) {
+						continue;
+					}
+				}
+				
 				for (OFFlowMod fm2 : rightUpdateTable.addFlowMods) {
 					OFFlowMod composedFm = null;
 					if (this.operator == PolicyOperator.Parallel) {

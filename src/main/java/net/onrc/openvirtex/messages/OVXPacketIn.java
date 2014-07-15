@@ -57,16 +57,18 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
     public void virtualize(final PhysicalSwitch sw) {
 
         OVXSwitch vSwitch = OVXMessageUtil.untranslateXid(this, sw);
-        /*
-         * Fetching port from the physical switch
-         */
 
+        //Fetching port from the physical switch
         short inport = this.getInPort();
         port = sw.getPort(inport);
         Mappable map = sw.getMap();
 
 		final OFMatch match = new OFMatch();
 		match.loadFromPacket(this.getPacketData(), inport);
+		
+		if (match.getDataLayerType() == (short) 0x86dd) { // 0x86dd IPv6
+			return;
+		}
 
 		this.tenantId = this.fetchTenantId(match, map, true);
 		if (this.tenantId == null) {
@@ -74,13 +76,11 @@ public class OVXPacketIn extends OFPacketIn implements Virtualizable {
 					"PacketIn {} does not belong to any virtual network; "
 							+ "dropping and installing a temporary drop rule",
 					this);
-			this.installDropRule(sw, match);
+			//this.installDropRule(sw, match);
 			return;
 		}
 
-		/*
-		 * Checks on vSwitch and the virtual port done in swndPkt.
-		 */
+		//Checks on vSwitch and the virtual port done in swndPkt
 		vSwitch = this.fetchOVXSwitch(sw, vSwitch, map);
 		this.ovxPort = this.port.getOVXPort(this.tenantId, 0);
 		this.sendPkt(vSwitch, match, sw);
