@@ -43,6 +43,6 @@ def installPolicy():
 if __name__ == '__main__':
     bootMonitorController()
     bootRouteController()
-    #installPolicy()
+    installPolicy()
 
 
