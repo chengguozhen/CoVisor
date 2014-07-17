@@ -1,12 +1,12 @@
 #!/usr/bin/python
-
 import sys
 import subprocess
 import random
-
+from ExprTopo.multiple import *
 
 WorkDir = "/home/xinjin/xin-flowmaster"
-MininetTopoScript = "this"
+MininetTopoScript = "%s/OpenVirteX/experiments/topo-mininet/" % WorkDir + \
+    "multiple.py"
 SWITCH_NUM = 2
 swDPIDs = []
 for i in range(SWITCH_NUM):
@@ -14,19 +14,26 @@ for i in range(SWITCH_NUM):
 DefaultRuleNum = 20
 UpdateRuleNum = 5
 
-def startMininet(mnScript): 
-    p1 = subprocess.Popen(["echo", "xinjin"], stdout=subprocess.PIPE)
-    p2 = subprocess.Popen(["sudo", "python", mnScript], stdin=p1.stdout,
-        stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+#********************************************************************
+# mininet: start, kill
+#********************************************************************
+def startMininet():
+    topo = MultipleTopo()
+    net = Mininet(topo, autoSetMacs=True, xterms=False,
+        controller=RemoteController)
+    net.addController('c', ip='128.112.93.28')
+    print "\nHosts configured with IPs, " + \
+        "switches pointing to OpenVirteX at 128.112.93.28 port 6633\n"
+    net.start()
+    CLI(net)
+    net.stop()
 
-def showMininet(mnScript):
-    subprocess.call("ps ax | grep %s | grep -v grep" % mnScript, shell=True)
+def killMininet():
+    subprocess.call("mn -c", shell=True)
 
-def killMininet(mnScript):
-    subprocess.call("echo xinjin | ps ax | grep %s " % mnScript +
-        "| grep -v grep | awk '{print $1}' | xargs sudo -S kill -9",
-        shell=True)
-
+#********************************************************************
+# ovx: start, show, kill
+#********************************************************************
 def startOVX():
     with open("ovx.log", "w") as logfile:
         subprocess.call("sh %s/OpenVirteX/scripts/ovx.sh &" % WorkDir,
@@ -40,6 +47,31 @@ def killOVX():
     subprocess.call("ps ax | grep ovx.sh | grep -v grep | awk '{print $1}' " +
         "| xargs pkill -TERM -P", shell=True)
 
+#********************************************************************
+# floodlight: start, show, kill
+#********************************************************************
+def startOneFloodlight(index):
+    with open("ctrl%d.log" % index, "w") as logfile:
+        subprocess.call("java -jar " +
+            "%s/floodlight-0.90/target/floodlight.jar -cf " % WorkDir +
+            "%s/OpenVirteX/experiments/" % WorkDir +
+            "ctrl/ctrl%d.floodlight &" % index,
+            shell=True, stdout=logfile, stderr=subprocess.STDOUT)
+
+def startFloodlight():
+    startOneFloodlight(1)
+    startOneFloodlight(2)
+
+def showFloodlight():
+    subprocess.call("ps ax | grep floodlight | grep -v grep", shell=True)
+
+def killFloodlight():
+    subprocess.call("ps ax | grep floodlight | grep -v grep | awk '{print $1}' " +
+        "| xargs kill", shell=True)
+
+#********************************************************************
+# rule: monitor, routing
+#********************************************************************
 def generateDefaultRule(swDPID):
     rule = '{"switch":"%s", ' % swDPID
     rule = rule + '"name":"default0", "priority":"0", ' + \
@@ -142,31 +174,9 @@ def updateMonitor():
     print "update monitor rules"
 
 
-def main(argv):
-
-    try:
-        opts, args = getopt.getopt(argv, "h", ["start-mn", "show-mn", "kill-mn"])
-    except getopt.GetoptError:
-        print "ctrl.py start-mn/show-mn/kill-mn/" +\
-            "start-ovx/show-ovx/kill-ovx/start-fl/show-fl/kill-fl"
-        sys.exit(2)
-
-    if len(sys.argv) < 2:
-        print "\tUsage: ctrl_rule.py init_m/init_r/update_m/update_r"
-        sys.exit()
-
-    if sys.argv[1] == "init_m":
-        initMonitor()
-    elif sys.argv[1] == "init_r":
-        initRoute()
-    elif sys.argv[1] == "update_m":
-        updateMonitor()
-    elif sys.argv[1] == "showMn":
-        showMininet("multiple")
-#    elif sys.argv[1] == "update_r":
-#        updateRoute()
-    else:
-        print "not supported"
+#********************************************************************
+# main
+#********************************************************************
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
@@ -174,11 +184,9 @@ if __name__ == '__main__':
         sys.exit()
 
     if sys.argv[1] == "start-mn":
-        startMininet(MininetTopoScript)
-    elif sys.argv[1] == "show-mn":
-        showMininet(MininetTopoScript)
+        startMininet()
     elif sys.argv[1] == "kill-mn":
-        killMininet(MininetTopoScript)
+        killMininet()
     elif sys.argv[1] == "start-ovx":
         startOVX()
     elif sys.argv[1] == "show-ovx":

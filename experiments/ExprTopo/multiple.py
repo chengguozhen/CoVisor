@@ -45,5 +45,7 @@ if __name__ == '__main__':
     net.addController('c', ip='128.112.93.28') # localhost:127.0.0.1 vm-to-mac:10.0.2.2 server-to-mac:128.112.93.28
     print "\nHosts configured with IPs, switches pointing to OpenVirteX at 128.112.93.28 port 6633\n"
     net.start()
-    CLI(net)
-    net.stop()
+    raw_input("started, press...")
+    #CLI(net)
+    #net.stop()
+    
