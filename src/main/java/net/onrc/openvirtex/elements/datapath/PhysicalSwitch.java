@@ -231,14 +231,15 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     	
     	if (msg.getType() == OFType.FLOW_MOD) {
     		
-    		log.error("---------- New FlowMod ----------");
-    		log.error(msg.toString());
+    		//log.error("---------- New FlowMod ----------");
+    		//log.error(msg.toString());
     		
+    		log.error("start {}", System.nanoTime());
     		PolicyUpdateTable updateTable = policyTree.update((OFFlowMod) msg, ((OVXSwitch) from).getTenantId());
     		
-    		log.error(policyTree.flowTable.toString());
-    		log.error(policyTree.leftChild.flowTable.toString());;
-    		log.error(policyTree.rightChild.flowTable.toString());
+    		//log.error(policyTree.flowTable.toString());
+    		//log.error(policyTree.leftChild.flowTable.toString());;
+    		//log.error(policyTree.rightChild.flowTable.toString());
     		
 			if ((this.channel.isOpen()) && (this.isConnected)) {
 				for (OFFlowMod fm : updateTable.addFlowMods) {
@@ -249,6 +250,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 					this.channel.write(Collections.singletonList(fm));
 				}
 			}
+			log.error("end {}", System.nanoTime());
     	}
     	else if ((this.channel.isOpen()) && (this.isConnected)) {
             this.channel.write(Collections.singletonList(msg));
