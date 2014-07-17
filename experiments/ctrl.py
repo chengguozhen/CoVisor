@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import sys
+import time
 import subprocess
 import random
 from ExprTopo.multiple import *
@@ -13,6 +14,8 @@ for i in range(SWITCH_NUM):
     swDPIDs.append("00:a4:23:05:00:00:00:0%d" % (i+1))
 DefaultRuleNum = 20
 UpdateRuleNum = 5
+CONTROLLER_IP = "localhost"
+ovxctlPy = "%s/OpenVirteX/utils/ovxctl.py" % WorkDir
 
 #********************************************************************
 # mininet: start, kill
@@ -21,18 +24,28 @@ def startMininet():
     topo = MultipleTopo()
     net = Mininet(topo, autoSetMacs=True, xterms=False,
         controller=RemoteController)
-    net.addController('c', ip='128.112.93.28')
+    net.addController('c', ip='127.0.0.1')
     print "\nHosts configured with IPs, " + \
-        "switches pointing to OpenVirteX at 128.112.93.28 port 6633\n"
+        "switches pointing to OpenVirteX at 127.0.0.1 port 6633\n"
     net.start()
     CLI(net)
     net.stop()
 
+def startMininetWithoutCLI():
+    topo = MultipleTopo()
+    net = Mininet(topo, autoSetMacs=True, xterms=False,
+        controller=RemoteController)
+    net.addController('c', ip='127.0.0.1')
+    print "\nHosts configured with IPs, " + \
+        "switches pointing to OpenVirteX at 127.0.0.1 port 6633\n"
+    net.start()
+
 def killMininet():
-    subprocess.call("mn -c", shell=True)
+    print "kill mininet"
+    subprocess.call("mn -c > /dev/null 2>&1", shell=True)
 
 #********************************************************************
-# ovx: start, show, kill
+# ovx: start, show, kill, add controller
 #********************************************************************
 def startOVX():
     with open("ovx.log", "w") as logfile:
@@ -44,8 +57,46 @@ def showOVX():
     subprocess.call("ps ax | grep java | grep -v grep", shell=True)
 
 def killOVX():
+    print "kill ovx"
     subprocess.call("ps ax | grep ovx.sh | grep -v grep | awk '{print $1}' " +
-        "| xargs pkill -TERM -P", shell=True)
+        #"| xargs kill -9 > /dev/null 2>&1", shell=True)
+        "| xargs pkill -TERM -P > /dev/null 2>&1", shell=True)
+
+
+def addMonitorController():
+    print "*****************************"
+    print "***** Monitor Controller ****"
+    print "*****************************"
+    subprocess.call([ovxctlPy, "-n", "createNetwork",
+        "tcp:%s:10000" % CONTROLLER_IP, "10.0.0.0", "16"])
+    for i in xrange(1, SWITCH_NUM + 1):
+        subprocess.call([ovxctlPy, "-n", "createSwitch",
+            "1", "00:00:00:00:00:00:0%d:00" % i])
+        subprocess.call([ovxctlPy, "-n", "createPort",
+            "1", "00:00:00:00:00:00:0%d:00" % i, "1"])
+        subprocess.call([ovxctlPy, "-n", "connectHost",
+            "1", "00:a4:23:05:00:00:00:0%d" % i, "1",
+            "00:00:00:00:0%d:01" % i])
+    subprocess.call([ovxctlPy, "-n", "startNetwork", "1"])
+
+def addRouteController():
+    print "*****************************"
+    print "***** Route Controller ******"
+    print "*****************************"
+    subprocess.call([ovxctlPy, "-n", "createNetwork",
+        "tcp:%s:20000" % CONTROLLER_IP, "10.0.0.0", "16"])
+    for i in xrange(1, SWITCH_NUM + 1):
+        subprocess.call([ovxctlPy, "-n", "createSwitch",
+            "2", "00:00:00:00:00:00:0%d:00" % i])
+        subprocess.call([ovxctlPy, "-n", "createPort",
+            "2", "00:00:00:00:00:00:0%d:00" % i, "2"])
+        subprocess.call([ovxctlPy, "-n", "connectHost",
+            "2", "00:a4:23:05:00:00:00:0%d" % i, "1",
+            "00:00:00:00:0%d:02" % i])
+    subprocess.call([ovxctlPy, "-n", "startNetwork", "2"])
+
+def addPolicy():
+    subprocess.call([ovxctlPy, "-n", "createPolicy", "1+2"])
 
 #********************************************************************
 # floodlight: start, show, kill
@@ -66,8 +117,9 @@ def showFloodlight():
     subprocess.call("ps ax | grep floodlight | grep -v grep", shell=True)
 
 def killFloodlight():
+    print "kill floodlight"
     subprocess.call("ps ax | grep floodlight | grep -v grep | awk '{print $1}' " +
-        "| xargs kill", shell=True)
+        "| xargs kill > /dev/null 2>&1", shell=True)
 
 #********************************************************************
 # rule: monitor, routing
@@ -173,14 +225,37 @@ def updateMonitor():
 
     print "update monitor rules"
 
-
 #********************************************************************
 # main
 #********************************************************************
+def cleanAll():
+    killMininet()
+    killOVX()
+    killFloodlight()
+
+def startAll():
+    startFloodlight()
+    startOVX()
+    startMininetWithoutCLI()
+    time.sleep(5)
+    addMonitorController()
+    addRouteController()
+    addPolicy()
+    
+    raw_input("continue")
+
+    cleanAll()
+
+
+def printHelp():
+    print "\tUsage: ctrl_rule.py"
+    print "\t\tstart-mn kill-mn"
+    print "\t\tstart-ovx show-ovx kill-ovx"
+    print "\t\tstart-fl show-fl kill-fl"
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print "\tUsage: ctrl_rule.py init_m/init_r/update_m/update_r"
+        printHelp()
         sys.exit()
 
     if sys.argv[1] == "start-mn":
@@ -199,8 +274,12 @@ if __name__ == '__main__':
         showFloodlight()
     elif sys.argv[1] == "kill-fl":
         killFloodlight()
+    elif sys.argv[1] == "start":
+        startAll()
+    elif sys.argv[1] == "clean":
+        cleanAll()
     else:
-        print "not supported"
+        printHelp()
 
 
 
