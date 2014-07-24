@@ -71,4 +71,5 @@ if __name__ == '__main__':
     rtopo = RTopo()
     rtopo.parse(sys.argv[1])
     print len(rtopo.switches)
+    rtopo.interactive()
 

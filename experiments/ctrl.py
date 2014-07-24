@@ -3,11 +3,10 @@ import sys
 import time
 import subprocess
 import random
-from ExprTopo.multiple import *
+from ExprTopo.mnrocketfueltopo import *
+
 
 WorkDir = "/home/xinjin/xin-flowmaster"
-MininetTopoScript = "%s/OpenVirteX/experiments/topo-mininet/" % WorkDir + \
-    "multiple.py"
 SWITCH_NUM = 2
 swDPIDs = []
 for i in range(SWITCH_NUM):
@@ -21,7 +20,7 @@ ovxctlPy = "%s/OpenVirteX/utils/ovxctl.py" % WorkDir
 # mininet: start, kill
 #********************************************************************
 def startMininet():
-    topo = MultipleTopo()
+    topo = MNTopo()
     net = Mininet(topo, autoSetMacs=True, xterms=False,
         controller=RemoteController)
     net.addController('c', ip='127.0.0.1')
@@ -32,7 +31,7 @@ def startMininet():
     net.stop()
 
 def startMininetWithoutCLI():
-    topo = MultipleTopo()
+    topo = MNTopo()
     net = Mininet(topo, autoSetMacs=True, xterms=False,
         controller=RemoteController)
     net.addController('c', ip='127.0.0.1')
