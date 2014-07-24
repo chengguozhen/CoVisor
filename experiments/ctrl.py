@@ -3,7 +3,8 @@ import sys
 import time
 import subprocess
 import random
-from ExprTopo.mnrocketfueltopo import *
+from ExprTopo.rftopo import *
+from apps import *
 
 
 WorkDir = "/home/xinjin/xin-flowmaster"
@@ -32,6 +33,8 @@ def startMininet():
 
 def startMininetWithoutCLI():
     topo = MNTopo()
+    app = RoutingApp(topo, 'classbench/acl1k')
+    app.genRules()
     net = Mininet(topo, autoSetMacs=True, xterms=False,
         controller=RemoteController)
     net.addController('c', ip='127.0.0.1')
@@ -274,6 +277,7 @@ if __name__ == '__main__':
     elif sys.argv[1] == "kill-fl":
         killFloodlight()
     elif sys.argv[1] == "start":
+        startMininetWithoutCLI()
         startAll()
     elif sys.argv[1] == "clean":
         cleanAll()
