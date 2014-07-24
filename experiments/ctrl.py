@@ -33,6 +33,7 @@ def startMininet():
 
 def startMininetWithoutCLI():
     topo = MNTopo()
+    app = FirewallApp(topo, 'classbench/test')
     app = RoutingApp(topo, 'classbench/acl1k')
     app.genRules()
     net = Mininet(topo, autoSetMacs=True, xterms=False,
