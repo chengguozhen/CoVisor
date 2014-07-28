@@ -1,7 +1,5 @@
 package edu.princeton.cs.policy;
 
-import java.util.List;
-
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
@@ -10,8 +8,6 @@ import org.apache.logging.log4j.Logger;
 
 import com.googlecode.concurrenttrees.common.Iterables;
 import com.googlecode.concurrenttrees.common.PrettyPrinter;
-import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
-import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharArrayNodeFactory;
 import com.googlecode.concurrenttrees.radix.node.util.PrettyPrintable;
 

@@ -21,7 +21,8 @@ public final class BasePolicyTests {
         //suite.addTest(ParallelCompositionTest.suite());
         //suite.addTest(SequentialCompositionTest.suite());
         //suite.addTest(PolicyTreeTest.suite());
-        suite.addTest(PlayGroundTest.suite());
+        //suite.addTest(PlayGroundTest.suite());
+        suite.addTest(ExactMatchTest.suite());
         // $JUnit-END$
         return suite;
     }
