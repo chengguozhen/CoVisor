@@ -117,7 +117,7 @@ public class OpenVirteXController implements Runnable {
         initVendorMessages();
         PhysicalNetwork.getInstance().boot();
 
-        //this.startDatabase();
+        this.startDatabase();
         this.startServer();
 
         try {
