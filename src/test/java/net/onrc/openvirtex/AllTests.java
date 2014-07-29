@@ -39,7 +39,7 @@ public final class AllTests {
     public static Test suite() {
         final TestSuite suite = new TestSuite(AllTests.class.getName());
         // $JUnit-BEGIN$
-        suite.addTest(BasePolicyTests.suite());
+        //suite.addTest(BasePolicyTests.suite());
         /*suite.addTest(BaseCtrlTests.suite());
         suite.addTest(BaseMapTests.suite());
         suite.addTest(BaseIPTests.suite());
