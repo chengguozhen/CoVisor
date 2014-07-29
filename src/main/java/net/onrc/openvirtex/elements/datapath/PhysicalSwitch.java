@@ -50,6 +50,7 @@ import edu.princeton.cs.policy.PolicyUpdateTable;
  */
 public class PhysicalSwitch extends Switch<PhysicalPort> {
 
+	public static Boolean IsCompositionOn = false;
     private static Logger log = LogManager.getLogger(PhysicalSwitch.class.getName());
     // The Xid mapper
     private final XidTranslator<OVXSwitch> translator;
@@ -229,36 +230,38 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     @Override
     public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
     	
-    	if (msg.getType() == OFType.FLOW_MOD) {
-    		
-    		//log.error("---------- New FlowMod ----------");
-    		//log.error(msg.toString());
-    		
-    		log.error("start {}", System.nanoTime());
-    		PolicyUpdateTable updateTable = policyTree.update((OFFlowMod) msg, ((OVXSwitch) from).getTenantId());
-    		
-    		//log.error(policyTree.flowTable.toString());
-    		//log.error(policyTree.leftChild.flowTable.toString());;
-    		//log.error(policyTree.rightChild.flowTable.toString());
-    		
-			if ((this.channel.isOpen()) && (this.isConnected)) {
-				for (OFFlowMod fm : updateTable.addFlowMods) {
-					this.channel.write(Collections.singletonList(fm));
+		if (PhysicalSwitch.IsCompositionOn) {
+			if (msg.getType() == OFType.FLOW_MOD) {
+				// log.error("---------- New FlowMod ----------");
+				// log.error(msg.toString());
+
+				log.error("start {}", System.nanoTime());
+				PolicyUpdateTable updateTable = policyTree.update(
+						(OFFlowMod) msg, ((OVXSwitch) from).getTenantId());
+
+				// log.error(policyTree.flowTable.toString());
+				// log.error(policyTree.leftChild.flowTable.toString());;
+				// log.error(policyTree.rightChild.flowTable.toString());
+
+				if ((this.channel.isOpen()) && (this.isConnected)) {
+					for (OFFlowMod fm : updateTable.addFlowMods) {
+						this.channel.write(Collections.singletonList(fm));
+					}
+					for (OFFlowMod fm : updateTable.deleteFlowMods) {
+						fm.setCommand(OFFlowMod.OFPFC_DELETE);
+						this.channel.write(Collections.singletonList(fm));
+					}
 				}
-				for (OFFlowMod fm : updateTable.deleteFlowMods) {
-					fm.setCommand(OFFlowMod.OFPFC_DELETE);
-					this.channel.write(Collections.singletonList(fm));
-				}
+				log.error("end {}", System.nanoTime());
+			} else if ((this.channel.isOpen()) && (this.isConnected)) {
+				this.channel.write(Collections.singletonList(msg));
 			}
-			log.error("end {}", System.nanoTime());
-    	}
-    	else if ((this.channel.isOpen()) && (this.isConnected)) {
-            this.channel.write(Collections.singletonList(msg));
-        }
-    	
-        /*if ((this.channel.isOpen()) && (this.isConnected)) {
-            this.channel.write(Collections.singletonList(msg));
-        }*/
+		} else {
+
+			if ((this.channel.isOpen()) && (this.isConnected)) {
+				this.channel.write(Collections.singletonList(msg));
+			}
+		}
     }
 
     /*

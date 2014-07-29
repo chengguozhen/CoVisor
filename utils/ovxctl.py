@@ -574,11 +574,48 @@ def pa_createPolicy(args, cmd):
 
 def do_createPolicy(gopts, opts, args):
     if len(args) != 1:
-        print ("connectLink : Must specify a policy") 
+        print ("createPolicy : Must specify a policy") 
         sys.exit()
     req = { "policy" : args[0] }
     result = connect(gopts, "tenant", "createPolicy", data=req, passwd=getPasswd(gopts))
     print "Policy '%s' has been created" % args[0] 
+
+def pa_startComposition(args, cmd):
+    usage = "%s" % USAGE.format(cmd)
+    (sdesc, ldesc) = DESCS[cmd]
+    parser = OptionParser(usage=usage, description=ldesc)
+    return parser.parse_args(args)
+
+def do_startComposition(gopts, opts, args):
+    req = {}
+    result = connect(gopts, "tenant", "startComposition", data=req, passwd=getPasswd(gopts))
+    print "Composition has been started" 
+
+def pa_stopComposition(args, cmd):
+    usage = "%s" % USAGE.format(cmd)
+    (sdesc, ldesc) = DESCS[cmd]
+    parser = OptionParser(usage=usage, description=ldesc)
+    return parser.parse_args(args)
+
+def do_stopComposition(gopts, opts, args):
+    req = {}
+    result = connect(gopts, "tenant", "stopComposition", data=req, passwd=getPasswd(gopts))
+    print "Composition has been stopped" 
+
+def pa_setComposeAlgo(args, cmd):
+    usage = "%s <algo>" % USAGE.format(cmd)
+    (sdesc, ldesc) = DESCS[cmd]
+    parser = OptionParser(usage=usage, description=ldesc)
+    return parser.parse_args(args)
+
+def do_setComposeAlgo(gopts, opts, args):
+    if len(args) != 1:
+        print ("setComposeAlgo : Must specify an algorithm") 
+        sys.exit()
+    req = { "algo" : args[0] }
+    result = connect(gopts, "tenant", "setComposeAlgo", data=req, passwd=getPasswd(gopts))
+    print "Algorithm '%s' has been set" % args[0] 
+
 
 
 def pa_help(args, cmd):
@@ -685,6 +722,9 @@ CMDS = {
     'getVirtualTopology': (pa_getVirtualTopology, do_getVirtualTopology),
 
     'createPolicy': (pa_createPolicy, do_createPolicy),
+    'startComposition': (pa_startComposition, do_startComposition),
+    'stopComposition': (pa_stopComposition, do_stopComposition),
+    'setComposeAlgo': (pa_setComposeAlgo, do_setComposeAlgo),
     
     'help' : (pa_help, do_help)
 }
@@ -796,7 +836,16 @@ DESCS = {
                                "\nExample: getVirtualTopology 1")),
     'createPolicy' : ("Create controller policy",
                                 ("Create controller policy. Must specify a policy.",
-                                "\nExample: createPolicy 1+2"))
+                                "\nExample: createPolicy 1+2")),
+    'startComposition' : ("Start composition",
+                                ("Start composition.",
+                                "\nExample: startComposition")),
+    'stopComposition' : ("Stop composition",
+                                ("Stop composition.",
+                                "\nExample: stopComposition")),
+    'setComposeAlgo' : ("Set composition algorihm",
+                                ("Set composition algorithm. Must specify an algorithm.",
+                                "\nExample: setComposeAlgo strawman/incremental"))
 }
 
 USAGE="%prog {}"
