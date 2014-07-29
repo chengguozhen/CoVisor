@@ -3,7 +3,6 @@ package edu.princeton.cs.policy.ofwrapper;
 import java.util.Arrays;
 
 import org.openflow.protocol.OFMatch;
-import org.openflow.util.HexString;
 
 public class OFMatchWrapper {
 	

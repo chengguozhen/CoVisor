@@ -34,7 +34,7 @@ public class CreatePolicy extends ApiHandler<Map<String, Object>> {
 				: map.getPhysicalSwitchMap().entrySet()) {
 			
 			PolicyTree policyTree = new PolicyTree();
-			policyTree.operator = PolicyOperator.Parallel;
+			policyTree.operator = PolicyOperator.Sequential;
 			
 			PhysicalSwitch sw = entry.getKey();
 			for (Entry<Integer, OVXSwitch> tenantSw : entry.getValue().entrySet()) {
