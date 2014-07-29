@@ -307,7 +307,7 @@ public class PolicyTree {
 	}
 
 	// strawman solution: calculate a new cross product
-	private PolicyUpdateTable updateSequentialStrawman(OFFlowMod fm,
+	/*private PolicyUpdateTable updateSequentialStrawman(OFFlowMod fm,
 			Integer tenantId) {
 
 		this.leftChild.update(fm, tenantId);
@@ -330,6 +330,6 @@ public class PolicyTree {
 		}
 
 		return updateTable;
-	}
+	}*/
 	
 }

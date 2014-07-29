@@ -6,6 +6,8 @@ echo ""
 
 ./ovxctl.py -n createNetwork tcp:192.168.56.101:10000 123.0.0.0 16
 
+./ovxctl.py -n createNetwork tcp:localhost:10000 10.0.0.0 16
+
 ./ovxctl.py -n createSwitch 1  00:00:00:00:00:00:01:00
 ./ovxctl.py -n createSwitch 1  00:00:00:00:00:00:02:00
 ./ovxctl.py -n createSwitch 1  00:00:00:00:00:00:03:00

@@ -31,11 +31,14 @@ import net.onrc.openvirtex.api.service.handlers.tenant.RemoveOVXNetwork;
 import net.onrc.openvirtex.api.service.handlers.tenant.RemoveOVXPort;
 import net.onrc.openvirtex.api.service.handlers.tenant.RemoveOVXSwitch;
 import net.onrc.openvirtex.api.service.handlers.tenant.DisconnectOVXRoute;
+import net.onrc.openvirtex.api.service.handlers.tenant.SetComposeAlgo;
 import net.onrc.openvirtex.api.service.handlers.tenant.SetOVXBigSwitchRouting;
 import net.onrc.openvirtex.api.service.handlers.tenant.SetOVXLinkPath;
+import net.onrc.openvirtex.api.service.handlers.tenant.StartComposition;
 import net.onrc.openvirtex.api.service.handlers.tenant.StartOVXNetwork;
 import net.onrc.openvirtex.api.service.handlers.tenant.StartOVXPort;
 import net.onrc.openvirtex.api.service.handlers.tenant.StartOVXSwitch;
+import net.onrc.openvirtex.api.service.handlers.tenant.StopComposition;
 import net.onrc.openvirtex.api.service.handlers.tenant.StopOVXNetwork;
 import net.onrc.openvirtex.api.service.handlers.tenant.StopOVXPort;
 import net.onrc.openvirtex.api.service.handlers.tenant.StopOVXSwitch;
@@ -175,6 +178,9 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
             this.put("stopPort", new StopOVXPort());
             
             this.put("createPolicy", new CreatePolicy());
+            this.put("startComposition", new StartComposition());
+            this.put("stopComposition", new StopComposition());
+            this.put("setComposeAlgo", new SetComposeAlgo());
         }
     };
 

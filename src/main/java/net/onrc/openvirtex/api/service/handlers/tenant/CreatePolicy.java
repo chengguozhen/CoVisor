@@ -20,7 +20,7 @@ import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 public class CreatePolicy extends ApiHandler<Map<String, Object>> {
 
 	public static int policyCount = 0;
-	private Logger log = LogManager.getLogger(CreateOVXSwitch.class.getName());
+	private Logger log = LogManager.getLogger(CreatePolicy.class.getName());
 	
 	@Override
 	public JSONRPC2Response process(final Map<String, Object> params) {
