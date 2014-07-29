@@ -229,7 +229,8 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 
     @Override
     public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
-    	
+    	log.error("---------- New FlowMod Out ----------");
+		log.error(msg.toString());
 		if (PhysicalSwitch.IsCompositionOn) {
 			if (msg.getType() == OFType.FLOW_MOD) {
 				// log.error("---------- New FlowMod ----------");
@@ -257,7 +258,8 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 				this.channel.write(Collections.singletonList(msg));
 			}
 		} else {
-
+			log.error("---------- New FlowMod In ----------");
+			log.error(msg.toString());
 			if ((this.channel.isOpen()) && (this.isConnected)) {
 				this.channel.write(Collections.singletonList(msg));
 			}
