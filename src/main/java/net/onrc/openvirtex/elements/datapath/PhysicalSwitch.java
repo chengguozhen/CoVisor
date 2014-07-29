@@ -257,7 +257,8 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 				this.channel.write(Collections.singletonList(msg));
 			}
 		} else {
-
+			log.error("---------- New FlowMod ----------");
+			log.error(msg.toString());
 			if ((this.channel.isOpen()) && (this.isConnected)) {
 				this.channel.write(Collections.singletonList(msg));
 			}
