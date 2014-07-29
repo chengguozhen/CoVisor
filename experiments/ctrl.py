@@ -39,7 +39,7 @@ def startMininetWithoutCLI():
     print "\nHosts configured with IPs, " + \
         "switches pointing to OpenVirteX at 127.0.0.1 port 6633\n"
     net.start()
-    return topo
+    return (topo, net)
 
 def killMininet():
     print "kill mininet"
@@ -60,27 +60,70 @@ def showOVX():
 def killOVX():
     print "kill ovx"
     subprocess.call("ps ax | grep ovx.sh | grep -v grep | awk '{print $1}' " +
-        #"| xargs kill -9 > /dev/null 2>&1", shell=True)
-        "| xargs pkill -TERM -P > /dev/null 2>&1", shell=True)
+        #"| xargs kill > /dev/null 2>&1", shell=True)
+        "| xargs kill -9 > /dev/null 2>&1", shell=True)
+        #"| xargs pkill -TERM -P > /dev/null 2>&1", shell=True)
+    subprocess.call("ps ax | grep OpenVirteX | grep -v grep | awk '{print $1}' " +
+        "| xargs kill -9 > /dev/null 2>&1", shell=True)
 
 
 def addController1(topo):
     print "*****************************"
     print "******** Controller 1 *******"
     print "*****************************"
-    subprocess.call([ovxctlPy, "-n", "createNetwork",
-        "tcp:%s:10000" % CONTROLLER_IP, "10.0.0.0", "16"])
+    cmd = "%s -n createNetwork tcp:%s:10000 10.0.0.0 16" % (ovxctlPy,
+        CONTROLLER_IP)
+    subprocess.call(cmd, shell=True)
     for sw in topo.graph.nodes():
-        subprocess.call([ovxctlPy, "-n", "createSwitch",
-            "1", topo.graph.node[sw]['dpid'])
-        for i in range(len(topo.graph.edge[sw])):
-            subprocess.call([ovxctlPy, "-n", "createPort",
-                "1", topo.graph.node[sw]['dpid'], "%d" % (i+2])
-        subprocess.call([ovxctlPy, "-n", "connectHost",
-            "1", topo.graph.node[sw]['dpid'], "1",
-            self.graph.node[switch]['dpid'][4:-1] + '1'])
-    subprocess.call([ovxctlPy, "-n", "startNetwork", "1"])
+        cmd = "%s -n createSwitch 1 %s" % (ovxctlPy,
+            topo.graph.node[sw]['dpid'])
+        subprocess.call(cmd, shell=True)
+        for i in range(len(topo.graph.edge[sw])+1):
+            cmd = "%s -n createPort 1 %s %d" % (ovxctlPy,
+                topo.graph.node[sw]['dpid'], i+1)
+            subprocess.call(cmd, shell=True)
+    for edge in topo.graph.edges():
+        srcMac = "00a42305" + topo.graph.node[edge[0]]['dpid'][-10:-2]
+        srcPort = topo.graph.edge[edge[0]][edge[1]][edge[0]]
+        dstMac = "00a42305" + topo.graph.node[edge[1]]['dpid'][-10:-2]
+        dstPort = topo.graph.edge[edge[0]][edge[1]][edge[1]]
+        cmd = "%s -n connectLink 1 %s %d %s %d spf 1" % (ovxctlPy, srcMac,
+            srcPort, dstMac, dstPort)
+        subprocess.call(cmd, shell=True)
+    cmd = "%s -n startNetwork 1" % ovxctlPy
+    subprocess.call(cmd, shell=True)
 
+def addController2(topo):
+    print "*****************************"
+    print "******** Controller 2 *******"
+    print "*****************************"
+    cmd = "%s -n createNetwork tcp:%s:20000 10.0.0.0 16" % (ovxctlPy,
+        CONTROLLER_IP)
+    subprocess.call(cmd, shell=True)
+    for sw in topo.graph.nodes():
+        cmd = "%s -n createSwitch 2 %s" % (ovxctlPy,
+            topo.graph.node[sw]['dpid'])
+        subprocess.call(cmd, shell=True)
+        for i in range(len(topo.graph.edge[sw])+1):
+            cmd = "%s -n createPort 2 %s %d" % (ovxctlPy,
+                topo.graph.node[sw]['dpid'], i+1)
+            subprocess.call(cmd, shell=True)
+        rawHostMac = topo.graph.node[sw]['dpid'][4:-1] + '1'
+        hostMac = ':'.join(a+b for a,b in zip(rawHostMac[::2], rawHostMac[1::2]))
+        cmd = "%s -n connectHost 2 %s %d %s" % (ovxctlPy,
+            "00a42305" + topo.graph.node[sw]['dpid'][-10:-2], 1,
+            hostMac)
+        subprocess.call(cmd, shell=True)
+    for edge in topo.graph.edges():
+        srcMac = "00a42305" + topo.graph.node[edge[0]]['dpid'][-10:-2]
+        srcPort = topo.graph.edge[edge[0]][edge[1]][edge[0]]
+        dstMac = "00a42305" + topo.graph.node[edge[1]]['dpid'][-10:-2]
+        dstPort = topo.graph.edge[edge[0]][edge[1]][edge[1]]
+        cmd = "%s -n connectLink 2 %s %d %s %d spf 1" % (ovxctlPy, srcMac,
+            srcPort, dstMac, dstPort)
+        subprocess.call(cmd, shell=True)
+    cmd = "%s -n startNetwork 2" % ovxctlPy
+    subprocess.call(cmd, shell=True)
 
 def addMonitorController():
     print "*****************************"
@@ -138,7 +181,7 @@ def showFloodlight():
 def killFloodlight():
     print "kill floodlight"
     subprocess.call("ps ax | grep floodlight | grep -v grep | awk '{print $1}' " +
-        "| xargs kill > /dev/null 2>&1", shell=True)
+        "| xargs kill -9 > /dev/null 2>&1", shell=True)
 
 #********************************************************************
 # rule: monitor, routing
@@ -249,25 +292,35 @@ def updateMonitor():
 #********************************************************************
 def cleanAll():
     killMininet()
-    killOVX()
     killFloodlight()
+    killOVX()
+    showOVX()
+    showFloodlight()
 
 def startAll():
     startFloodlight()
     startOVX()
-    topo = startMininetWithoutCLI()
+    (topo, net) = startMininetWithoutCLI()
     time.sleep(5)
     addController1(topo)
-    raw_input("continue")
-    addController2(topo)
+    #addController2(topo)
     addPolicy()
-
     app = FirewallApp(topo, 'classbench/test')
-    app = RoutingApp(topo, 'classbench/acl1k')
+    app.genRules()
+    app.installRules()
+    CLI(net)
+    app = RoutingApp(topo, 'classbench/test')
     
     raw_input("continue")
 
     cleanAll()
+
+def testApp():
+    topo = MNTopo()
+    app = FirewallApp(topo, 'classbench/test')
+    app = RoutingApp(topo, 'classbench/test')
+    app.genRules()
+    #app.installRules()
 
 
 def printHelp():
@@ -301,6 +354,8 @@ if __name__ == '__main__':
         startAll()
     elif sys.argv[1] == "clean":
         cleanAll()
+    elif sys.argv[1] == "test-app":
+        testApp()
     else:
         printHelp()
 

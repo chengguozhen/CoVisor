@@ -9,7 +9,7 @@ class MNTopo(Topo):
 
     def __init__(self, enable_all = True,
         topoFile = "/home/xinjin/xin-flowmaster/" + \
-        "OpenVirteX/experiments/ExprTopo/Rocketfuel/internet2/weights.intra"):
+        "OpenVirteX/experiments/ExprTopo/Rocketfuel/test/weights.intra"):
 
         "Create Rocketfuel topology for mininet."
 
@@ -40,12 +40,14 @@ class MNTopo(Topo):
         # Add core switches
         for idx, switch in enumerate(self.graph.nodes()):
             index = idx + 1
-            if index < 10:
-                self.graph.node[switch]['dpid'] = '0000000000000%d00' % index
-            elif index < 100:
-                self.graph.node[switch]['dpid'] = '000000000000%d00' % index
-            elif index < 1000:
-                self.graph.node[switch]['dpid'] = '00000000000%d00' % index
+            self.graph.node[switch]['ridx'] = index
+            if index < 16:
+                self.graph.node[switch]['dpid'] = '0000000000000%s00' % format(index, 'x')
+            elif index < 16*16:
+                self.graph.node[switch]['dpid'] = '000000000000%s00' % format(index, 'x')
+            elif index < 16*16*16:
+                self.graph.node[switch]['dpid'] = '00000000000%s00' % format(index, 'x')
+            self.graph.node[switch]['vdpid'] = "00a42305" + self.graph.node[switch]['dpid'][-10:-2]
             self.addSwitch(switch, dpid=self.graph.node[switch]['dpid'])
 
         # Add hosts and connect them to their core switch
