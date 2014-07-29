@@ -33,15 +33,13 @@ def startMininet():
 
 def startMininetWithoutCLI():
     topo = MNTopo()
-    app = FirewallApp(topo, 'classbench/test')
-    app = RoutingApp(topo, 'classbench/acl1k')
-    app.genRules()
     net = Mininet(topo, autoSetMacs=True, xterms=False,
         controller=RemoteController)
     net.addController('c', ip='127.0.0.1')
     print "\nHosts configured with IPs, " + \
         "switches pointing to OpenVirteX at 127.0.0.1 port 6633\n"
     net.start()
+    return topo
 
 def killMininet():
     print "kill mininet"
@@ -64,6 +62,24 @@ def killOVX():
     subprocess.call("ps ax | grep ovx.sh | grep -v grep | awk '{print $1}' " +
         #"| xargs kill -9 > /dev/null 2>&1", shell=True)
         "| xargs pkill -TERM -P > /dev/null 2>&1", shell=True)
+
+
+def addController1(topo):
+    print "*****************************"
+    print "******** Controller 1 *******"
+    print "*****************************"
+    subprocess.call([ovxctlPy, "-n", "createNetwork",
+        "tcp:%s:10000" % CONTROLLER_IP, "10.0.0.0", "16"])
+    for sw in topo.graph.nodes():
+        subprocess.call([ovxctlPy, "-n", "createSwitch",
+            "1", topo.graph.node[sw]['dpid'])
+        for i in range(len(topo.graph.edge[sw])):
+            subprocess.call([ovxctlPy, "-n", "createPort",
+                "1", topo.graph.node[sw]['dpid'], "%d" % (i+2])
+        subprocess.call([ovxctlPy, "-n", "connectHost",
+            "1", topo.graph.node[sw]['dpid'], "1",
+            self.graph.node[switch]['dpid'][4:-1] + '1'])
+    subprocess.call([ovxctlPy, "-n", "startNetwork", "1"])
 
 
 def addMonitorController():
@@ -239,11 +255,15 @@ def cleanAll():
 def startAll():
     startFloodlight()
     startOVX()
-    startMininetWithoutCLI()
+    topo = startMininetWithoutCLI()
     time.sleep(5)
-    addMonitorController()
-    addRouteController()
+    addController1(topo)
+    raw_input("continue")
+    addController2(topo)
     addPolicy()
+
+    app = FirewallApp(topo, 'classbench/test')
+    app = RoutingApp(topo, 'classbench/acl1k')
     
     raw_input("continue")
 
@@ -278,7 +298,6 @@ if __name__ == '__main__':
     elif sys.argv[1] == "kill-fl":
         killFloodlight()
     elif sys.argv[1] == "start":
-        startMininetWithoutCLI()
         startAll()
     elif sys.argv[1] == "clean":
         cleanAll()

@@ -25,10 +25,10 @@ class MNTopo(Topo):
             if not self.graph.has_edge(temp[0], temp[1]):
                 self.graph.add_edge(temp[0], temp[1], weight = float(temp[2]))
                 if not 'ports' in self.graph.node[temp[0]]:
-                    self.graph.node[temp[0]]['ports'] = 4
+                    self.graph.node[temp[0]]['ports'] = 1
                 self.graph.node[temp[0]]['ports'] += 1
                 if not 'ports' in self.graph.node[temp[1]]:
-                    self.graph.node[temp[1]]['ports'] = 4
+                    self.graph.node[temp[1]]['ports'] = 1
                 self.graph.node[temp[1]]['ports'] += 1
                 p0 = self.graph.node[temp[0]]['ports']
                 self.graph.edge[temp[0]][temp[1]][temp[0]] = p0
