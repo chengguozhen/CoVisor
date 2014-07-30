@@ -63,10 +63,11 @@ class RoutingApp():
                         self.rules[name] = rule
                         self.ruleCount += 1
                     prev = sw
+        print len(self.rules)
 
     def installRules(self):
         for rule in self.rules.values():
-            print rule
+            #print rule
             cmd = "curl -d '%s' http://localhost:20001/wm/staticflowentrypusher/json" % rule
             subprocess.call(cmd, shell=True)
             print ""
@@ -80,6 +81,9 @@ class FirewallApp():
         self.graph = topo.graph
         self.rules = {}
         self.ruleCount = 0
+
+        self.addRules = {}
+        self.addRuleCount = 5
 
         random.seed(1)
         self.metaRules = []
@@ -118,17 +122,31 @@ class FirewallApp():
         for switch in self.graph.nodes():
             ridx = self.graph.node[switch]['ridx'] 
             vdpid = self.graph.node[switch]['vdpid']
-            for index, metaRule in enumerate(self.metaRules):
+            for index, metaRule in enumerate(self.metaRules[:-self.addRuleCount]):
                 name = "FWAppS%dR%d" % (ridx, index)
                 rule = '{"switch":"%s", ' % vdpid + \
                             '"name":"%s", ' % name + \
                             metaRule
                 self.rules[name] = rule
- 
+            for index, metaRule in enumerate(self.metaRules[-self.addRuleCount:]):
+                name = "FWAppS%dR%d" % (ridx, index + len(self.metaRules) - self.addRuleCount)
+                rule = '{"switch":"%s", ' % vdpid + \
+                            '"name":"%s", ' % name + \
+                            metaRule
+                self.addRules[name] = rule
+
     def installRules(self):
         for rule in self.rules.values():
-            print rule
+            #print rule
             cmd = "curl -d '%s' http://localhost:10001/wm/staticflowentrypusher/json" % rule
             subprocess.call(cmd, shell=True)
             print ""
+
+    def updateRules(self):
+        for rule in self.addRules.values():
+            #print rule
+            cmd = "curl -d '%s' http://localhost:10001/wm/staticflowentrypusher/json" % rule
+            subprocess.call(cmd, shell=True)
+            print ""
+
 

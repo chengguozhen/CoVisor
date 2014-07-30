@@ -234,7 +234,8 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 				// log.error("---------- New FlowMod ----------");
 				// log.error(msg.toString());
 
-				log.info("MagicTimestamp\t1\t{}", System.nanoTime());
+                long startTime = System.nanoTime();
+				//log.info("MagicTimestamp\t1\t{}", System.nanoTime());
 				PolicyUpdateTable updateTable = policyTree.update(
 						(OFFlowMod) msg, ((OVXSwitch) from).getTenantId());
 
@@ -251,7 +252,13 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 						this.channel.write(Collections.singletonList(fm));
 					}
 				}
-				log.info("MagicTimestamp\t2\t{}", System.nanoTime());
+                long elapseTime = System.nanoTime() - startTime;
+				log.info("MagicTimestamp\t2\t{}\t{}\t{}\t{}\t{}",
+                    elapseTime,
+                    updateTable.addFlowMods.size(),
+                    updateTable.deleteFlowMods.size(),
+                    policyTree.leftChild.flowTable.getFlowMods().size(),
+                    policyTree.rightChild.flowTable.getFlowMods().size());
 			} else if ((this.channel.isOpen()) && (this.isConnected)) {
 				this.channel.write(Collections.singletonList(msg));
 			}

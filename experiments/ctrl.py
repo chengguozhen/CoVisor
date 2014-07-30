@@ -8,20 +8,28 @@ from apps import *
 
 
 WorkDir = "/home/xinjin/xin-flowmaster"
-SWITCH_NUM = 2
-swDPIDs = []
-for i in range(SWITCH_NUM):
-    swDPIDs.append("00:a4:23:05:00:00:00:0%d" % (i+1))
-DefaultRuleNum = 20
-UpdateRuleNum = 5
+#SWITCH_NUM = 2
+#swDPIDs = []
+#for i in range(SWITCH_NUM):
+#    swDPIDs.append("00:a4:23:05:00:00:00:0%d" % (i+1))
+#DefaultRuleNum = 20
+#UpdateRuleNum = 5
 CONTROLLER_IP = "localhost"
 ovxctlPy = "%s/OpenVirteX/utils/ovxctl.py" % WorkDir
+
+
+topoFile = "%s/OpenVirteX/experiments/ExprTopo/Rocketfuel/" % WorkDir + \
+    "internet2/weights.intra"
+    #"test/weights.intra"
+fwFile = "%s/OpenVirteX/experiments/classbench/" % WorkDir + \
+    "acl1k"
+    #"test"
 
 #********************************************************************
 # mininet: start, kill
 #********************************************************************
 def startMininet():
-    topo = MNTopo()
+    topo = MNTopo(topoFile=topoFile)
     net = Mininet(topo, autoSetMacs=True, xterms=False,
         controller=RemoteController)
     net.addController('c', ip='127.0.0.1')
@@ -32,7 +40,7 @@ def startMininet():
     net.stop()
 
 def startMininetWithoutCLI():
-    topo = MNTopo()
+    topo = MNTopo(topoFile=topoFile)
     net = Mininet(topo, autoSetMacs=True, xterms=False,
         controller=RemoteController)
     net.addController('c', ip='127.0.0.1')
@@ -163,106 +171,135 @@ def killFloodlight():
 #********************************************************************
 # rule: monitor, routing
 #********************************************************************
-def generateDefaultRule(swDPID):
-    rule = '{"switch":"%s", ' % swDPID
-    rule = rule + '"name":"default0", "priority":"0", ' + \
-        '"active":"true", "actions":""}'
-    return rule
+#def generateDefaultRule(swDPID):
+#    rule = '{"switch":"%s", ' % swDPID
+#    rule = rule + '"name":"default0", "priority":"0", ' + \
+#        '"active":"true", "actions":""}'
+#    return rule
+#
+#def generateMonitorRule(swDPID, name):
+#    rule = '{"switch":"%s", ' % swDPID
+#    rule = rule + '"name":"%s", ' % name
+#    rule = rule + '"priority":"%d", ' % random.randint(1, 60000)
+#    rule = rule + '"ether-type":"2048", '
+#    rule = rule + '"src-ip":"%d.%d.%d.%d/%d", ' % (
+#        random.randint(0, 256), random.randint(0, 256),
+#        random.randint(0, 256), random.randint(0, 256),
+#        random.randint(0, 32))
+#    rule = rule + '"active":"true", "actions":""}' 
+#    return rule
+#
+#def generateMonitorRuleDelete(swDPID, name):
+#    #rule = '{"switch":"%s", ' % swDPID
+#    #rule = rule + '"name":"%s"}' % name
+#    rule = '{"name":"%s"}' % name
+#    return rule
+# 
+#def generateRouteRule(swDPID, name):
+#    rule = '{"switch":"%s", ' % swDPID
+#    rule = rule + '"name":"%s", ' % name
+#    rule = rule + '"priority":"%d", ' % random.randint(1, 60000)
+#    rule = rule + '"ether-type":"2048", '
+#    rule = rule + '"dst-ip":"%d.%d.%d.%d/%d", ' % (
+#        random.randint(0, 256), random.randint(0, 256),
+#        random.randint(0, 256), random.randint(0, 256),
+#        random.randint(0, 32))
+#    rule = rule + '"active":"true", "actions":"output=1"}' 
+#    return rule
+#
+#def deleteRules(rules, app):
+#    for rule in rules:
+#        print rule
+#        if app == "m":
+#            subprocess.call(["curl", "-X", "DELETE", "-d", rule,
+#                "http://localhost:10001/wm/staticflowentrypusher/json"])
+#        else:
+#            subprocess.call(["curl", "-X", "DELETE", "-d", rule,
+#                "http://localhost:20001/wm/staticflowentrypusher/json"])
+#        print ""
+#
+#def installRules(rules, app):
+#    for rule in rules:
+#        print rule
+#        if app == "m":
+#            subprocess.call(["curl", "-d", rule,
+#                "http://localhost:10001/wm/staticflowentrypusher/json"])
+#        else:
+#            subprocess.call(["curl", "-d", rule,
+#                "http://localhost:20001/wm/staticflowentrypusher/json"])
+#        print ""
+#
+#def initMonitor():
+#    defaultRules = []
+#    for swDPID in swDPIDs:
+#        defaultRules.append(generateDefaultRule(swDPID))
+#    installRules(defaultRules, "m")
+#
+#    monitorRules = []
+#    for swDPID in swDPIDs:
+#        for i in range(DefaultRuleNum):
+#            monitorRules.append(generateMonitorRule(swDPID,
+#                "%sMonitor%d" % (swDPID[-2:], i)))
+#    installRules(monitorRules, "m")
+#
+#    print "init monitor rules"
+#
+#def initRoute():
+#    defaultRules = []
+#    for swDPID in swDPIDs:
+#        defaultRules.append(generateDefaultRule(swDPID))
+#    installRules(defaultRules, "r")
+#
+#    routeRules = []
+#    for swDPID in swDPIDs:
+#        for i in range(DefaultRuleNum):
+#            routeRules.append(generateRouteRule(swDPID,
+#                "%sRoute%d" % (swDPID[-2:], i)))
+#    installRules(routeRules, "r")
+#
+#    print "init route rules"
+#
+#def updateMonitor():
+#    monitorRules = []
+#    for swDPID in swDPIDs:
+#        for i in range(UpdateRuleNum):
+#            monitorRules.append(generateMonitorRule(swDPID,
+#                "%sMonitor%d" % (swDPID[-2:], DefaultRuleNum + i)))
+#            #monitorRules.append(generateMonitorRuleDelete(swDPID,
+#            #    "%sMonitor%d" % (swDPID[-2:], i)))
+#    installRules(monitorRules, "m")
+#    #deleteRules(monitorRules, "m")
+#
+#    print "update monitor rules"
 
-def generateMonitorRule(swDPID, name):
-    rule = '{"switch":"%s", ' % swDPID
-    rule = rule + '"name":"%s", ' % name
-    rule = rule + '"priority":"%d", ' % random.randint(1, 60000)
-    rule = rule + '"ether-type":"2048", '
-    rule = rule + '"src-ip":"%d.%d.%d.%d/%d", ' % (
-        random.randint(0, 256), random.randint(0, 256),
-        random.randint(0, 256), random.randint(0, 256),
-        random.randint(0, 32))
-    rule = rule + '"active":"true", "actions":""}' 
-    return rule
+#********************************************************************
+# expr script
+#********************************************************************
+def processLog(fout):
+    cmd = "python log_process.py ovx.log %s" % fout
+    subprocess.call(cmd, shell=True)
 
-def generateMonitorRuleDelete(swDPID, name):
-    #rule = '{"switch":"%s", ' % swDPID
-    #rule = rule + '"name":"%s"}' % name
-    rule = '{"name":"%s"}' % name
-    return rule
- 
-def generateRouteRule(swDPID, name):
-    rule = '{"switch":"%s", ' % swDPID
-    rule = rule + '"name":"%s", ' % name
-    rule = rule + '"priority":"%d", ' % random.randint(1, 60000)
-    rule = rule + '"ether-type":"2048", '
-    rule = rule + '"dst-ip":"%d.%d.%d.%d/%d", ' % (
-        random.randint(0, 256), random.randint(0, 256),
-        random.randint(0, 256), random.randint(0, 256),
-        random.randint(0, 32))
-    rule = rule + '"active":"true", "actions":"output=1"}' 
-    return rule
+def expr(algo):
+    startFloodlight()
+    startOVX()
+    (topo, net) = startMininetWithoutCLI()
+    time.sleep(5)
+    addController1(topo)
+    addController2(topo)
+    addPolicy()
+    startComposition()
+    app1 = FirewallApp(topo, fwFile)
+    app1.genRules()
+    app1.installRules()
+    app2 = RoutingApp(topo, fwFile)
+    app2.genRules()
+    app2.installRules()
+    time.sleep(1)
+    setComposeAlgo(algo)
+    app1.updateRules()
+    cleanAll()
+    processLog('res.' + algo)
 
-def deleteRules(rules, app):
-    for rule in rules:
-        print rule
-        if app == "m":
-            subprocess.call(["curl", "-X", "DELETE", "-d", rule,
-                "http://localhost:10001/wm/staticflowentrypusher/json"])
-        else:
-            subprocess.call(["curl", "-X", "DELETE", "-d", rule,
-                "http://localhost:20001/wm/staticflowentrypusher/json"])
-        print ""
-
-def installRules(rules, app):
-    for rule in rules:
-        print rule
-        if app == "m":
-            subprocess.call(["curl", "-d", rule,
-                "http://localhost:10001/wm/staticflowentrypusher/json"])
-        else:
-            subprocess.call(["curl", "-d", rule,
-                "http://localhost:20001/wm/staticflowentrypusher/json"])
-        print ""
-
-def initMonitor():
-    defaultRules = []
-    for swDPID in swDPIDs:
-        defaultRules.append(generateDefaultRule(swDPID))
-    installRules(defaultRules, "m")
-
-    monitorRules = []
-    for swDPID in swDPIDs:
-        for i in range(DefaultRuleNum):
-            monitorRules.append(generateMonitorRule(swDPID,
-                "%sMonitor%d" % (swDPID[-2:], i)))
-    installRules(monitorRules, "m")
-
-    print "init monitor rules"
-
-def initRoute():
-    defaultRules = []
-    for swDPID in swDPIDs:
-        defaultRules.append(generateDefaultRule(swDPID))
-    installRules(defaultRules, "r")
-
-    routeRules = []
-    for swDPID in swDPIDs:
-        for i in range(DefaultRuleNum):
-            routeRules.append(generateRouteRule(swDPID,
-                "%sRoute%d" % (swDPID[-2:], i)))
-    installRules(routeRules, "r")
-
-    print "init route rules"
-
-def updateMonitor():
-    monitorRules = []
-    for swDPID in swDPIDs:
-        for i in range(UpdateRuleNum):
-            monitorRules.append(generateMonitorRule(swDPID,
-                "%sMonitor%d" % (swDPID[-2:], DefaultRuleNum + i)))
-            #monitorRules.append(generateMonitorRuleDelete(swDPID,
-            #    "%sMonitor%d" % (swDPID[-2:], i)))
-    installRules(monitorRules, "m")
-    #deleteRules(monitorRules, "m")
-
-    print "update monitor rules"
 
 #********************************************************************
 # main
@@ -283,23 +320,25 @@ def startAll():
     addController2(topo)
     addPolicy()
     startComposition()
-    setComposeAlgo('incremental')
-    app1 = FirewallApp(topo, 'classbench/test')
+    app1 = FirewallApp(topo, fwFile)
     app1.genRules()
     app1.installRules()
-    app2 = RoutingApp(topo, 'classbench/test')
+    app2 = RoutingApp(topo, fwFile)
     app2.genRules()
     app2.installRules()
-    CLI(net)
+    setComposeAlgo('incremental')
+    app1.updateRules()
+    #CLI(net)
     
     cleanAll()
 
 def testApp():
-    topo = MNTopo()
-    app = FirewallApp(topo, 'classbench/test')
-    #app = RoutingApp(topo, 'classbench/test')
+    topo = MNTopo(topoFile=topoFile)
+    app = FirewallApp(topo, fwFile)
+    app = RoutingApp(topo, fwFile)
     app.genRules()
-    app.installRules()
+    #app.updateRules()
+    #app.installRules()
 
 
 def printHelp():
@@ -335,6 +374,8 @@ if __name__ == '__main__':
         cleanAll()
     elif sys.argv[1] == "test-app":
         testApp()
+    elif sys.argv[1] == "expr":
+        expr(sys.argv[2])
     else:
         printHelp()
 
