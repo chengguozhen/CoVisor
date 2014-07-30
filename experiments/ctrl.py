@@ -283,6 +283,7 @@ def startAll():
     addController2(topo)
     addPolicy()
     startComposition()
+    setComposeAlgo('incremental')
     app1 = FirewallApp(topo, 'classbench/test')
     app1.genRules()
     app1.installRules()
@@ -302,7 +303,7 @@ def testApp():
 
 
 def printHelp():
-    print "\tUsage: ctrl_rule.py"
+    print "\tUsage: ctrl.py"
     print "\t\tstart-mn kill-mn"
     print "\t\tstart-ovx show-ovx kill-ovx"
     print "\t\tstart-fl show-fl kill-fl"

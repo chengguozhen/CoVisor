@@ -26,6 +26,7 @@ public class SetComposeAlgo extends ApiHandler<Map<String, Object>> {
 		}
 		
 		this.log.info("set compose algorithm to {}", PolicyTree.UPDATEMECHANISM);
+		this.log.info("MagicTimestamp\t4\t{}", System.nanoTime());
 		return new JSONRPC2Response(0);
 	}
 
