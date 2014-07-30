@@ -85,10 +85,18 @@ public class RuleGenerationUtil {
 
 		OFMatch m = new OFMatch();
 		int wcards = OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_TYPE
-				& ((32 - dstPrefix) << OFMatch.OFPFW_NW_DST_SHIFT | ~OFMatch.OFPFW_NW_DST_MASK);
+				& ((32 - dstPrefix) << OFMatch.OFPFW_NW_DST_SHIFT | ~OFMatch.OFPFW_NW_DST_MASK)
+				& ((24 << OFMatch.OFPFW_NW_SRC_SHIFT) | ~OFMatch.OFPFW_NW_DST_MASK)
+				& ~OFMatch.OFPFW_TP_SRC
+				& ~OFMatch.OFPFW_TP_DST
+				& ~OFMatch.OFPFW_NW_PROTO;
 		m.setWildcards(wcards);
 		m.setDataLayerType((short) 2048);
 		m.setNetworkDestination((new PhysicalIPAddress(dstIp)).getIp());
+		m.setNetworkSource((new PhysicalIPAddress("196.1.0.0")).getIp());
+		m.setTransportSource((short) 1521);
+		m.setTransportDestination((short) 1237);
+		m.setNetworkProtocol((byte) 6);
 		fm.setMatch(m);
 
 		List<OFAction> actions = new ArrayList<OFAction>();

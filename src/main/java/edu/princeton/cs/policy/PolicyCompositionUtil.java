@@ -328,10 +328,10 @@ public class PolicyCompositionUtil {
 			match.setNetworkProtocol((Byte) val);
 			break;
 		case OFMatch.OFPFW_TP_SRC:
-			match.setTransportSource((Byte) val);
+			match.setTransportSource((Short) val);
 			break;
 		case OFMatch.OFPFW_TP_DST:
-			match.setTransportDestination((Byte) val);
+			match.setTransportDestination((Short) val);
 			break;
 		case OFMatch.OFPFW_NW_SRC_ALL:
 			match.setNetworkSource((Integer) val);

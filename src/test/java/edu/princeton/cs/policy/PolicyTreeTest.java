@@ -223,7 +223,7 @@ public class PolicyTreeTest extends TestCase {
     	policyTree.leftChild = leftTree;
     	policyTree.rightChild = rightTree;
 		
-    	PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Strawman;
+    	PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Incremental;
     	PolicyTree.ActionOutputAsPass = true;
     	
 		// firewall policy
