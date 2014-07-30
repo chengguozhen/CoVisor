@@ -125,37 +125,14 @@ def addController2(topo):
     cmd = "%s -n startNetwork 2" % ovxctlPy
     subprocess.call(cmd, shell=True)
 
-def addMonitorController():
-    print "*****************************"
-    print "***** Monitor Controller ****"
-    print "*****************************"
-    subprocess.call([ovxctlPy, "-n", "createNetwork",
-        "tcp:%s:10000" % CONTROLLER_IP, "10.0.0.0", "16"])
-    for i in xrange(1, SWITCH_NUM + 1):
-        subprocess.call([ovxctlPy, "-n", "createSwitch",
-            "1", "00:00:00:00:00:00:0%d:00" % i])
-        subprocess.call([ovxctlPy, "-n", "createPort",
-            "1", "00:00:00:00:00:00:0%d:00" % i, "1"])
-        subprocess.call([ovxctlPy, "-n", "connectHost",
-            "1", "00:a4:23:05:00:00:00:0%d" % i, "1",
-            "00:00:00:00:0%d:01" % i])
-    subprocess.call([ovxctlPy, "-n", "startNetwork", "1"])
+def startComposition():
+    subprocess.call("%s -n startComposition" % ovxctlPy, shell=True)
 
-def addRouteController():
-    print "*****************************"
-    print "***** Route Controller ******"
-    print "*****************************"
-    subprocess.call([ovxctlPy, "-n", "createNetwork",
-        "tcp:%s:20000" % CONTROLLER_IP, "10.0.0.0", "16"])
-    for i in xrange(1, SWITCH_NUM + 1):
-        subprocess.call([ovxctlPy, "-n", "createSwitch",
-            "2", "00:00:00:00:00:00:0%d:00" % i])
-        subprocess.call([ovxctlPy, "-n", "createPort",
-            "2", "00:00:00:00:00:00:0%d:00" % i, "2"])
-        subprocess.call([ovxctlPy, "-n", "connectHost",
-            "2", "00:a4:23:05:00:00:00:0%d" % i, "1",
-            "00:00:00:00:0%d:02" % i])
-    subprocess.call([ovxctlPy, "-n", "startNetwork", "2"])
+def stopComposition():
+    subprocess.call("%s -n stopComposition" % ovxctlPy, shell=True)
+
+def setComposeAlgo(algo):
+    subprocess.call("%s -n setComposeAlgo %s" % (ovxctlPy, algo), shell=True)
 
 def addPolicy():
     subprocess.call([ovxctlPy, "-n", "createPolicy", "1+2"])
@@ -303,24 +280,25 @@ def startAll():
     (topo, net) = startMininetWithoutCLI()
     time.sleep(5)
     addController1(topo)
-    #addController2(topo)
+    addController2(topo)
     addPolicy()
-    app = FirewallApp(topo, 'classbench/test')
-    app.genRules()
-    app.installRules()
+    startComposition()
+    app1 = FirewallApp(topo, 'classbench/test')
+    app1.genRules()
+    app1.installRules()
+    app2 = RoutingApp(topo, 'classbench/test')
+    app2.genRules()
+    app2.installRules()
     CLI(net)
-    app = RoutingApp(topo, 'classbench/test')
     
-    raw_input("continue")
-
     cleanAll()
 
 def testApp():
     topo = MNTopo()
     app = FirewallApp(topo, 'classbench/test')
-    app = RoutingApp(topo, 'classbench/test')
+    #app = RoutingApp(topo, 'classbench/test')
     app.genRules()
-    #app.installRules()
+    app.installRules()
 
 
 def printHelp():

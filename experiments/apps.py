@@ -63,12 +63,11 @@ class RoutingApp():
                         self.rules[name] = rule
                         self.ruleCount += 1
                     prev = sw
-        print "generate total rules:", len(self.rules)
 
     def installRules(self):
         for rule in self.rules.values():
-            cmd = "curl -d '%s' http://localhost:10001/wm/staticflowentrypusher/json" % rule
-            print cmd
+            print rule
+            cmd = "curl -d '%s' http://localhost:20001/wm/staticflowentrypusher/json" % rule
             subprocess.call(cmd, shell=True)
             print ""
 
@@ -82,12 +81,13 @@ class FirewallApp():
         self.rules = {}
         self.ruleCount = 0
 
+        random.seed(1)
         self.metaRules = []
         f = open(classbenchFile, 'r')
         oneline = f.readline()
         while oneline != "":
             temp = oneline.strip().split('\t')
-            rule = '"priority":"%d", ' % random.randint(1, 60000) + \
+            rule = '"priority":"%d", ' % random.randint(1, 100) + \
                 '"ether-type":"2048", ' + \
                 '"src-ip":"%s", ' % temp[0][1:] + \
                 '"dst-ip":"%s", ' % temp[1]
@@ -127,8 +127,8 @@ class FirewallApp():
  
     def installRules(self):
         for rule in self.rules.values():
+            print rule
             cmd = "curl -d '%s' http://localhost:10001/wm/staticflowentrypusher/json" % rule
-            print cmd
             subprocess.call(cmd, shell=True)
             print ""
 
