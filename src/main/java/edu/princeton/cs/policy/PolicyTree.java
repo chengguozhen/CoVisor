@@ -25,6 +25,7 @@ public class PolicyTree {
 	}
 	
 	public static PolicyUpdateMechanism UPDATEMECHANISM = PolicyUpdateMechanism.Incremental;
+	public static boolean ActionOutputAsPass = true; // set true for firewall app
 	
 	public PolicyOperator operator;
 	public PolicyTree leftChild;
@@ -88,10 +89,12 @@ public class PolicyTree {
 					if (fm1.getActions().isEmpty()) {
 						flag = true;
 					}
-					for (OFAction action : fm1.getActions()) {
-						if (action instanceof OFActionOutput) {
-							flag = true;
-							break;
+					if (!ActionOutputAsPass) {
+						for (OFAction action : fm1.getActions()) {
+							if (action instanceof OFActionOutput) {
+								flag = true;
+								break;
+							}
 						}
 					}
 					if (flag) {
@@ -173,10 +176,12 @@ public class PolicyTree {
 					if (fm1.getActions().isEmpty()) {
 						flag = true;
 					}
-					for (OFAction action : fm1.getActions()) {
-						if (action instanceof OFActionOutput) {
-							flag = true;
-							break;
+					if (!ActionOutputAsPass) {
+						for (OFAction action : fm1.getActions()) {
+							if (action instanceof OFActionOutput) {
+								flag = true;
+								break;
+							}
 						}
 					}
 					if (flag) {
@@ -220,10 +225,12 @@ public class PolicyTree {
 					if (fm1.getActions().isEmpty()) {
 						flag = true;
 					}
-					for (OFAction action : fm1.getActions()) {
-						if (action instanceof OFActionOutput) {
-							flag = true;
-							break;
+					if (!ActionOutputAsPass) {
+						for (OFAction action : fm1.getActions()) {
+							if (action instanceof OFActionOutput) {
+								flag = true;
+								break;
+							}
 						}
 					}
 					if (flag) {

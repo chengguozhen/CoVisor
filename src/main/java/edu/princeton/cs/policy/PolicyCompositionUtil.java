@@ -79,10 +79,12 @@ public class PolicyCompositionUtil {
 		if (fm1.getActions().isEmpty()) {
 			flag = true;
 		}
-		for (OFAction action : fm1.getActions()) {
-			if (action instanceof OFActionOutput) {
-				flag = true;
-				break;
+		if (!PolicyTree.ActionOutputAsPass) {
+			for (OFAction action : fm1.getActions()) {
+				if (action instanceof OFActionOutput) {
+					flag = true;
+					break;
+				}
 			}
 		}
 		if (flag) {
@@ -122,6 +124,9 @@ public class PolicyCompositionUtil {
 		List<OFAction> actions = new ArrayList<OFAction>();
 		int length = OFFlowMod.MINIMUM_LENGTH;
 		for (OFAction action : fm1.getActions()) {
+			if (PolicyTree.ActionOutputAsPass && action instanceof OFActionOutput) {
+				continue;
+			}
 			actions.add(action);
 			length += action.getLengthU();
 		}
@@ -220,8 +225,8 @@ public class PolicyCompositionUtil {
 			int mask1 = wcard1 & OFMatch.OFPFW_NW_DST_MASK;
 			int mask2 = wcard2 & OFMatch.OFPFW_NW_DST_MASK;
 			int shift = Math.min(Math.max(mask1, mask2) >> OFMatch.OFPFW_NW_DST_SHIFT, 32);
-			int ip1 = (m1.getNetworkSource() >> shift) << shift;
-			int ip2 = (m2.getNetworkSource() >> shift) << shift;
+			int ip1 = (m1.getNetworkDestination() >> shift) << shift;
+			int ip2 = (m2.getNetworkDestination() >> shift) << shift;
 			if (shift == 32 || ip1 == ip2) {
 				int wcard = match.getWildcards() & (Math.min(mask1, mask2) | ~OFMatch.OFPFW_NW_DST_MASK);
 				match.setWildcards(wcard);

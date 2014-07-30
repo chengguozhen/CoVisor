@@ -15,7 +15,7 @@ import org.openflow.protocol.action.OFActionOutput;
 
 public class RuleGenerationUtil {
 	
-	private static Random rand = new Random();
+	private static Random rand = new Random(1);
 	
 	public static OFFlowMod generateDefaultRule() {
     	OFFlowMod fm = new OFFlowMod();
@@ -63,6 +63,45 @@ public class RuleGenerationUtil {
 		List<OFAction> actions = new ArrayList<OFAction>();
 		fm.setActions(actions);
 		fm.setLengthU(fm.getLengthU());
+		
+		return fm;
+    }
+	
+	public static OFFlowMod generateFWRule() {
+    	String dstIp = String.format("%d.%d.%d.%d", getRandomNumber(0, 256), getRandomNumber(0, 256),
+    			getRandomNumber(0, 256), getRandomNumber(0, 256));
+    	return generateFWRule(getRandomNumber(1, 60000), dstIp, getRandomNumber(0, 32), OFFlowMod.OFPFC_ADD);
+    }
+    
+	public static OFFlowMod generateFWRule(int priority, String dstIp, int dstPrefix, short command) {
+    	
+    	OFFlowMod fm = new OFFlowMod();
+		fm.setCommand(command);
+		fm.setIdleTimeout((short) 0);
+		fm.setHardTimeout((short) 0);
+		fm.setBufferId(OFPacketOut.BUFFER_ID_NONE);
+		fm.setCookie(0);
+		fm.setPriority((short) priority);
+
+		OFMatch m = new OFMatch();
+		int wcards = OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_TYPE
+				& ((32 - dstPrefix) << OFMatch.OFPFW_NW_DST_SHIFT | ~OFMatch.OFPFW_NW_DST_MASK);
+		m.setWildcards(wcards);
+		m.setDataLayerType((short) 2048);
+		m.setNetworkDestination((new PhysicalIPAddress(dstIp)).getIp());
+		fm.setMatch(m);
+
+		List<OFAction> actions = new ArrayList<OFAction>();
+		if (priority % 2 == 0) {
+			fm.setActions(actions);
+			fm.setLengthU(fm.getLengthU());
+		} else {
+			OFActionOutput action = new OFActionOutput();
+			action.setPort((short) 1);
+			actions.add(action);
+			fm.setActions(actions);
+			fm.setLengthU(fm.getLengthU() + action.getLengthU());
+		}
 		
 		return fm;
     }
