@@ -55,6 +55,13 @@ public class OVXActionOutput extends OFActionOutput implements
     public void virtualize(final OVXSwitch sw,
             final List<OFAction> approvedActions, final OVXMatch match)
             throws ActionVirtualizationDenied, DroppedMessageException {
+            approvedActions.add(this);
+    }
+
+    /*@Override
+    public void virtualize(final OVXSwitch sw,
+            final List<OFAction> approvedActions, final OVXMatch match)
+            throws ActionVirtualizationDenied, DroppedMessageException {
         final OVXPort inPort = sw.getPort(match.getInputPort());
 
         // TODO: handle TABLE output port here
@@ -70,13 +77,6 @@ public class OVXActionOutput extends OFActionOutput implements
         }
 
         if (match.isFlowMod()) {
-            /*
-             * FlowMod management Iterate through the output port list. Two main
-             * scenarios: - OVXSwitch is BigSwitch and inPort & outPort belongs
-             * to different physical switches - Other cases, e.g. SingleSwitch
-             * and BigSwitch with inPort & outPort belonging to the same
-             * physical switch
-             */
             // Retrieve the flowMod from the virtual flow map
             final OVXFlowMod fm;
             try {
@@ -92,10 +92,6 @@ public class OVXActionOutput extends OFActionOutput implements
                 Integer linkId = 0;
                 Integer flowId = 0;
 
-                /*
-                 * OVXSwitch is BigSwitch and inPort & outPort belongs to
-                 * different physical switches
-                 */
                 if (sw instanceof OVXBigSwitch
                         && inPort.getPhysicalPort().getParentSwitch() != outPort
                                 .getPhysicalPort().getParentSwitch()) {
@@ -164,24 +160,10 @@ public class OVXActionOutput extends OFActionOutput implements
                 // switch
             }
         } else if (match.isPacketOut()) {
-            /*
-             * PacketOut management. Iterate through the output port list. Three
-             * possible scenarios: - outPort belongs to a link: send a packetIn
-             * coming from the virtual link end point to the controller -
-             * outPort is an edge port: two different sub-cases: - inPort &
-             * outPort belongs to the same physical switch, e.g. rewrite outPort
-             * - inPort & outPort belongs to different switches (bigSwitch):
-             * send a packetOut to the physical port @ the end of the BS route
-             */
-
             // TODO check how to delete the packetOut and if it's required
             boolean throwException = true;
 
             for (final OVXPort outPort : outPortList) {
-                /**
-                 * If the outPort belongs to a virtual link, generate a packetIn
-                 * coming from the end point of the link to the controller.
-                 */
                 if (outPort.isLink()) {
                     final OVXPort dstPort = outPort.getLink().getOutLink()
                             .getDstPort();
@@ -195,10 +177,6 @@ public class OVXActionOutput extends OFActionOutput implements
                                     .getParentSwitch().getSwitchName(),
                             dstPort.getPhysicalPortNumber());
                 } else if (sw instanceof OVXBigSwitch) {
-                    /**
-                     * Big-switch management. Generate a packetOut to the
-                     * physical outPort
-                     */
                     // Only generate pkt_out if a route is configured between in
                     // and output port
                     if ((inPort == null)
@@ -214,11 +192,6 @@ public class OVXActionOutput extends OFActionOutput implements
                                 dstPort.getPortNumber());
                     }
                 } else {
-                    /**
-                     * Else (e.g. the outPort is an edgePort in a single switch)
-                     * modify the packet and send to the physical switch.
-                     *
-                     */
                     throwException = false;
                     approvedActions.add(new OFActionOutput(outPort
                             .getPhysicalPortNumber()));
@@ -232,7 +205,7 @@ public class OVXActionOutput extends OFActionOutput implements
             }
         }
 
-    }
+    }*/
     
     /*@Override
     public void virtualize(final OVXSwitch sw,

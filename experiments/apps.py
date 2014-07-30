@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import sys
+import subprocess
 import time
 import random
 from ExprTopo.rftopo import *
@@ -49,11 +50,11 @@ class RoutingApp():
                         prev = sw
                         continue
                     visited.add(prev)
-                    dpid = self.graph.node[prev]['dpid']
+                    vdpid = self.graph.node[prev]['vdpid']
                     output = self.graph.edge[prev][sw][prev]
                     for subnet in self.graph.node[dst]['subnets']:
                         name = "RouteApp%d" % self.ruleCount
-                        rule = '{"switch":"%s", ' % dpid + \
+                        rule = '{"switch":"%s", ' % vdpid + \
                             '"name":"%s", ' % name + \
                             '"priority":"%s", ' % subnet.split('/')[1] + \
                             '"ether-type":"2048", ' + \
@@ -65,9 +66,10 @@ class RoutingApp():
         print "generate total rules:", len(self.rules)
 
     def installRules(self):
-        for rule in rules:
-            subprocess.call(["curl", "-d", rule,
-                "http://localhost:20001/wm/staticflowentrypusher/json"])
+        for rule in self.rules.values():
+            cmd = "curl -d '%s' http://localhost:10001/wm/staticflowentrypusher/json" % rule
+            print cmd
+            subprocess.call(cmd, shell=True)
             print ""
 
 #********************************************************************
@@ -100,7 +102,7 @@ class FirewallApp():
 
             protocol = temp[4].split('/')
             if protocol[1] == '0xFF':
-                rule = rule + '"protocol":"%s", ' % protocol[0]
+                rule = rule + '"protocol":"%s", ' % int(protocol[0], 0)
             
             if random.randint(0, 1) == 0:
                 rule = rule + '"active":"true", "actions":""}' 
@@ -115,17 +117,18 @@ class FirewallApp():
     def genRules(self):
         for switch in self.graph.nodes():
             ridx = self.graph.node[switch]['ridx'] 
-            dpid = self.graph.node[prev]['dpid']
+            vdpid = self.graph.node[switch]['vdpid']
             for index, metaRule in enumerate(self.metaRules):
-                name = "FWApp%s%d" % (ridx, index)
-                rule = '{"switch":"%s", ' % dpid + \
+                name = "FWAppS%dR%d" % (ridx, index)
+                rule = '{"switch":"%s", ' % vdpid + \
                             '"name":"%s", ' % name + \
-                            + metaRule
+                            metaRule
                 self.rules[name] = rule
  
     def installRules(self):
-        for rule in rules:
-            subprocess.call(["curl", "-d", rule,
-                "http://localhost:10001/wm/staticflowentrypusher/json"])
+        for rule in self.rules.values():
+            cmd = "curl -d '%s' http://localhost:10001/wm/staticflowentrypusher/json" % rule
+            print cmd
+            subprocess.call(cmd, shell=True)
             print ""
 
