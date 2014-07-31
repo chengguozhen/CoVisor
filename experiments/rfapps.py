@@ -3,48 +3,73 @@ import sys
 import subprocess
 import time
 import random
-from ExprTopo.mtopo import *
+from ExprTopo.rftopo import *
 
 #********************************************************************
 # Routing App
 #********************************************************************
 class RoutingApp():
 
-    def __init__(self, topo, prefixFile, perSwRule = 100):
+    def __init__(self, topo, classbenchFile):
         self.graph = topo.graph
-        self.perSwRule = perSwRule
         self.rules = {}
-        self.subnets = []
+        self.ruleCount = 0
 
-        f = open(prefixFile, 'r')
+        # assign subnets to switches
+        subnets = set()
+        f = open(classbenchFile, 'r')
         oneline = f.readline()
         while oneline != "":
-            self.subnets.append(oneline.strip())
+            temp = oneline.strip().split()
+            subnets.add(temp[0][1:])
+            subnets.add(temp[1])
             oneline = f.readline()
         f.close()
-        random.shuffle(self.subnets)
-        print subnets
+        subnets = list(subnets)
+
+        perSwSubnetCount = len(subnets) / len(topo.graph.nodes())
+        for index, switch in enumerate(topo.graph.nodes()):
+            topo.graph.node[switch]['subnets'] = []
+            for snIndex in range(perSwSubnetCount):
+                subnet = subnets[index * perSwSubnetCount + snIndex]
+                topo.graph.node[switch]['subnets'].append(subnet)
 
     def genRules(self):
-        for switch in self.graph.nodes():
-            ridx = self.graph.node[switch]['ridx']
-            vdpid = self.graph.node[switch]['vdpid']
-            for index, subnet in enumerate(self.subnets[0:self.ruleCount]):
-                name = "RouteAppS%dR%d" % (ridx, index)
-                rule = '{"switch":"%s", ' % vdpid + \
-                    '"name":"%s", ' % name + \
-                    '"priority":"%s", ' % subnet.split('/')[1] + \
-                    '"ether-type":"2048", ' + \
-                    '"dst-ip":"%s", ' % subnet + \
-                    '"active":"true", "actions":"output=1"}'
-                self.rules[name] = rule
+        paths = nx.all_pairs_dijkstra_path(self.graph)
+        for dst in self.graph.nodes():
+            visited = set()
+            for src in self.graph.nodes():
+                if src == dst:
+                    continue
+                path = paths[src][dst]
+                if len(path) == 0:
+                    continue
+                prev = path[0]
+                for sw in path[1:]:
+                    if prev in visited:
+                        prev = sw
+                        continue
+                    visited.add(prev)
+                    vdpid = self.graph.node[prev]['vdpid']
+                    output = self.graph.edge[prev][sw][prev]
+                    for subnet in self.graph.node[dst]['subnets']:
+                        name = "RouteApp%d" % self.ruleCount
+                        rule = '{"switch":"%s", ' % vdpid + \
+                            '"name":"%s", ' % name + \
+                            '"priority":"%s", ' % subnet.split('/')[1] + \
+                            '"ether-type":"2048", ' + \
+                            '"dst-ip":"%s", ' % subnet + \
+                            '"active":"true", "actions":"output=%d"}' % output
+                        self.rules[name] = rule
+                        self.ruleCount += 1
+                    prev = sw
         print len(self.rules)
 
     def installRules(self):
         for rule in self.rules.values():
-            print rule
-            #cmd = "curl -d '%s' http://localhost:20001/wm/staticflowentrypusher/json" % rule
-            #subprocess.call(cmd, shell=True)
+            #print rule
+            cmd = "curl -d '%s' http://localhost:20001/wm/staticflowentrypusher/json" % rule
+            subprocess.call(cmd, shell=True)
             print ""
 
 #********************************************************************

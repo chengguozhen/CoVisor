@@ -3,9 +3,8 @@ import sys
 import time
 import subprocess
 import random
-from ExprTopo.rftopo import *
-from apps import *
-
+from ExprTopo.mtopo import *
+from apps import RoutingApp, FirewallApp
 
 WorkDir = "/home/xinjin/xin-flowmaster"
 #SWITCH_NUM = 2
@@ -74,8 +73,62 @@ def killOVX():
     subprocess.call("ps ax | grep OpenVirteX | grep -v grep | awk '{print $1}' " +
         "| xargs kill -9 > /dev/null 2>&1", shell=True)
 
-
 def addController1(topo):
+    print "*****************************"
+    print "******** Controller 1 *******"
+    print "*****************************"
+    cmd = "%s -n createNetwork tcp:%s:10000 10.0.0.0 16" % (ovxctlPy,
+        CONTROLLER_IP)
+    subprocess.call(cmd, shell=True)
+    for sw in topo.graph.nodes():
+        # create switch
+        cmd = "%s -n createSwitch 1 %s" % (ovxctlPy,
+            topo.graph.node[sw]['dpid'])
+        subprocess.call(cmd, shell=True)
+        # create port
+        for i in range(topo.hostPerSw):
+            cmd = "%s -n createPort 1 %s %d" % (ovxctlPy,
+                topo.graph.node[sw]['dpid'], i+1)
+            subprocess.call(cmd, shell=True)
+        # add 1 host
+        rawHostMac = topo.graph.node[sw]['dpid'][4:-1] + '1'
+        hostMac = ':'.join(a+b for a,b in zip(rawHostMac[::2], rawHostMac[1::2]))
+        cmd = "%s -n connectHost 1 %s %d %s" % (ovxctlPy,
+            "00a42305" + topo.graph.node[sw]['dpid'][-10:-2], 1,
+            hostMac)
+        subprocess.call(cmd, shell=True)
+    cmd = "%s -n startNetwork 1" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+
+def addController2(topo):
+    print "*****************************"
+    print "******** Controller 2 *******"
+    print "*****************************"
+    cmd = "%s -n createNetwork tcp:%s:20000 10.0.0.0 16" % (ovxctlPy,
+        CONTROLLER_IP)
+    subprocess.call(cmd, shell=True)
+    for sw in topo.graph.nodes():
+        # create switch
+        cmd = "%s -n createSwitch 2 %s" % (ovxctlPy,
+            topo.graph.node[sw]['dpid'])
+        subprocess.call(cmd, shell=True)
+        # create port
+        for i in range(topo.hostPerSw):
+            cmd = "%s -n createPort 2 %s %d" % (ovxctlPy,
+                topo.graph.node[sw]['dpid'], i+1)
+            subprocess.call(cmd, shell=True)
+        # add the remaining host
+        for i in xrange(1, topo.hostPerSw):
+            rawHostMac = topo.graph.node[sw]['dpid'][4:-1] + '%d' % (i+1)
+            hostMac = ':'.join(a+b for a,b in zip(rawHostMac[::2], rawHostMac[1::2]))
+            cmd = "%s -n connectHost 2 %s %d %s" % (ovxctlPy,
+                "00a42305" + topo.graph.node[sw]['dpid'][-10:-2], i+1,
+                hostMac)
+        subprocess.call(cmd, shell=True)
+    cmd = "%s -n startNetwork 2" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+
+def addRfTopoController1(topo):
     print "*****************************"
     print "******** Controller 1 *******"
     print "*****************************"
@@ -101,7 +154,7 @@ def addController1(topo):
     cmd = "%s -n startNetwork 1" % ovxctlPy
     subprocess.call(cmd, shell=True)
 
-def addController2(topo):
+def addRfTopoController2(topo):
     print "*****************************"
     print "******** Controller 2 *******"
     print "*****************************"
@@ -320,6 +373,7 @@ def startAll():
     addController2(topo)
     addPolicy()
     startComposition()
+    CLI(net)
     app1 = FirewallApp(topo, fwFile)
     app1.genRules()
     app1.installRules()
