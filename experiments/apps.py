@@ -23,13 +23,21 @@ class RoutingApp():
             oneline = f.readline()
         f.close()
         random.shuffle(self.subnets)
-        print subnets
 
     def genRules(self):
         for switch in self.graph.nodes():
             ridx = self.graph.node[switch]['ridx']
             vdpid = self.graph.node[switch]['vdpid']
-            for index, subnet in enumerate(self.subnets[0:self.ruleCount]):
+            
+            # default rule
+            name = "RouteAppS%dD0" % ridx
+            rule = '{"switch":"%s", ' % vdpid + \
+                '"name":"%s", ' % name + \
+                '"priority":"0", ' + \
+                '"active":"true", "actions":""}'
+            self.rules[name] = rule
+            # routing rules
+            for index, subnet in enumerate(self.subnets[0:self.perSwRule]):
                 name = "RouteAppS%dR%d" % (ridx, index)
                 rule = '{"switch":"%s", ' % vdpid + \
                     '"name":"%s", ' % name + \
@@ -38,13 +46,11 @@ class RoutingApp():
                     '"dst-ip":"%s", ' % subnet + \
                     '"active":"true", "actions":"output=1"}'
                 self.rules[name] = rule
-        print len(self.rules)
 
     def installRules(self):
         for rule in self.rules.values():
-            print rule
-            #cmd = "curl -d '%s' http://localhost:20001/wm/staticflowentrypusher/json" % rule
-            #subprocess.call(cmd, shell=True)
+            cmd = "curl -d '%s' http://localhost:20001/wm/staticflowentrypusher/json" % rule
+            subprocess.call(cmd, shell=True)
             print ""
 
 #********************************************************************
@@ -97,6 +103,16 @@ class FirewallApp():
         for switch in self.graph.nodes():
             ridx = self.graph.node[switch]['ridx'] 
             vdpid = self.graph.node[switch]['vdpid']
+
+            # default rule
+            name = "RouteAppS%dD0" % ridx
+            rule = '{"switch":"%s", ' % vdpid + \
+                '"name":"%s", ' % name + \
+                '"priority":"0", ' + \
+                '"active":"true", "actions":""}'
+            self.rules[name] = rule
+
+            # firewall rule
             for index, metaRule in enumerate(self.metaRules[:-self.addRuleCount]):
                 name = "FWAppS%dR%d" % (ridx, index)
                 rule = '{"switch":"%s", ' % vdpid + \
@@ -112,14 +128,12 @@ class FirewallApp():
 
     def installRules(self):
         for rule in self.rules.values():
-            #print rule
             cmd = "curl -d '%s' http://localhost:10001/wm/staticflowentrypusher/json" % rule
             subprocess.call(cmd, shell=True)
             print ""
 
     def updateRules(self):
         for rule in self.addRules.values():
-            #print rule
             cmd = "curl -d '%s' http://localhost:10001/wm/staticflowentrypusher/json" % rule
             subprocess.call(cmd, shell=True)
             print ""

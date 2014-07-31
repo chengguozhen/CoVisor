@@ -20,9 +20,14 @@ ovxctlPy = "%s/OpenVirteX/utils/ovxctl.py" % WorkDir
 topoFile = "%s/OpenVirteX/experiments/ExprTopo/Rocketfuel/" % WorkDir + \
     "internet2/weights.intra"
     #"test/weights.intra"
-fwFile = "%s/OpenVirteX/experiments/classbench/" % WorkDir + \
-    "acl1k"
+prefixFile = "%s/OpenVirteX/experiments/classbench/" % WorkDir + \
+    "acl1_prefix"
     #"test"
+fwFile = "%s/OpenVirteX/experiments/classbench/" % WorkDir + \
+    "acl1_10"
+    #"test"
+swNumber = 1
+perSwRoutingRule = 5
 
 #********************************************************************
 # mininet: start, kill
@@ -39,7 +44,7 @@ def startMininet():
     net.stop()
 
 def startMininetWithoutCLI():
-    topo = MNTopo(topoFile=topoFile)
+    topo = MNTopo(sw_number = swNumber, topoFile=topoFile)
     net = Mininet(topo, autoSetMacs=True, xterms=False,
         controller=RemoteController)
     net.addController('c', ip='127.0.0.1')
@@ -328,11 +333,19 @@ def killFloodlight():
 #********************************************************************
 # expr script
 #********************************************************************
+def cleanAll():
+    killMininet()
+    killFloodlight()
+    killOVX()
+    showOVX()
+    showFloodlight()
+
 def processLog(fout):
     cmd = "python log_process.py ovx.log %s" % fout
     subprocess.call(cmd, shell=True)
 
-def expr(algo):
+def expr(algo, outLog):
+    cleanAll()
     startFloodlight()
     startOVX()
     (topo, net) = startMininetWithoutCLI()
@@ -344,26 +357,42 @@ def expr(algo):
     app1 = FirewallApp(topo, fwFile)
     app1.genRules()
     app1.installRules()
-    app2 = RoutingApp(topo, fwFile)
+    app2 = RoutingApp(topo, prefixFile, perSwRule = perSwRoutingRule)
     app2.genRules()
     app2.installRules()
     time.sleep(1)
     setComposeAlgo(algo)
     app1.updateRules()
     cleanAll()
-    processLog('res.' + algo)
+    #processLog('res.' + algo)
+    processLog(outLog)
+
+def exprAll1():
+    global fwFile
+    global perSwRoutingRule
+
+    perSwRoutingRule = 100
+    fwRule = 100
+    for fwRule in [100, 200, 300, 400, 500]:
+        fwFile = 'classbench/acl1_%d' % fwRule
+        expr('strawman', 'res_strawman_%d' %  fwRule)
+        expr('inc', 'res_inc_%d' %  fwRule)
+        
+def exprAll():
+    global fwFile
+    global perSwRoutingRule
+
+    perSwRoutingRule = 100
+    fwRule = 100
+    for perSwRoutingRule in [100, 200, 300, 400, 500]:
+        fwFile = 'classbench/acl1_%d' % fwRule
+        expr('strawman', 'res_strawman_%d' %  perSwRoutingRule)
+        expr('inc', 'res_inc_%d' %  perSwRoutingRule)
 
 
 #********************************************************************
 # main
 #********************************************************************
-def cleanAll():
-    killMininet()
-    killFloodlight()
-    killOVX()
-    showOVX()
-    showFloodlight()
-
 def startAll():
     startFloodlight()
     startOVX()
@@ -373,13 +402,14 @@ def startAll():
     addController2(topo)
     addPolicy()
     startComposition()
-    CLI(net)
     app1 = FirewallApp(topo, fwFile)
     app1.genRules()
     app1.installRules()
-    app2 = RoutingApp(topo, fwFile)
+    CLI(net)
+    app2 = RoutingApp(topo, prefixFile, perSwRule = 5)
     app2.genRules()
     app2.installRules()
+    CLI(net)
     setComposeAlgo('incremental')
     app1.updateRules()
     #CLI(net)
@@ -389,10 +419,10 @@ def startAll():
 def testApp():
     topo = MNTopo(topoFile=topoFile)
     app = FirewallApp(topo, fwFile)
-    app = RoutingApp(topo, fwFile)
+    #app = RoutingApp(topo, prefixFile, perSwRule = 5)
     app.genRules()
-    #app.updateRules()
-    #app.installRules()
+    app.installRules()
+    app.updateRules()
 
 
 def printHelp():
@@ -429,7 +459,8 @@ if __name__ == '__main__':
     elif sys.argv[1] == "test-app":
         testApp()
     elif sys.argv[1] == "expr":
-        expr(sys.argv[2])
+        #expr(sys.argv[2])
+        exprAll()
     else:
         printHelp()
 

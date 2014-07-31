@@ -231,8 +231,8 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
 		if (PhysicalSwitch.IsCompositionOn) {
 			if (msg.getType() == OFType.FLOW_MOD) {
-				// log.error("---------- New FlowMod ----------");
-				// log.error(msg.toString());
+				 //log.error("---------- New FlowMod ----------");
+				 //log.error(msg.toString());
 
                 long startTime = System.nanoTime();
 				//log.info("MagicTimestamp\t1\t{}", System.nanoTime());
