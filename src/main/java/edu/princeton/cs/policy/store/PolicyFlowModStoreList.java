@@ -1,56 +1,118 @@
 package edu.princeton.cs.policy.store;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.openflow.protocol.OFFlowMod;
+import org.openflow.protocol.action.OFAction;
+import org.openflow.protocol.action.OFActionOutput;
+
+import edu.princeton.cs.policy.adv.PolicyTree;
+import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreKey;
+import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreType;
 
 public class PolicyFlowModStoreList implements PolicyFlowModStore {
 	
-	public PolicyFlowModStoreList () {
-		
+	private PolicyFlowModStoreType storeType;
+	private PolicyFlowModStoreKey storeKey;
+	private List<PolicyFlowModStoreType> childStoreTypes;
+	private List<PolicyFlowModStoreKey> childStoreKeys;
+	private List<OFFlowMod> flowMods;
+	
+	public PolicyFlowModStoreList (List<PolicyFlowModStoreType> storeTypes,
+			List<PolicyFlowModStoreKey> storeKeys) {
+		this.storeType = storeTypes.get(0);
+		for (int i = 1; i < storeTypes.size(); i++) {
+			this.childStoreTypes.add(storeTypes.get(i));
+		}
+		this.storeKey = storeKeys.get(0);
+		for (int i = 1; i < storeKeys.size(); i++) {
+			this.childStoreKeys.add(storeKeys.get(i));
+		}
+		this.flowMods = new ArrayList<OFFlowMod>();
 	}
 
 	@Override
 	public void setStore(List<OFFlowMod> flowMods) {
-		// TODO Auto-generated method stub
-		
+		this.flowMods = flowMods;
 	}
 
 	@Override
 	public void clear() {
-		// TODO Auto-generated method stub
-		
+		this.flowMods.clear();
 	}
 
 	@Override
 	public void add(OFFlowMod fm) {
-		// TODO Auto-generated method stub
-		
+		this.flowMods.add(fm);
 	}
 
 	@Override
 	public OFFlowMod remove(OFFlowMod fm) {
-		// TODO Auto-generated method stub
-		return null;
+		OFFlowMod toDelete = null;
+		for (OFFlowMod curFlowMod : this.flowMods) {
+			if (curFlowMod.getMatch().equals(fm.getMatch()) && curFlowMod.getPriority() == fm.getPriority()) {
+				toDelete = curFlowMod;
+				break;
+			}
+		}
+		if (toDelete != null) {
+			this.flowMods.remove(toDelete);
+		}
+		return toDelete;
 	}
 
 	@Override
 	public List<OFFlowMod> removaAll(List<OFFlowMod> flowMods) {
-		// TODO Auto-generated method stub
-		return null;
+		List<OFFlowMod> toDelete = new ArrayList<OFFlowMod>();
+		for (OFFlowMod fm : flowMods) {
+			for (OFFlowMod curFlowMod : this.flowMods) {
+				if (curFlowMod.getMatch().equals(fm.getMatch()) && curFlowMod.getPriority() == fm.getPriority()) {
+					toDelete.add(curFlowMod);
+					break;
+				}
+			}
+		}
+		this.flowMods.removeAll(toDelete);
+		return toDelete;
 	}
 
 	@Override
 	public List<OFFlowMod> getFlowMods() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.flowMods;
 	}
 
 	@Override
 	public List<OFFlowMod> getPotentialFlowMods(OFFlowMod fm,
-			boolean isSequentialLeft) {
-		// TODO Auto-generated method stub
-		return null;
+			boolean isFilterAction) {
+		if (isFilterAction) {
+			List<OFFlowMod> returnFlowMods = new ArrayList<OFFlowMod>();
+			for (OFFlowMod ofm : this.flowMods) {
+				boolean flag = false;
+				if (ofm.getActions().isEmpty()) {
+					flag = true;
+				}
+				if (!PolicyTree.ActionOutputAsPass) {
+					for (OFAction action : ofm.getActions()) {
+						if (action instanceof OFActionOutput) {
+							flag = true;
+							break;
+						}
+					}
+				}
+				if (!flag) {
+					returnFlowMods.add(ofm);
+				}
+			}
+			return returnFlowMods;
+		} else {
+			return this.flowMods;
+		}
+	}
+	
+	@Override
+	public String toString() {
+		return "Type: " + this.storeType + "\tKey: " + this.storeKey;
 	}
 
 }

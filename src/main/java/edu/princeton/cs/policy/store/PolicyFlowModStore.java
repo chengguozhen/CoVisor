@@ -20,7 +20,7 @@ public interface PolicyFlowModStore {
 		NETWORK_PROTO,
 		TRANSPORT_SRC,
 		TRANSPORT_DST,
-		all
+		ALL
 	}
 
 	public void setStore(List<OFFlowMod> flowMods);

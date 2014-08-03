@@ -138,8 +138,8 @@ public class PolicyFlowTable {
 		}
 	}
 	
-	public List<OFFlowMod> getPotentialFlowMods (OFFlowMod fm, boolean isSequentialLeft) {
-		return this.flowModStore.getPotentialFlowMods(fm, isSequentialLeft);
+	public List<OFFlowMod> getPotentialFlowMods (OFFlowMod fm, boolean isFilterAction) {
+		return this.flowModStore.getPotentialFlowMods(fm, isFilterAction);
 	}
 	
 }

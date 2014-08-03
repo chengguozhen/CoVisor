@@ -199,7 +199,7 @@ public class PolicyTree {
 					}
 				}
 				
-				for (OFFlowMod fm2: rightChild.flowTable.getPotentialFlowMods(fm1, true)) {
+				for (OFFlowMod fm2: rightChild.flowTable.getPotentialFlowMods(fm1, false)) {
 					
 					OFFlowMod composedFm = null;
 					if (this.operator == PolicyOperator.Parallel) {
@@ -219,7 +219,7 @@ public class PolicyTree {
 			for (OFFlowMod fm2 : rightUpdateTable.addFlowMods) {
 				
 				List<OFFlowMod> leftTableWithoutAdd = PolicyCompositionUtil
-						.diffFlowMods(leftChild.flowTable.getPotentialFlowMods(fm2, false),
+						.diffFlowMods(leftChild.flowTable.getPotentialFlowMods(fm2, true),
 								leftUpdateTable.addFlowMods);
 				for (OFFlowMod fm1 : leftTableWithoutAdd) {
 					
