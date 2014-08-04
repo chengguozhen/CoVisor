@@ -9,17 +9,26 @@ import org.openflow.protocol.OFFlowMod;
 import com.googlecode.concurrenttrees.common.KeyValuePair;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharArrayNodeFactory;
 
+import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreKey;
+import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreType;
 import edu.princeton.cs.trie.radix.ConcurrentIPRadixTree;
 import edu.princeton.cs.trie.radix.IPRadixTree;
 
 public class PolicyFlowModStoreTrie extends PolicyFlowModStore {
 	
 	private IPRadixTree<PolicyFlowModStore> flowModsTrie;
+	private PolicyFlowModStore wildcardFlowStore;
 	
 	public PolicyFlowModStoreTrie(List<PolicyFlowModStoreType> storeTypes,
 			List<PolicyFlowModStoreKey> storeKeys) {
 		super(storeTypes, storeKeys);
 		this.flowModsTrie = new ConcurrentIPRadixTree<PolicyFlowModStore>(new DefaultCharArrayNodeFactory());
+		
+		List<PolicyFlowModStoreType> wildcardStoreTypes = new ArrayList<PolicyFlowModStoreType>();
+		wildcardStoreTypes.add(PolicyFlowModStoreType.WILDCARD);
+    	List<PolicyFlowModStoreKey> wildcardStoreKeys = new ArrayList<PolicyFlowModStoreKey>();
+    	wildcardStoreKeys.add(PolicyFlowModStoreKey.ALL);
+		this.wildcardFlowStore = new PolicyFlowModStoreList(wildcardStoreTypes, wildcardStoreKeys);
 	}
 
 	@Override
@@ -33,17 +42,24 @@ public class PolicyFlowModStoreTrie extends PolicyFlowModStore {
 	@Override
 	public void clear() {
 		this.flowModsTrie = new ConcurrentIPRadixTree<PolicyFlowModStore>(new DefaultCharArrayNodeFactory());
+		this.wildcardFlowStore.clear();
 	}
 
 	@Override
 	public void add(OFFlowMod fm) {
 		String key = this.getKey(fm);
-		PolicyFlowModStore value = this.flowModsTrie.getValueForExactKey(key);
-		if (value == null) {
-			value = PolicyFlowModStore.createFlowModStore(this.childStoreTypes, this.childStoreKeys);
-			this.flowModsTrie.put(key, value);
+		if (key.equals("")) {
+			this.wildcardFlowStore.add(fm);
+		} else {
+			PolicyFlowModStore value = this.flowModsTrie
+					.getValueForExactKey(key);
+			if (value == null) {
+				value = PolicyFlowModStore.createFlowModStore(
+						this.childStoreTypes, this.childStoreKeys);
+				this.flowModsTrie.put(key, value);
+			}
+			value.add(fm);
 		}
-		value.add(fm);
 	}
 	
 	private String getKey (OFFlowMod fm) {
@@ -67,9 +83,14 @@ public class PolicyFlowModStoreTrie extends PolicyFlowModStore {
 	@Override
 	public OFFlowMod remove(OFFlowMod fm) {
 		String key = this.getKey(fm);
-		PolicyFlowModStore value = this.flowModsTrie.getValueForExactKey(key);
-		if (value != null) {
-			return value.remove(fm);
+		if (key.equals("")) {
+			return wildcardFlowStore.remove(fm);
+		} else {
+			PolicyFlowModStore value = this.flowModsTrie
+					.getValueForExactKey(key);
+			if (value != null) {
+				return value.remove(fm);
+			}
 		}
 		return null;
 	}
@@ -79,11 +100,19 @@ public class PolicyFlowModStoreTrie extends PolicyFlowModStore {
 		List<OFFlowMod> deletedFms = new ArrayList<OFFlowMod>();
 		for (OFFlowMod fm : flowMods) {
 			String key = this.getKey(fm);
-			PolicyFlowModStore value = this.flowModsTrie.getValueForExactKey(key);
-			if (value != null) {
-				OFFlowMod deleted = value.remove(fm);
+			if (key.equals("")) {
+				OFFlowMod deleted =wildcardFlowStore.remove(fm);
 				if (deleted != null) {
 					deletedFms.add(deleted);
+				}
+			} else {
+				PolicyFlowModStore value = this.flowModsTrie
+						.getValueForExactKey(key);
+				if (value != null) {
+					OFFlowMod deleted = value.remove(fm);
+					if (deleted != null) {
+						deletedFms.add(deleted);
+					}
 				}
 			}
 		}
@@ -92,18 +121,35 @@ public class PolicyFlowModStoreTrie extends PolicyFlowModStore {
 
 	@Override
 	public List<OFFlowMod> getFlowMods() {
-		throw new NotImplementedException("don't allow getFlowMods from PolicyFlowModStoreTrie");
+		List<OFFlowMod> flowMods = new ArrayList<OFFlowMod>();
+
+		// get flowmods that match this field
+		List<KeyValuePair<PolicyFlowModStore>> keyValuePairs = this.flowModsTrie
+				.getIPKeyValuePairsForKeysStartingWith("");
+		for (KeyValuePair<PolicyFlowModStore> keyValuePair : keyValuePairs) {
+			flowMods.addAll(keyValuePair.getValue().getFlowMods());
+		}
+
+		// get flowmods that wildcard this field
+		flowMods.addAll(this.wildcardFlowStore.getFlowMods());
+		return flowMods;
 	}
 
 	@Override
 	public List<OFFlowMod> getPotentialFlowMods(OFFlowMod fm) {
-		List<OFFlowMod> flowMods = new ArrayList<OFFlowMod>();
 		String key = this.getKey(fm);
-		List<KeyValuePair<PolicyFlowModStore>> keyValuePairs =
-				this.flowModsTrie.getIPKeyValuePairsForKeysStartingWith(key);
+
+		List<OFFlowMod> flowMods = new ArrayList<OFFlowMod>();
+
+		// get flowmods that match this field
+		List<KeyValuePair<PolicyFlowModStore>> keyValuePairs = this.flowModsTrie
+				.getIPKeyValuePairsForKeysStartingWith(key);
 		for (KeyValuePair<PolicyFlowModStore> keyValuePair : keyValuePairs) {
 			flowMods.addAll(keyValuePair.getValue().getPotentialFlowMods(fm));
 		}
+
+		// get flowmods that wildcard this field
+		flowMods.addAll(this.wildcardFlowStore.getFlowMods());
 		return flowMods;
 	}
 	

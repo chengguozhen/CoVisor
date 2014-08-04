@@ -303,7 +303,7 @@ public class PolicyTreeTest extends TestCase {
 		log.error("add {}, delete {}", updateTable.addFlowMods.size(), updateTable.deleteFlowMods.size());
 		
 		updateTable = policyTree.update(RuleGenerationUtil.generateFWRule(1, "2.1.0.0", 24, OFFlowMod.OFPFC_DELETE), 1);
-		log.error("add {}, delete {}", updateTable.addFlowMods.size(), updateTable.deleteFlowMods.size());		
+		log.error("add {}, delete {}", updateTable.addFlowMods.size(), updateTable.deleteFlowMods.size());
     }
     
     // experiment: M + R, test time

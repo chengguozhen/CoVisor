@@ -34,7 +34,7 @@ public class ACLTest extends TestCase {
     // Monitoring: srcMac, dstMac
     // Routing: dstMac
     // index: dstMac
-	public void testParallelExactDstMac() {
+	public void atestParallelExactDstMac() {
     	List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
     	storeTypes.add(PolicyFlowModStoreType.EXACT);
     	storeTypes.add(PolicyFlowModStoreType.WILDCARD);
@@ -134,7 +134,7 @@ public class ACLTest extends TestCase {
     // Routing: dstPrefix
     // index: dstPrefix
 	public void testSequentialPrefixDstIp() {
-		PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Strawman;
+		PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Incremental;
 		
     	List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
     	storeTypes.add(PolicyFlowModStoreType.PREFIX);
@@ -153,6 +153,96 @@ public class ACLTest extends TestCase {
     	policyTree.operator = PolicyOperator.Sequential;
     	policyTree.leftChild = leftTree;
     	policyTree.rightChild = rightTree;
+    	
+		// firewall policy
+		policyTree.update(RuleGenerationUtil.generateDefaultRule(), 1);
+		policyTree.update(RuleGenerationUtil.generateFWRule(1, "2.0.0.1", 32, OFFlowMod.OFPFC_ADD), 1);
+		policyTree.update(RuleGenerationUtil.generateFWRule(2, "2.0.0.2", 32, OFFlowMod.OFPFC_ADD), 1);
+		
+		log.error("********************************************************************************");
+		log.error("policy tree test 2: sequential composition FW >> R");
+		for (OFFlowMod fm : policyTree.flowTable.getFlowModsSorted()) {
+			log.error(fm);
+		}
+		
+		// routing policy
+		policyTree.update(RuleGenerationUtil.generateDefaultRule(), 2);
+		log.error("********************************************************************************");
+		log.error("policy tree test 2: sequential composition FW >> R");
+		for (OFFlowMod fm : policyTree.flowTable.getFlowModsSorted()) {
+			log.error(fm);
+		}
+		
+		
+		policyTree.update(RuleGenerationUtil.generateRoutingRule(1, "2.0.0.1", 1, OFFlowMod.OFPFC_ADD), 2);
+		policyTree.update(RuleGenerationUtil.generateRoutingRule(1, "2.0.0.2", 2, OFFlowMod.OFPFC_ADD), 2);
+		
+		log.error("********************************************************************************");
+		log.error("policy tree test 2: sequential composition FW >> R");
+		for (OFFlowMod fm : policyTree.flowTable.getFlowModsSorted()) {
+			log.error(fm);
+		}
+		
+		// add
+		policyTree.update(RuleGenerationUtil.generateFWRule(1, "2.1.0.0", 24, OFFlowMod.OFPFC_ADD), 1);
+		policyTree.update(RuleGenerationUtil.generateFWRule(2, "2.0.0.5", 32, OFFlowMod.OFPFC_ADD), 1);
+		policyTree.update(RuleGenerationUtil.generateRoutingRule(1, "2.1.0.1", 3, OFFlowMod.OFPFC_ADD), 2);
+		policyTree.update(RuleGenerationUtil.generateRoutingRule(1, "2.0.0.4", 4, OFFlowMod.OFPFC_ADD), 2);
+		
+		log.error("policy tree test 2: add");
+		for (OFFlowMod fm : policyTree.flowTable.getFlowModsSorted()) {
+			log.error(fm);
+		}
+		
+		// delete
+		policyTree.update(RuleGenerationUtil.generateFWRule(1, "2.0.0.1", 32, OFFlowMod.OFPFC_DELETE), 1);
+		policyTree.update(RuleGenerationUtil.generateFWRule(2, "2.0.0.2", 32, OFFlowMod.OFPFC_DELETE), 1);
+		policyTree.update(RuleGenerationUtil.generateRoutingRule(1, "2.0.0.1", 1, OFFlowMod.OFPFC_DELETE), 2);
+		policyTree.update(RuleGenerationUtil.generateRoutingRule(1, "2.0.0.2", 2, OFFlowMod.OFPFC_DELETE), 2);
+		
+		log.error("policy tree test 2: delete");
+		for (OFFlowMod fm : policyTree.flowTable.getFlowModsSorted()) {
+			log.error(fm);
+		}
+		
+		// add
+		policyTree.update(RuleGenerationUtil.generateFWRule(1, "2.0.0.1", 32, OFFlowMod.OFPFC_ADD), 1);
+		policyTree.update(RuleGenerationUtil.generateFWRule(2, "2.0.0.2", 32, OFFlowMod.OFPFC_ADD), 1);
+		policyTree.update(RuleGenerationUtil.generateRoutingRule(1, "2.0.0.1", 1, OFFlowMod.OFPFC_ADD), 2);
+		policyTree.update(RuleGenerationUtil.generateRoutingRule(1, "2.0.0.2", 2, OFFlowMod.OFPFC_ADD), 2);
+		
+		log.error("policy tree test 2: add");
+		for (OFFlowMod fm : policyTree.flowTable.getFlowModsSorted()) {
+			log.error(fm);
+		}
+		
+		// delete
+		policyTree.update(RuleGenerationUtil.generateFWRule(1, "2.1.0.0", 24, OFFlowMod.OFPFC_DELETE), 1);
+		policyTree.update(RuleGenerationUtil.generateFWRule(2, "2.0.0.5", 32, OFFlowMod.OFPFC_DELETE), 1);
+		policyTree.update(RuleGenerationUtil.generateRoutingRule(1, "2.1.0.1", 3, OFFlowMod.OFPFC_DELETE), 2);
+		policyTree.update(RuleGenerationUtil.generateRoutingRule(1, "2.0.0.4", 4, OFFlowMod.OFPFC_DELETE), 2);
+		
+		log.error("policy tree test 2: delete");
+		for (OFFlowMod fm : policyTree.flowTable.getFlowModsSorted()) {
+			log.error(fm);
+		}
+		
+		// update flow mods
+		PolicyUpdateTable updateTable = null;
+		policyTree.update(RuleGenerationUtil.generateRoutingRule(1, "2.1.0.1", 3, OFFlowMod.OFPFC_ADD), 2);
+		log.error("policy tree test 2: pre add");
+		for (OFFlowMod fm : policyTree.flowTable.getFlowModsSorted()) {
+			log.error(fm);
+		}
+		updateTable = policyTree.update(RuleGenerationUtil.generateFWRule(1, "2.1.0.0", 24, OFFlowMod.OFPFC_ADD), 1);
+		log.error("policy tree test 2: after add");
+		for (OFFlowMod fm : policyTree.flowTable.getFlowModsSorted()) {
+			log.error(fm);
+		}
+		log.error("add {}, delete {}", updateTable.addFlowMods.size(), updateTable.deleteFlowMods.size());
+		
+		updateTable = policyTree.update(RuleGenerationUtil.generateFWRule(1, "2.1.0.0", 24, OFFlowMod.OFPFC_DELETE), 1);
+		log.error("add {}, delete {}", updateTable.addFlowMods.size(), updateTable.deleteFlowMods.size());
 	}
 	
 	@Override

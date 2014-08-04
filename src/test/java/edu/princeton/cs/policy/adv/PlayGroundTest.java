@@ -60,7 +60,7 @@ public class PlayGroundTest extends TestCase {
         System.out.println("Keys closest to 'TEMPLE': " + Iterables.toString(tree.getClosestKeys("TEMPLE")));
     }*/
     
-    public void atestIP() {
+    public void testIP() {
     	
     	//RadixTree<Integer> tree = new ConcurrentRadixTree<Integer>(new DefaultCharArrayNodeFactory());
     	//tree.put("10.0.0.0", arg1)
@@ -126,7 +126,7 @@ public class PlayGroundTest extends TestCase {
     	
     }
     
-    public void testMatchCompareHelper() {
+    public void atestMatchCompareHelper() {
     	for (int i = 100; i < 1000; i+=100) {
     		helper(i);
     	}

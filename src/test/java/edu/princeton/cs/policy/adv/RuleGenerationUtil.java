@@ -143,7 +143,7 @@ public class RuleGenerationUtil {
 		OFMatch m = new OFMatch();
 		int wcards = OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_DL_TYPE
 				& ((32 - dstPrefix) << OFMatch.OFPFW_NW_DST_SHIFT | ~OFMatch.OFPFW_NW_DST_MASK)
-				& ((24 << OFMatch.OFPFW_NW_SRC_SHIFT) | ~OFMatch.OFPFW_NW_DST_MASK)
+				& ((24 << OFMatch.OFPFW_NW_SRC_SHIFT) | ~OFMatch.OFPFW_NW_SRC_MASK)
 				& ~OFMatch.OFPFW_TP_SRC
 				& ~OFMatch.OFPFW_TP_DST
 				& ~OFMatch.OFPFW_NW_PROTO;

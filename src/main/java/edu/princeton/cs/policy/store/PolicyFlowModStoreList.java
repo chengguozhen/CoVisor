@@ -8,6 +8,8 @@ import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
 
 import edu.princeton.cs.policy.adv.PolicyTree;
+import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreKey;
+import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreType;
 
 public class PolicyFlowModStoreList extends PolicyFlowModStore {
 	
