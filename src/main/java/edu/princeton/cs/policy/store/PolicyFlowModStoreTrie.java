@@ -12,24 +12,13 @@ import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharArrayNodeFa
 import edu.princeton.cs.trie.radix.ConcurrentIPRadixTree;
 import edu.princeton.cs.trie.radix.IPRadixTree;
 
-public class PolicyFlowModStoreTrie implements PolicyFlowModStore {
+public class PolicyFlowModStoreTrie extends PolicyFlowModStore {
 	
-	private PolicyFlowModStoreType storeType;
-	private PolicyFlowModStoreKey storeKey;
-	private List<PolicyFlowModStoreType> childStoreTypes;
-	private List<PolicyFlowModStoreKey> childStoreKeys;
-	private IPRadixTree<PolicyFlowModStore> flowModsTrie; 
+	private IPRadixTree<PolicyFlowModStore> flowModsTrie;
 	
 	public PolicyFlowModStoreTrie(List<PolicyFlowModStoreType> storeTypes,
 			List<PolicyFlowModStoreKey> storeKeys) {
-		this.storeType = storeTypes.get(0);
-		for (int i = 1; i < storeTypes.size(); i++) {
-			this.childStoreTypes.add(storeTypes.get(i));
-		}
-		this.storeKey = storeKeys.get(0);
-		for (int i = 1; i < storeKeys.size(); i++) {
-			this.childStoreKeys.add(storeKeys.get(i));
-		}
+		super(storeTypes, storeKeys);
 		this.flowModsTrie = new ConcurrentIPRadixTree<PolicyFlowModStore>(new DefaultCharArrayNodeFactory());
 	}
 
@@ -51,7 +40,7 @@ public class PolicyFlowModStoreTrie implements PolicyFlowModStore {
 		String key = this.getKey(fm);
 		PolicyFlowModStore value = this.flowModsTrie.getValueForExactKey(key);
 		if (value == null) {
-			value = this.createChildFlowModStore();
+			value = PolicyFlowModStore.createFlowModStore(this.childStoreTypes, this.childStoreKeys);
 			this.flowModsTrie.put(key, value);
 		}
 		value.add(fm);
@@ -59,57 +48,20 @@ public class PolicyFlowModStoreTrie implements PolicyFlowModStore {
 	
 	private String getKey (OFFlowMod fm) {
 		int ip = 0;
+		int prefixLen = 0;
 		switch (this.storeKey) {
 		case NETWORK_SRC:
 			ip = fm.getMatch().getNetworkSource();
+			prefixLen = fm.getMatch().getNetworkSourceMaskLen(); 
 			break;
 		case NETWORK_DST:
 			ip = fm.getMatch().getNetworkDestination();
+			prefixLen = fm.getMatch().getNetworkDestinationMaskLen();
 			break;
 		default:
 			break;
 		}
-		return String.format("%32s", Integer.toBinaryString(ip)).replace(' ', '0');
-	}
-	
-	private PolicyFlowModStore createChildFlowModStore() {
-		PolicyFlowModStore flowModStore = null;
-		switch (this.childStoreTypes.get(0)) {
-		case EXACT: {
-			switch (this.childStoreKeys.get(0)) {
-			case DATA_SRC:
-			case DATA_DST:
-				flowModStore = new PolicyFlowModStoreMap<ByteArrayWrapper>(childStoreTypes, childStoreKeys);
-				break;
-			case NETWORK_SRC:
-			case NETWORK_DST:
-				flowModStore = new PolicyFlowModStoreMap<Integer>(childStoreTypes, childStoreKeys);
-				break;
-			case NETWORK_PROTO:
-				flowModStore = new PolicyFlowModStoreMap<Byte>(childStoreTypes, childStoreKeys);
-				break;
-			case TRANSPORT_SRC:
-			case TRANSPORT_DST:
-				flowModStore = new PolicyFlowModStoreMap<Short>(childStoreTypes, childStoreKeys);
-				break;
-			default:
-				break;
-			}
-			break;
-		}
-		case PREFIX: {
-			flowModStore = new PolicyFlowModStoreTrie(childStoreTypes, childStoreKeys);
-			break;
-		}
-		case WILDCARD: {
-			flowModStore = new PolicyFlowModStoreList(childStoreTypes, childStoreKeys);
-			break;
-		}
-		default: {
-			break;
-		}
-		}
-		return flowModStore;
+		return String.format("%32s", Integer.toBinaryString(ip)).replace(' ', '0').substring(0, prefixLen);
 	}
 
 	@Override
@@ -144,14 +96,13 @@ public class PolicyFlowModStoreTrie implements PolicyFlowModStore {
 	}
 
 	@Override
-	public List<OFFlowMod> getPotentialFlowMods(OFFlowMod fm,
-			boolean isSequentialLeft) {
+	public List<OFFlowMod> getPotentialFlowMods(OFFlowMod fm) {
 		List<OFFlowMod> flowMods = new ArrayList<OFFlowMod>();
 		String key = this.getKey(fm);
 		List<KeyValuePair<PolicyFlowModStore>> keyValuePairs =
 				this.flowModsTrie.getIPKeyValuePairsForKeysStartingWith(key);
 		for (KeyValuePair<PolicyFlowModStore> keyValuePair : keyValuePairs) {
-			flowMods.addAll(keyValuePair.getValue().getPotentialFlowMods(fm, isSequentialLeft));
+			flowMods.addAll(keyValuePair.getValue().getPotentialFlowMods(fm));
 		}
 		return flowMods;
 	}

@@ -8,6 +8,9 @@ import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
 
+import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreKey;
+import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreType;
+
 public class PolicyTree {
 	
 	public enum PolicyOperator {
@@ -33,10 +36,23 @@ public class PolicyTree {
 	public Integer tenantId; // only meaningful when operator is Invalid
 	
 	public PolicyTree() {
+		List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
+    	storeTypes.add(PolicyFlowModStoreType.WILDCARD);
+    	List<PolicyFlowModStoreKey> storeKeys = new ArrayList<PolicyFlowModStoreKey>();
+    	storeKeys.add(PolicyFlowModStoreKey.ALL);
 		this.operator = PolicyOperator.Invalid;
 		this.leftChild = null;
 		this.rightChild = null;
-		this.flowTable = new PolicyFlowTable();
+		this.flowTable = new PolicyFlowTable(storeTypes, storeKeys);
+		this.tenantId = -1;
+	}
+	
+	public PolicyTree(List<PolicyFlowModStoreType> storeTypes,
+			List<PolicyFlowModStoreKey> storeKeys) {
+		this.operator = PolicyOperator.Invalid;
+		this.leftChild = null;
+		this.rightChild = null;
+		this.flowTable = new PolicyFlowTable(storeTypes, storeKeys);
 		this.tenantId = -1;
 	}
 	
@@ -199,7 +215,7 @@ public class PolicyTree {
 					}
 				}
 				
-				for (OFFlowMod fm2: rightChild.flowTable.getPotentialFlowMods(fm1, false)) {
+				for (OFFlowMod fm2: rightChild.flowTable.getPotentialFlowMods(fm1)) {
 					
 					OFFlowMod composedFm = null;
 					if (this.operator == PolicyOperator.Parallel) {
@@ -219,9 +235,27 @@ public class PolicyTree {
 			for (OFFlowMod fm2 : rightUpdateTable.addFlowMods) {
 				
 				List<OFFlowMod> leftTableWithoutAdd = PolicyCompositionUtil
-						.diffFlowMods(leftChild.flowTable.getPotentialFlowMods(fm2, true),
+						.diffFlowMods(leftChild.flowTable.getPotentialFlowMods(fm2),
 								leftUpdateTable.addFlowMods);
 				for (OFFlowMod fm1 : leftTableWithoutAdd) {
+					
+					if (this.operator == PolicyOperator.Sequential) {
+						boolean flag = false;
+						if (fm1.getActions().isEmpty()) {
+							flag = true;
+						}
+						if (!ActionOutputAsPass) {
+							for (OFAction action : fm1.getActions()) {
+								if (action instanceof OFActionOutput) {
+									flag = true;
+									break;
+								}
+							}
+						}
+						if (flag) {
+							continue;
+						}
+					}
 					
 					OFFlowMod composedFm = null;
 					if (this.operator == PolicyOperator.Parallel) {

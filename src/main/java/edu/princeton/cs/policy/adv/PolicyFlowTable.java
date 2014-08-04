@@ -11,6 +11,8 @@ import org.openflow.protocol.OFFlowMod;
 
 import edu.princeton.cs.policy.store.PolicyFlowModStore;
 import edu.princeton.cs.policy.store.PolicyFlowModStoreMap;
+import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreKey;
+import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreType;
 
 
 public class PolicyFlowTable {
@@ -19,9 +21,10 @@ public class PolicyFlowTable {
 	private ConcurrentHashMap<OFFlowMod, List<OFFlowMod>> generatedParentFlowModsDictionary;
 	private PolicyFlowModStore flowModStore;
 	
-	public PolicyFlowTable() {
+	public PolicyFlowTable(List<PolicyFlowModStoreType> storeTypes,
+			List<PolicyFlowModStoreKey> storeKeys) {
 		this.generatedParentFlowModsDictionary = new ConcurrentHashMap<OFFlowMod, List<OFFlowMod>>();
-		this.flowModStore = new PolicyFlowModStoreMap<Integer>();
+		this.flowModStore = PolicyFlowModStore.createFlowModStore(storeTypes, storeKeys);
 	}
 	
 	public void addFlowMod(OFFlowMod fm) {
@@ -99,12 +102,13 @@ public class PolicyFlowTable {
 	}
 	
 	public List<OFFlowMod> getFlowModsSorted() {
-		Collections.sort(this.flowModStore.getFlowMods(), new Comparator<OFFlowMod>() {
+		List<OFFlowMod> flowMods = this.flowModStore.getFlowMods();
+		Collections.sort(flowMods, new Comparator<OFFlowMod>() {
 			public int compare(OFFlowMod fm1, OFFlowMod fm2) {
 				return fm2.getPriority() - fm1.getPriority();
 			}
 		});
-		return this.flowModStore.getFlowMods();
+		return flowMods;
 	}
 	
 	@Override
@@ -138,8 +142,8 @@ public class PolicyFlowTable {
 		}
 	}
 	
-	public List<OFFlowMod> getPotentialFlowMods (OFFlowMod fm, boolean isFilterAction) {
-		return this.flowModStore.getPotentialFlowMods(fm, isFilterAction);
+	public List<OFFlowMod> getPotentialFlowMods (OFFlowMod fm) {
+		return this.flowModStore.getPotentialFlowMods(fm);
 	}
 	
 }

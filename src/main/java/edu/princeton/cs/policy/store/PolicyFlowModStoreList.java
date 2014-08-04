@@ -8,27 +8,14 @@ import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
 
 import edu.princeton.cs.policy.adv.PolicyTree;
-import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreKey;
-import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreType;
 
-public class PolicyFlowModStoreList implements PolicyFlowModStore {
+public class PolicyFlowModStoreList extends PolicyFlowModStore {
 	
-	private PolicyFlowModStoreType storeType;
-	private PolicyFlowModStoreKey storeKey;
-	private List<PolicyFlowModStoreType> childStoreTypes;
-	private List<PolicyFlowModStoreKey> childStoreKeys;
 	private List<OFFlowMod> flowMods;
 	
 	public PolicyFlowModStoreList (List<PolicyFlowModStoreType> storeTypes,
 			List<PolicyFlowModStoreKey> storeKeys) {
-		this.storeType = storeTypes.get(0);
-		for (int i = 1; i < storeTypes.size(); i++) {
-			this.childStoreTypes.add(storeTypes.get(i));
-		}
-		this.storeKey = storeKeys.get(0);
-		for (int i = 1; i < storeKeys.size(); i++) {
-			this.childStoreKeys.add(storeKeys.get(i));
-		}
+		super(storeTypes, storeKeys);
 		this.flowMods = new ArrayList<OFFlowMod>();
 	}
 
@@ -83,31 +70,8 @@ public class PolicyFlowModStoreList implements PolicyFlowModStore {
 	}
 
 	@Override
-	public List<OFFlowMod> getPotentialFlowMods(OFFlowMod fm,
-			boolean isFilterAction) {
-		if (isFilterAction) {
-			List<OFFlowMod> returnFlowMods = new ArrayList<OFFlowMod>();
-			for (OFFlowMod ofm : this.flowMods) {
-				boolean flag = false;
-				if (ofm.getActions().isEmpty()) {
-					flag = true;
-				}
-				if (!PolicyTree.ActionOutputAsPass) {
-					for (OFAction action : ofm.getActions()) {
-						if (action instanceof OFActionOutput) {
-							flag = true;
-							break;
-						}
-					}
-				}
-				if (!flag) {
-					returnFlowMods.add(ofm);
-				}
-			}
-			return returnFlowMods;
-		} else {
-			return this.flowMods;
-		}
+	public List<OFFlowMod> getPotentialFlowMods(OFFlowMod fm) {
+		return this.flowMods;
 	}
 	
 	@Override

@@ -1,6 +1,7 @@
 package edu.princeton.cs.policy.adv;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import net.onrc.openvirtex.util.MACAddress;
@@ -291,19 +292,27 @@ public class PolicyCompositionUtil {
 		int wcard = match.getWildcards();
 		if ((wcard1 & field) == 0 && (wcard2 & field) == 0) {
 			wcard = wcard & (~field);
-			for (int i = 0; i < MACAddress.MAC_ADDRESS_LENGTH; i++) {
+			match.setWildcards(wcard);
+			/*for (int i = 0; i < MACAddress.MAC_ADDRESS_LENGTH; i++) {
 				if (val1[i] != val2[i]) {
 					return false;
 				}
+			}*/
+			if (Arrays.equals(val1, val2)) {
+				setMatchField(match, field, val1);
+				return true;
 			}
-			setMatchField(match, field, val1);
-			return true;
+			else {
+				return false;
+			}
 		} else if ((wcard1 & field) == 0 && (wcard2 & field) != 0) {
 			wcard = wcard & (~field);
+			match.setWildcards(wcard);
 			setMatchField(match, field, val1);
 			return true;
 		} else if ((wcard1 & field) != 0 && (wcard2 & field) == 0) {
 			wcard = wcard & (~field);
+			match.setWildcards(wcard);
 			setMatchField(match, field, val2);
 			return true;
 		} else if ((wcard1 & field) != 0 && (wcard2 & field) != 0) {

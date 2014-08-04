@@ -7,28 +7,16 @@ import java.util.Map;
 
 import org.openflow.protocol.OFFlowMod;
 
-import com.google.common.base.CaseFormat;
+public class PolicyFlowModStoreMap<O> extends PolicyFlowModStore {
 
-public class PolicyFlowModStoreMap<O> implements PolicyFlowModStore {
-
-	@SuppressWarnings("unused")
-	private PolicyFlowModStoreType storeType;
-	private PolicyFlowModStoreKey storeKey;
-	private List<PolicyFlowModStoreType> childStoreTypes;
-	private List<PolicyFlowModStoreKey> childStoreKeys;
 	private Map<O, PolicyFlowModStore> flowModsMap;
+	private O wildcardKey;
 	
 	public PolicyFlowModStoreMap(List<PolicyFlowModStoreType> storeTypes,
 			List<PolicyFlowModStoreKey> storeKeys) {
-		this.storeType = storeTypes.get(0);
-		for (int i = 1; i < storeTypes.size(); i++) {
-			this.childStoreTypes.add(storeTypes.get(i));
-		}
-		this.storeKey = storeKeys.get(0);
-		for (int i = 1; i < storeKeys.size(); i++) {
-			this.childStoreKeys.add(storeKeys.get(i));
-		}
+		super(storeTypes, storeKeys);
 		this.flowModsMap = new HashMap<O, PolicyFlowModStore>();
+		this.wildcardKey = generateWildcardKey();
 	}
 	
 	@Override
@@ -44,13 +32,12 @@ public class PolicyFlowModStoreMap<O> implements PolicyFlowModStore {
 		this.flowModsMap.clear();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void add(OFFlowMod fm) {
 		O key = this.getKey(fm);
 		PolicyFlowModStore value = this.flowModsMap.get(key);
 		if (value == null) {
-			value = createChildFlowModStore();
+			value = PolicyFlowModStore.createFlowModStore(this.childStoreTypes, this.childStoreKeys);
 			this.flowModsMap.put(key, value);
 		}
 		value.add(fm);
@@ -87,44 +74,35 @@ public class PolicyFlowModStoreMap<O> implements PolicyFlowModStore {
 		return key;
 	}
 	
-	private PolicyFlowModStore createChildFlowModStore() {
-		PolicyFlowModStore flowModStore = null;
-		switch (this.childStoreTypes.get(0)) {
-		case EXACT: {
-			switch (this.childStoreKeys.get(0)) {
-			case DATA_SRC:
-			case DATA_DST:
-				flowModStore = new PolicyFlowModStoreMap<ByteArrayWrapper>(childStoreTypes, childStoreKeys);
-				break;
-			case NETWORK_SRC:
-			case NETWORK_DST:
-				flowModStore = new PolicyFlowModStoreMap<Integer>(childStoreTypes, childStoreKeys);
-				break;
-			case NETWORK_PROTO:
-				flowModStore = new PolicyFlowModStoreMap<Byte>(childStoreTypes, childStoreKeys);
-				break;
-			case TRANSPORT_SRC:
-			case TRANSPORT_DST:
-				flowModStore = new PolicyFlowModStoreMap<Short>(childStoreTypes, childStoreKeys);
-				break;
-			default:
-				break;
-			}
+	@SuppressWarnings("unchecked")
+	private O generateWildcardKey () {
+		O key = null;
+		switch (this.storeKey) {
+		case DATA_SRC:
+			key = (O) new ByteArrayWrapper(new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00});
+			break;
+		case DATA_DST:
+			key = (O) new ByteArrayWrapper(new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00});
+			break;
+		case NETWORK_SRC:
+			key = (O) Integer.valueOf(0);
+			break;
+		case NETWORK_DST:
+			key = (O) Integer.valueOf(0);
+			break;
+		case NETWORK_PROTO:
+			key = (O) Byte.valueOf((byte) 0);
+			break;
+		case TRANSPORT_SRC:
+			key = (O) Short.valueOf((short) 0);
+			break;
+		case TRANSPORT_DST:
+			key = (O) Short.valueOf((short) 0);
+			break;
+		default:
 			break;
 		}
-		case PREFIX: {
-			flowModStore = new PolicyFlowModStoreTrie(childStoreTypes, childStoreKeys);
-			break;
-		}
-		case WILDCARD: {
-			flowModStore = new PolicyFlowModStoreList(childStoreTypes, childStoreKeys);
-			break;
-		}
-		default: {
-			break;
-		}
-		}
-		return flowModStore;
+		return key;
 	}
 
 	@Override
@@ -164,14 +142,26 @@ public class PolicyFlowModStoreMap<O> implements PolicyFlowModStore {
 	}
 
 	@Override
-	public List<OFFlowMod> getPotentialFlowMods(OFFlowMod fm,
-			boolean isSequentialLeft) {
+	public List<OFFlowMod> getPotentialFlowMods(OFFlowMod fm) {
 		O key = this.getKey(fm);
-		PolicyFlowModStore value = this.flowModsMap.get(key);
-		if (value != null) {
-			return value.getPotentialFlowMods(fm, isSequentialLeft);
+		if (key.equals(wildcardKey)) {
+			return this.getFlowMods();
 		} else {
-			return new ArrayList<OFFlowMod>();
+			List<OFFlowMod> potentialFlowMods = new ArrayList<OFFlowMod>();
+			
+			// get flowmods that match this field
+			PolicyFlowModStore value = this.flowModsMap.get(key);
+			if (value != null) {
+				potentialFlowMods.addAll(value.getPotentialFlowMods(fm));
+			}
+
+			// get flowmods that wildcard this field
+			value = this.flowModsMap.get(this.wildcardKey);
+			if (value != null) {
+				potentialFlowMods.addAll(value.getPotentialFlowMods(fm));
+			}
+			
+			return potentialFlowMods;
 		}
 	}
 
