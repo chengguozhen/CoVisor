@@ -344,6 +344,13 @@ def processLog(fout):
     cmd = "python log_process.py ovx.log %s" % fout
     subprocess.call(cmd, shell=True)
 
+def exprVirt():
+    cleanAll()
+    startOneFloodlight(1)
+    startOVX()
+    (topo, net) = startMininetWithoutCLI()
+    CLI(net)
+
 def expr(algo, outLog):
     cleanAll()
     startFloodlight()
