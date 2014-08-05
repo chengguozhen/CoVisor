@@ -621,8 +621,6 @@ def pa_createMultiSwitch(args, cmd):
         USAGE.format(cmd)
     (sdesc, ldesc) = DESCS[cmd]
     parser = OptionParser(usage=usage, description=ldesc)
-    parser.add_option("-d", "--dpid", dest="dpid", type="str", default="0",
-        help="Specify the DPID for this switch")
     return parser.parse_args(args)
 
 def do_createMultiSwitch(gopts, opts, args):
@@ -632,8 +630,7 @@ def do_createMultiSwitch(gopts, opts, args):
             "number_of_baby_switches")
         sys.exit()
     req = { "tenantId" : int(args[0]), "physicalDpid" : int(args[1].replace(":", ""), 16),
-            "numberOfBabySwitches" : int(args[2]),
-            "dpid" : int(opts.dpid.replace(":", ""), 16)};
+            "numberOfBabySwitches" : int(args[2]) };
     print "req:  " + str(req)
     reply = connect(gopts, "tenant", "createMultiSwitch", data=req, passwd=getPasswd(gopts))
     switchId = reply.get('vdpid')
@@ -666,7 +663,7 @@ def do_createBabyPort(gopts, opts, args):
     portId = reply.get('vport')
     if switchId and portId:
         switch_name = '00:' + ':'.join([("%x" %int(switchId))[i:i+2] for i in range(0, len(("%x" %int(switchId))), 2)])
-    print "Virtual port has been created (tenant_id %s, switch_id %s, port_id %s)" % (args[0], %switch_name, portId)
+    print "Virtual port has been created (tenant_id %s, switch_id %s, port_id %s)" % (args[0], switch_name, portId)
 
 def pa_help(args, cmd):
     usage = "%s <cmd>" % USAGE.format(cmd)
@@ -899,7 +896,7 @@ DESCS = {
                                 "\nExample: stopComposition")),
     'setComposeAlgo' : ("Set composition algorihm",
                                 ("Set composition algorithm. Must specify an algorithm.",
-                                "\nExample: setComposeAlgo strawman/incremental"))
+                                "\nExample: setComposeAlgo strawman/incremental")),
     'createMultiSwitch' : ("Create virtual multi switch",
                                 ("Create a virtual multi switch. Must specify a tenant_id, the dpid of the " +
                                 "physical switch corresponding to this multi switch, and the number of " +
@@ -910,7 +907,7 @@ DESCS = {
                             "the dpid of the parent baby switch, and optionally the number of the " +
                             "corresponding physical port." +
                             "\nExample: createBabyPort 1 00:00:00:00:00:00:00:01\n" +
-                            "         createBabyPort 1 00:00:00:00:00:00:00:01 3")),
+                            "         createBabyPort 1 00:00:00:00:00:00:00:01 3"))
 }
 
 USAGE="%prog {}"

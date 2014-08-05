@@ -467,7 +467,8 @@ if __name__ == '__main__':
         testApp()
     elif sys.argv[1] == "expr":
         #expr(sys.argv[2])
-        exprAll()
+        #exprAll()
+        exprVirt()
     else:
         printHelp()
 
