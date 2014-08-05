@@ -32,7 +32,9 @@ import net.onrc.openvirtex.db.DBManager;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.Persistable;
 import net.onrc.openvirtex.elements.address.IPAddress;
+import net.onrc.openvirtex.elements.datapath.OVXBabySwitch;
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
+import net.onrc.openvirtex.elements.datapath.OVXMultiSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSingleSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
@@ -299,6 +301,47 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
                 | this.dpidCounter.getNewIndex();
         return this.createSwitch(dpids, switchId);
     }
+    
+    /**
+     * Create OVX multi switches
+     */
+	public OVXMultiSwitch createMultiSwitch(final long physicalDpid,
+			int numberOfBabySwitches, final long switchId)
+			throws IndexOutOfBoundException {
+		OVXSwitch virtualSwitch = new OVXMultiSwitch(switchId, this.tenantId);
+		this.addSwitch(virtualSwitch);
+		
+		final List<PhysicalSwitch> switches = new ArrayList<PhysicalSwitch>();
+		switches.add(PhysicalNetwork.getInstance().getSwitch(physicalDpid));
+		virtualSwitch.register(switches);
+
+		// Add babySwitches to multiSwitch.
+		for (int i = 0; i < numberOfBabySwitches; i++) {
+			final long babyId = (long) 0xa42305 << 32
+					| this.dpidCounter.getNewIndex();
+			OVXSwitch babySwitch = new OVXBabySwitch(babyId, (OVXMultiSwitch) virtualSwitch);
+			((OVXMultiSwitch) virtualSwitch).addSwitch((OVXBabySwitch) babySwitch);
+			/*
+			 * Store babySwitches in network dpidMap and neighborMap (in
+			 * addition to maps in multiSwitch).
+			 */
+			addSwitch(babySwitch);
+		}
+
+		if (this.isBooted) {
+			virtualSwitch.boot();
+		}
+
+		return (OVXMultiSwitch) virtualSwitch;
+	}
+    
+	public OVXMultiSwitch createMultiSwitch(final long physicalDpid, int numberOfBabySwitches)
+			throws IndexOutOfBoundException {
+		final long switchId = (long) 0xa42305 << 32
+				| this.dpidCounter.getNewIndex();
+		return this.createMultiSwitch(physicalDpid, numberOfBabySwitches,
+				switchId);
+	}
 
     /**
      * Creates a virtual port that is mapped to the given physical

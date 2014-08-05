@@ -1,4 +1,4 @@
-package edu.princeton.cs.policy;
+package edu.princeton.cs.policy.adv;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -18,9 +18,9 @@ public final class BasePolicyTests {
     public static Test suite() {
         final TestSuite suite = new TestSuite(BasePolicyTests.class.getName());
         // $JUnit-BEGIN$
-        suite.addTest(ParallelCompositionTest.suite());
-        suite.addTest(SequentialCompositionTest.suite());
-        //suite.addTest(PolicyTreeTest.suite());
+        //suite.addTest(ParallelCompositionTest.suite());
+        //suite.addTest(SequentialCompositionTest.suite());
+        suite.addTest(PolicyTreeTest.suite());
         //suite.addTest(PlayGroundTest.suite());
         //suite.addTest(ExactMatchTest.suite());
         // $JUnit-END$

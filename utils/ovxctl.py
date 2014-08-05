@@ -616,7 +616,57 @@ def do_setComposeAlgo(gopts, opts, args):
     result = connect(gopts, "tenant", "setComposeAlgo", data=req, passwd=getPasswd(gopts))
     print "Algorithm '%s' has been set" % args[0] 
 
+def pa_createMultiSwitch(args, cmd):
+    usage = "%s [options] <tenant_id> <physical_dpid> <number_of_baby_switches>" % \
+        USAGE.format(cmd)
+    (sdesc, ldesc) = DESCS[cmd]
+    parser = OptionParser(usage=usage, description=ldesc)
+    parser.add_option("-d", "--dpid", dest="dpid", type="str", default="0",
+        help="Specify the DPID for this switch")
+    return parser.parse_args(args)
 
+def do_createMultiSwitch(gopts, opts, args):
+    if len(args) != 3:
+        print ("createMultiSwitch : must specify: " +
+            "virtual tenant_id, physical_dpid (e.g. 00:00:00:00:00:00:00:01)," +
+            "number_of_baby_switches")
+        sys.exit()
+    req = { "tenantId" : int(args[0]), "physicalDpid" : int(args[1].replace(":", ""), 16),
+            "numberOfBabySwitches" : int(args[2]),
+            "dpid" : int(opts.dpid.replace(":", ""), 16)};
+    print "req:  " + str(req)
+    reply = connect(gopts, "tenant", "createMultiSwitch", data=req, passwd=getPasswd(gopts))
+    switchId = reply.get('vdpid')
+    babyDpids = reply.get("babyDpids")
+    if switchId and babyDpids:
+        switch_name = '00:' + ':'.join([("%x" % switchId)[i:i+2] for i in range(0, len(("%x" % switchId)), 2)])
+        print "Virtual switch has been created (tenant_id %s, switch_id %s) with internal baby switches %s" \
+            % (args[0], switch_name, babyDpids)
+
+def pa_createBabyPort(args, cmd):
+    usage = "%s [options] <tenant_id> <baby_dpid>" % USAGE.format(cmd)
+    (sdesc, ldesc) = DESCS[cmd]
+    parser = OptionParser(usage=usage, description=ldesc)
+    parser.add_option("--pport", dest="pport",
+        type="str", default="-1", help="Specify the number of " +
+        "the physical port corresponding to this baby port.")
+    return parser.parse_args(args)
+
+def do_createBabyPort(gopts, opts, args):
+    if len(args) != 2:
+        print ("createBabyPort : must specify: " +
+            "virtual tenant_id, baby dpid " +
+            "(e.g. 00:00:00:00:00:00:00:01) and (optionally) physical port")
+        sys.exit()
+    req = { "tenantId" : int(args[0]), "babyDpid" : int(args[1].replace(":", ""), 16),
+        "pport" : int(opts.pport) }
+    reply = connect(gopts, "tenant", "createBabyPort", data=req, passwd=getPasswd(gopts))
+
+    switchId = reply.get('vdpid')
+    portId = reply.get('vport')
+    if switchId and portId:
+        switch_name = '00:' + ':'.join([("%x" %int(switchId))[i:i+2] for i in range(0, len(("%x" %int(switchId))), 2)])
+    print "Virtual port has been created (tenant_id %s, switch_id %s, port_id %s)" % (args[0], %switch_name, portId)
 
 def pa_help(args, cmd):
     usage = "%s <cmd>" % USAGE.format(cmd)
@@ -725,7 +775,10 @@ CMDS = {
     'startComposition': (pa_startComposition, do_startComposition),
     'stopComposition': (pa_stopComposition, do_stopComposition),
     'setComposeAlgo': (pa_setComposeAlgo, do_setComposeAlgo),
-    
+   
+    'createMultiSwitch': (pa_createMultiSwitch, do_createMultiSwitch),
+    'createBabyPort': (pa_createBabyPort, do_createBabyPort),
+
     'help' : (pa_help, do_help)
 }
 
@@ -834,6 +887,7 @@ DESCS = {
     'getVirtualTopology' : ("Get the virtual topology",
                                  ("Get the virtual topology. Must specify a tenant_id.",
                                "\nExample: getVirtualTopology 1")),
+
     'createPolicy' : ("Create controller policy",
                                 ("Create controller policy. Must specify a policy.",
                                 "\nExample: createPolicy 1+2")),
@@ -846,6 +900,17 @@ DESCS = {
     'setComposeAlgo' : ("Set composition algorihm",
                                 ("Set composition algorithm. Must specify an algorithm.",
                                 "\nExample: setComposeAlgo strawman/incremental"))
+    'createMultiSwitch' : ("Create virtual multi switch",
+                                ("Create a virtual multi switch. Must specify a tenant_id, the dpid of the " +
+                                "physical switch corresponding to this multi switch, and the number of " +
+                                "baby switches internal to this multi switch." +
+                                "\nExample: createMultiSwitch 1 00:00:00:00:00:00:00:01 4")),
+    'createBabyPort' : ("Create virtual port on baby switch",
+                            ("Create a virtual port on a baby switch. Must specify a tenant_id, " +
+                            "the dpid of the parent baby switch, and optionally the number of the " +
+                            "corresponding physical port." +
+                            "\nExample: createBabyPort 1 00:00:00:00:00:00:00:01\n" +
+                            "         createBabyPort 1 00:00:00:00:00:00:00:01 3")),
 }
 
 USAGE="%prog {}"

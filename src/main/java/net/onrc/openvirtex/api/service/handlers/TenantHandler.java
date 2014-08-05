@@ -20,6 +20,8 @@ import java.util.HashMap;
 import net.onrc.openvirtex.api.service.handlers.tenant.AddController;
 import net.onrc.openvirtex.api.service.handlers.tenant.ConnectHost;
 import net.onrc.openvirtex.api.service.handlers.tenant.ConnectOVXLink;
+import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXBabyPort;
+import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXMultiSwitch;
 import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXNetwork;
 import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXPort;
 import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXSwitch;
@@ -148,6 +150,12 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
      * Keyword for the boot state.
      */
     public static final String IS_BOOTED = "isBooted";
+    
+    public static final String PHYSICAL_DPID = "physicalDpid";
+    public static final String PPORT = "pport";
+    public static final String NUMBER_OF_BABY_SWITCHES = "numberOfBabySwitches";
+    public static final String BABY_DPID = "babyDpid";
+    public static final String BABY_DPIDS = "babyDpids";
 
     @SuppressWarnings({ "serial", "rawtypes" })
     private HashMap<String, ApiHandler> handlers = new HashMap<String, ApiHandler>() {
@@ -177,10 +185,15 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
             this.put("stopSwitch", new StopOVXSwitch());
             this.put("stopPort", new StopOVXPort());
             
+            // composition policy handlers
             this.put("createPolicy", new CreatePolicy());
             this.put("startComposition", new StartComposition());
             this.put("stopComposition", new StopComposition());
             this.put("setComposeAlgo", new SetComposeAlgo());
+            
+            // many-to-one mapping handlers
+            this.put("createMultiSwitch", new CreateOVXMultiSwitch());
+    	    this.put("createBabyPort", new CreateOVXBabyPort());
         }
     };
 
