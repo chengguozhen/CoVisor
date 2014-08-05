@@ -644,19 +644,17 @@ def pa_createBabyPort(args, cmd):
     usage = "%s [options] <tenant_id> <baby_dpid>" % USAGE.format(cmd)
     (sdesc, ldesc) = DESCS[cmd]
     parser = OptionParser(usage=usage, description=ldesc)
-    parser.add_option("--pport", dest="pport",
-        type="str", default="-1", help="Specify the number of " +
-        "the physical port corresponding to this baby port.")
     return parser.parse_args(args)
 
 def do_createBabyPort(gopts, opts, args):
-    if len(args) != 2:
+    if len(args) != 3:
         print ("createBabyPort : must specify: " +
             "virtual tenant_id, baby dpid " +
             "(e.g. 00:00:00:00:00:00:00:01) and (optionally) physical port")
         sys.exit()
     req = { "tenantId" : int(args[0]), "babyDpid" : int(args[1].replace(":", ""), 16),
-        "pport" : int(opts.pport) }
+        "pport" : int(args[2]) }
+    print "req:  " + str(req)
     reply = connect(gopts, "tenant", "createBabyPort", data=req, passwd=getPasswd(gopts))
 
     switchId = reply.get('vdpid')
