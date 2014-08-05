@@ -10,8 +10,8 @@ import org.apache.logging.log4j.Logger;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
-import edu.princeton.cs.policy.PolicyTree;
-import edu.princeton.cs.policy.PolicyTree.PolicyOperator;
+import edu.princeton.cs.policy.adv.PolicyTree;
+import edu.princeton.cs.policy.adv.PolicyTree.PolicyOperator;
 import net.onrc.openvirtex.api.service.handlers.ApiHandler;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;

@@ -42,8 +42,8 @@ import org.openflow.protocol.OFType;
 import org.openflow.protocol.OFVendor;
 import org.openflow.protocol.statistics.OFStatistics;
 
-import edu.princeton.cs.policy.PolicyTree;
-import edu.princeton.cs.policy.PolicyUpdateTable;
+import edu.princeton.cs.policy.adv.PolicyTree;
+import edu.princeton.cs.policy.adv.PolicyUpdateTable;
 
 /**
  * The Class PhysicalSwitch.
