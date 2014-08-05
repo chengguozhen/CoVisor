@@ -37,21 +37,21 @@ public class CreateOVXBabyPort extends ApiHandler<Map<String, Object>> {
 	public JSONRPC2Response process(final Map<String, Object> params) {
 		JSONRPC2Response resp = null;
 
-		/*try {
+		try {
 			final Number tenantId = HandlerUtils.<Number> fetchField(
 					TenantHandler.TENANT, params, true, null);
 			final Number babyDpid = HandlerUtils.<Number> fetchField(
 					TenantHandler.BABY_DPID, params, true, null);
 			// OVXBabyPort does not need to map to PhysicalPort.
 			final Number pport = HandlerUtils.<Number> fetchField(
-					TenantHandler.PPORT, params, false, -1);
+					TenantHandler.PPORT, params, true, null);
 
 			HandlerUtils.isValidTenantId(tenantId.intValue());
 
 			final OVXMap map = OVXMap.getInstance();
 			final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
 					.intValue());
-			boolean pportExists = pport.intValue() != -1;
+			boolean pportExists = pport.intValue() != 0;
 			if (pportExists) {
 				OVXMultiSwitch multiSwitch = ((OVXBabySwitch) virtualNetwork
 						.getSwitch(babyDpid.longValue())).getParentSwitch();
@@ -69,11 +69,9 @@ public class CreateOVXBabyPort extends ApiHandler<Map<String, Object>> {
 
 			final OVXBabyPort ovxBabyPort;
 			if (pportExists) {
-				ovxBabyPort = virtualNetwork.createBabyPort(pport.shortValue(),
-						babyDpid.longValue());
+				ovxBabyPort = virtualNetwork.createBabyPort(babyDpid.longValue(), pport.shortValue());
 			} else {
-				ovxBabyPort = virtualNetwork.createBabyPort(babyDpid
-						.longValue());
+				ovxBabyPort = virtualNetwork.createBabyPort(babyDpid.longValue());
 			}
 
 			if (ovxBabyPort == null) {
@@ -126,7 +124,7 @@ public class CreateOVXBabyPort extends ApiHandler<Map<String, Object>> {
 			resp = new JSONRPC2Response(new JSONRPC2Error(
 					JSONRPC2Error.INVALID_PARAMS.getCode(), this.cmdName()
 							+ ": " + e.getMessage()), 0);
-		}*/
+		}
 		return resp;
 	}
 

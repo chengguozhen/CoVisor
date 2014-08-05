@@ -42,12 +42,14 @@ import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.host.Host;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
+import net.onrc.openvirtex.elements.port.OVXBabyPort;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.DuplicateIndexException;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.PortMappingException;
 import net.onrc.openvirtex.exceptions.RoutingAlgorithmException;
+import net.onrc.openvirtex.exceptions.SwitchMappingException;
 import net.onrc.openvirtex.messages.OVXPacketIn;
 import net.onrc.openvirtex.messages.OVXPacketOut;
 import net.onrc.openvirtex.routing.RoutingAlgorithms;
@@ -370,6 +372,30 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
         ovxPort.register();
         return ovxPort;
     }
+    
+    // create BabyPort, internal, no physical port mapped
+	public OVXBabyPort createBabyPort(final long babyDpid)
+			throws IndexOutOfBoundException {
+		final OVXBabySwitch babySwitch = (OVXBabySwitch) getSwitch(babyDpid);
+		OVXBabyPort babyPort = new OVXBabyPort(this.tenantId, babySwitch);
+		babyPort.register();
+		return babyPort;
+	}
+	
+	// create BabyPort, external, with physical port mapped
+	public OVXBabyPort createBabyPort(final long babyDpid, final short physicalPortNumber)
+			throws IndexOutOfBoundException, SwitchMappingException {
+		final OVXBabySwitch babySwitch = (OVXBabySwitch) getSwitch(babyDpid);
+		final OVXMultiSwitch multiSwitch = babySwitch.getParentSwitch();
+		final List<PhysicalSwitch> physicalSwitches = OVXMap.getInstance()
+			    .getPhysicalSwitches(multiSwitch);
+		final PhysicalSwitch physicalSwitch = physicalSwitches.get(0);
+		final PhysicalPort physicalPort = physicalSwitch.getPort(physicalPortNumber);
+		final OVXBabyPort babyPort = new OVXBabyPort(this.tenantId, babySwitch, physicalPort);
+		babyPort.register();
+		return babyPort;
+	}
+
 
     /**
      * Sets the algorithm and number of backups for the
