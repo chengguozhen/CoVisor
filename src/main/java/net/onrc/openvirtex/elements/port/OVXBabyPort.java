@@ -2,6 +2,8 @@ package net.onrc.openvirtex.elements.port;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openflow.protocol.OFPhysicalPort;
+
 import net.onrc.openvirtex.elements.datapath.OVXBabySwitch;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
@@ -21,7 +23,7 @@ public class OVXBabyPort extends OVXPort {
 	
 	public OVXBabyPort(int tenantId, OVXBabySwitch babySwitch)
 			throws IndexOutOfBoundException {
-		super(tenantId, null, true);
+		super(tenantId, new PhysicalPort(new OFPhysicalPort(), null, true), true);
 		this.parentSwitch = babySwitch;
 	}
 	
