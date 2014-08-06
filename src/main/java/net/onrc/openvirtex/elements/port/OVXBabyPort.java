@@ -14,18 +14,22 @@ public class OVXBabyPort extends OVXPort {
 	private static Logger log = LogManager.getLogger(OVXBabyPort.class
 			.getName());
 	final private OVXBabySwitch parentSwitch;
+	final private boolean isMapToPhysicalPort;
 	
 	public OVXBabyPort(int tenantId, OVXBabySwitch babySwitch, PhysicalPort port)
 			throws IndexOutOfBoundException {
 		super(tenantId, port, true);
 		this.parentSwitch = babySwitch;
+		this.isMapToPhysicalPort = false;
 	}
 	
 	public OVXBabyPort(int tenantId, OVXBabySwitch babySwitch)
 			throws IndexOutOfBoundException {
-		super(tenantId, new PhysicalPort(new OFPhysicalPort(), null, true), true);
+		super(tenantId, babySwitch.getPhysicalSwitch().getPort((short) 1) , true);
 		this.parentSwitch = babySwitch;
+		this.isMapToPhysicalPort = true;
 	}
+	
 	
 	@Override
 	public OVXBabySwitch getParentSwitch() {

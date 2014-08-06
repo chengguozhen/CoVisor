@@ -19,5 +19,9 @@ public class OVXBabySwitch extends OVXSingleSwitch {
 	public OVXMultiSwitch getParentSwitch() {
 		return this.parentSwitch;
 	}
+	
+	public PhysicalSwitch getPhysicalSwitch() {
+		return this.parentSwitch.getPhysicalSwitch();
+	}
 
 }
