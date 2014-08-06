@@ -29,6 +29,7 @@ public class OVXBabySwitch extends OVXSingleSwitch {
 	
 	@Override
     public void sendSouth(final OFMessage msg, final OVXPort inPort) {
+        log.info("babyswitch {} get msg {}", this.getName(), msg);
         this.parentSwitch.sendSouth(msg, this);
     }
 

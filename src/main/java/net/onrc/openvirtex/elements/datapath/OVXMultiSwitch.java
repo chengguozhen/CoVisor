@@ -47,7 +47,7 @@ public class OVXMultiSwitch extends OVXSingleSwitch {
 
 	public void sendSouth(final OFMessage msg, final OVXBabySwitch babySwitch) {
         log.info("Sending packet to sw {}: {}", this.getPhysicalSwitch().getName(), msg);
-        //psw.sendMsg(msg, this);
+        this.getPhysicalSwitch().sendMsg(msg, this);
     }
 	
 }

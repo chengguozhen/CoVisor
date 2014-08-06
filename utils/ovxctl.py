@@ -904,7 +904,7 @@ DESCS = {
                             ("Create a virtual port on a baby switch. Must specify a tenant_id, " +
                             "the dpid of the parent baby switch, and optionally the number of the " +
                             "corresponding physical port." +
-                            "\nExample: createBabyPort 1 00:00:00:00:00:00:00:01\n" +
+                            "\nExample: createBabyPort 1 00:00:00:00:00:00:00:01 0\n" +
                             "         createBabyPort 1 00:00:00:00:00:00:00:01 3"))
 }
 
