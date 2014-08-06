@@ -8,6 +8,7 @@ import net.onrc.openvirtex.exceptions.SwitchMappingException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openflow.protocol.OFMessage;
 
 /**
  * The Class OVXMultiSwitch.  Inherits from OVXSwitch, but also implements
@@ -44,5 +45,9 @@ public class OVXMultiSwitch extends OVXSingleSwitch {
 		return psw;
     }
 
+	public void sendSouth(final OFMessage msg, final OVXBabySwitch babySwitch) {
+        log.info("Sending packet to sw {}: {}", this.getPhysicalSwitch().getName(), msg);
+        //psw.sendMsg(msg, this);
+    }
 	
 }

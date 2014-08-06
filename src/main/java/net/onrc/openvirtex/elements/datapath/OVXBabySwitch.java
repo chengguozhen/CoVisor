@@ -1,7 +1,10 @@
 package net.onrc.openvirtex.elements.datapath;
 
+import net.onrc.openvirtex.elements.port.OVXPort;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openflow.protocol.OFMessage;
 
 /**
  * The Class OVXBabySwitch.
@@ -23,5 +26,10 @@ public class OVXBabySwitch extends OVXSingleSwitch {
 	public PhysicalSwitch getPhysicalSwitch() {
 		return this.parentSwitch.getPhysicalSwitch();
 	}
+	
+	@Override
+    public void sendSouth(final OFMessage msg, final OVXPort inPort) {
+        this.parentSwitch.sendSouth(msg, this);
+    }
 
 }
