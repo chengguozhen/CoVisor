@@ -30,6 +30,10 @@ public class OVXBabyPort extends OVXPort {
 		this.isMapToPhysicalPort = true;
 	}
 	
+	public boolean isMapToPhysicalPort() {
+		return this.isMapToPhysicalPort;
+	}
+	
 	
 	@Override
 	public OVXBabySwitch getParentSwitch() {

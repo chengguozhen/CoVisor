@@ -11,6 +11,7 @@ import junit.framework.TestSuite;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openflow.protocol.OFFlowMod;
 
 import com.googlecode.concurrenttrees.common.Iterables;
 import com.googlecode.concurrenttrees.common.PrettyPrinter;
@@ -64,6 +65,8 @@ public class PlayGroundTest extends TestCase {
     	
     	//RadixTree<Integer> tree = new ConcurrentRadixTree<Integer>(new DefaultCharArrayNodeFactory());
     	//tree.put("10.0.0.0", arg1)
+    	
+    	OFFlowMod ofm = RuleGenerationUtil.generateRoutingRule();
     	
     	IPRadixTree<Integer> tree = new ConcurrentIPRadixTree<Integer>(new DefaultCharArrayNodeFactory());
 

@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import net.onrc.openvirtex.util.MACAddress;
-
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFPacketOut;
@@ -141,7 +139,19 @@ public class PolicyCompositionUtil {
 		return composedFm;
 	}
 	
-	private static OFMatch actRevertMatch(OFMatch match, List<OFAction> actions) {
+	public static OFMatch actApplyMatch(OFMatch match, List<OFAction> actions) {
+		OFMatch m = match.clone();
+		for (OFAction action : actions) {
+			if (action instanceof OFActionNetworkLayerDestination) {
+				OFActionNetworkLayerDestination modNwDst = (OFActionNetworkLayerDestination) action;
+				m.setWildcards(m.getWildcards() & ~OFMatch.OFPFW_NW_DST_MASK);
+				m.setNetworkDestination(modNwDst.getNetworkAddress());
+			}
+		}
+		return m;
+	}
+	
+	public static OFMatch actRevertMatch(OFMatch match, List<OFAction> actions) {
 		OFMatch m = match.clone();
 		for (OFAction action : actions) {
 			if (action instanceof OFActionNetworkLayerDestination) {
@@ -162,7 +172,7 @@ public class PolicyCompositionUtil {
 		return m;
 	}
 
-	private static OFMatch intersectMatch (OFMatch m1, OFMatch m2) {
+	public static OFMatch intersectMatch (OFMatch m1, OFMatch m2) {
 		if (m1 == null || m2 == null) {
 			return null;
 		}

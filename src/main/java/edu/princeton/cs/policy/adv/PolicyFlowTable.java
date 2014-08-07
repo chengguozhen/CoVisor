@@ -10,7 +10,6 @@ import org.apache.commons.lang.NotImplementedException;
 import org.openflow.protocol.OFFlowMod;
 
 import edu.princeton.cs.policy.store.PolicyFlowModStore;
-import edu.princeton.cs.policy.store.PolicyFlowModStoreMap;
 import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreKey;
 import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreType;
 
@@ -21,6 +20,16 @@ public class PolicyFlowTable {
 	private ConcurrentHashMap<OFFlowMod, List<OFFlowMod>> generatedParentFlowModsDictionary;
 	private PolicyFlowModStore flowModStore;
 	
+	public PolicyFlowTable() {
+		this.generatedParentFlowModsDictionary = new ConcurrentHashMap<OFFlowMod, List<OFFlowMod>>();
+		
+		List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
+    	storeTypes.add(PolicyFlowModStoreType.WILDCARD);
+    	List<PolicyFlowModStoreKey> storeKeys = new ArrayList<PolicyFlowModStoreKey>();
+    	storeKeys.add(PolicyFlowModStoreKey.ALL);
+    	this.flowModStore = PolicyFlowModStore.createFlowModStore(storeTypes, storeKeys);
+	}
+
 	public PolicyFlowTable(List<PolicyFlowModStoreType> storeTypes,
 			List<PolicyFlowModStoreKey> storeKeys) {
 		this.generatedParentFlowModsDictionary = new ConcurrentHashMap<OFFlowMod, List<OFFlowMod>>();

@@ -36,14 +36,10 @@ public class PolicyTree {
 	public Integer tenantId; // only meaningful when operator is Invalid
 	
 	public PolicyTree() {
-		List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
-    	storeTypes.add(PolicyFlowModStoreType.WILDCARD);
-    	List<PolicyFlowModStoreKey> storeKeys = new ArrayList<PolicyFlowModStoreKey>();
-    	storeKeys.add(PolicyFlowModStoreKey.ALL);
 		this.operator = PolicyOperator.Invalid;
 		this.leftChild = null;
 		this.rightChild = null;
-		this.flowTable = new PolicyFlowTable(storeTypes, storeKeys);
+		this.flowTable = new PolicyFlowTable();
 		this.tenantId = -1;
 	}
 	
