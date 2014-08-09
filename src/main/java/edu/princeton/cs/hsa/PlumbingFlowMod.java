@@ -1,7 +1,9 @@
 package edu.princeton.cs.hsa;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFMatch;
@@ -10,8 +12,10 @@ import edu.princeton.cs.policy.adv.PolicyCompositionUtil;
 
 public class PlumbingFlowMod extends OFFlowMod {
 	
-	private List<PlumbingFlowMod> prevFlowMods;
-	private List<PlumbingFlowMod> nextFlowMods;
+	private List<PlumbingFlowMod> prevPfms;
+	private List<PlumbingFlowMod> nextPfms;
+	private Map<PlumbingFlowMod, PlumbingFlow> prevPflows;
+	private Map<PlumbingFlowMod, PlumbingFlow> nextPflows;
 	
 	public PlumbingFlowMod(final OFFlowMod fm) {
 		super();
@@ -26,23 +30,35 @@ public class PlumbingFlowMod extends OFFlowMod {
 		this.flags = fm.getFlags();
 		this.actions = fm.getActions();
 		
-		this.prevFlowMods = new ArrayList<PlumbingFlowMod>();
-		this.nextFlowMods = new ArrayList<PlumbingFlowMod>();
+		this.prevPfms = new ArrayList<PlumbingFlowMod>();
+		this.nextPfms = new ArrayList<PlumbingFlowMod>();
 	}
 
-	public boolean createFilter(PlumbingFlowMod nextFm) {
+	public void createFilter(PlumbingFlowMod nextFm) {
 		OFMatch match = PolicyCompositionUtil.intersectMatch(this.getMatch(),
 				PolicyCompositionUtil.actRevertMatch(nextFm.getMatch(), this.getActions()));
 		if(match != null) {
-			this.nextFlowMods.add(nextFm);
-			nextFm.prevFlowMods.add(this);
-			return true;
+			this.nextPfms.add(nextFm);
+			nextFm.prevPfms.add(this);
 		}
-		return false;
 	}
 	
-	public List<PlumbingFlowMod> getNextFlowMods {
-		return this.nextFlowMods;
+	public Collection<PlumbingFlowMod> getPrevPFlowMods() {
+		return this.prevPfms;
 	}
+
+	public Collection<PlumbingFlowMod> getNextPFlowMods() {
+		return this.nextPfms;
+	}
+	
+	public Collection<PlumbingFlow> getPrevPFlows() {
+		return this.prevPflows.values();
+	}
+	
+	public Collection<PlumbingFlow> getNextPFlows() {
+		return this.nextPflows.values();
+	}
+	
+	
 
 }

@@ -59,35 +59,63 @@ public class PlumbingNode {
 		// update filter to ascendant
 		for (PlumbingNode prevHop : this.getPrevHops()) {
 			for (OFFlowMod prevOfm : prevHop.flowTable.getPotentialFlowMods(pfm)) {
-				boolean isIntersected = ((PlumbingFlowMod) prevOfm).createFilter(pfm);
-				if (isIntersected) {
-					/*
-					 * for flow : prevFm.getFlows
-					 * 		apply prevFm to flow
-					 * 		try flow with fm
-					 * 		if true
-					 * 			propagate_helper
-					 * 
-					 * propagate_helper (flow, fm)
-					 * 	apply fm to flow
-					 * 	rules = progate_helper(flow, after)
-					 */
-				}
+				PlumbingFlowMod prevPfm = (PlumbingFlowMod) prevOfm;
+				prevPfm.createFilter(pfm);
 			}
 		}
 		
+		for (PlumbingFlowMod prevPfm : pfm.getPrevPFlowMods()) {
+			for (PlumbingFlow prevPflow : prevPfm.getPrevPFlows()) {
+				OFMatch match = PolicyCompositionUtil.actApplyMatch(prevPflow.getMatch(), prevPfm.getActions());
+				PlumbingFlow pflow = new PlumbingFlow(match, prevPfm, pfm, prevPflow);
+				List<Tuple<OFFlowMod, Integer>> fmTuples = fwdPropagateFlow(pflow);
+				fmTuples = backPropagateFlow(fmTuples, prevPfm);
+				for (Tuple<OFFlowMod, Integer> fmTuple : fmTuples) {
+					updateTable.addFlowMods.add(fmTuple.first);
+				}
+			}
+		}
+
 		return updateTable;
 	}
 	
-	public List<OFFlowMod> propagateFlow (OFMatch match, PlumbingFlowMod pfm) {
-		List<OFFlowMod> ofms = new ArrayList<OFFlowMod>();
+	public List<Tuple<OFFlowMod, Integer>> fwdPropagateFlow (PlumbingFlow pflow) {
+		List<Tuple<OFFlowMod, Integer>> fmTuples = new ArrayList<Tuple<OFFlowMod, Integer>>();
+		
+		OFMatch match = pflow.getMatch();
+		PlumbingFlowMod pfm = pflow.getNextPFlowMod();
+		
+		
+		/*OFMatch m = PolicyCompositionUtil.actApplyMatch(match, pfm.getActions());
+		for (PlumbingFlowMod nextPfm : pfm.getNextPFlowMods()) {
+			List<Tuple<OFFlowMod, Integer>> curFmTuples = this.fwdPropagateFlow(pflow);
+			for (Tuple<OFFlowMod, Integer> curFmTuple : curFmTuples) {
+				OFFlowMod composedFm = PolicyCompositionUtil.sequentialComposition(pfm, curFmTuple.first);
+				if (composedFm != null) {
+					fmTuples.add(new Tuple<OFFlowMod, Integer>(composedFm, curFmTuple.second + 1));
+				}
+			}
+		}*/
+		
+		return fmTuples;
+	}
+	
+	public List<Tuple<OFFlowMod, Integer>> backPropagateFlow (List<Tuple<OFFlowMod, Integer>> fmTuples,
+			PlumbingFlowMod pfm) {
+		/*List<Tuple<OFFlowMod, Integer>> fmTuples = new ArrayList<Tuple<OFFlowMod, Integer>>();
 		
 		OFMatch m = PolicyCompositionUtil.actApplyMatch(match, pfm.getActions());
 		for (PlumbingFlowMod nextPfm : pfm.getNextFlowMods()) {
-			List<OFFlowMod> curOfms = this.propagateFlow(m, nextPfm);
-		}
+			List<Tuple<OFFlowMod, Integer>> curFmTuples = this.fwdPropagateFlow(m, nextPfm);
+			for (Tuple<OFFlowMod, Integer> curFmTuple : curFmTuples) {
+				OFFlowMod composedFm = PolicyCompositionUtil.sequentialComposition(pfm, curFmTuple.first);
+				if (composedFm != null) {
+					fmTuples.add(new Tuple<OFFlowMod, Integer>(composedFm, curFmTuple.second + 1));
+				}
+			}
+		}*/
 		
-		return null;
+		return fmTuples;
 	}
 	
 	private PlumbingNode getNextHop(PlumbingFlowMod fm) {

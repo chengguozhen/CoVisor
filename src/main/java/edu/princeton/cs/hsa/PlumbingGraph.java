@@ -12,6 +12,8 @@ import edu.princeton.cs.policy.adv.PolicyUpdateTable;
 
 public class PlumbingGraph {
 	
+	public static final int PRIORITY_HOPS = 3;
+	
 	private Logger logger = LogManager.getLogger(PlumbingGraph.class.getName());
 	
 	private List<PlumbingNode> nodes;
