@@ -7,17 +7,21 @@ import java.util.Map;
 
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFMatch;
+import org.openflow.protocol.action.OFAction;
+import org.openflow.protocol.action.OFActionOutput;
 
 import edu.princeton.cs.policy.adv.PolicyCompositionUtil;
 
 public class PlumbingFlowMod extends OFFlowMod {
 	
+	private OFFlowMod originalOfm;
 	private List<PlumbingFlowMod> prevPfms;
 	private List<PlumbingFlowMod> nextPfms;
-	private Map<PlumbingFlowMod, PlumbingFlow> prevPflows;
-	private Map<PlumbingFlowMod, PlumbingFlow> nextPflows;
+	private List<PlumbingFlow> prevPflows;
+	private List<PlumbingFlow> nextPflows;
+	private PlumbingNode pNode;
 	
-	public PlumbingFlowMod(final OFFlowMod fm) {
+	public PlumbingFlowMod(final OFFlowMod fm, final PlumbingNode pNode) {
 		super();
 		this.match = fm.getMatch();
 		this.cookie = fm.getCookie();
@@ -30,8 +34,12 @@ public class PlumbingFlowMod extends OFFlowMod {
 		this.flags = fm.getFlags();
 		this.actions = fm.getActions();
 		
+		this.originalOfm = fm;
 		this.prevPfms = new ArrayList<PlumbingFlowMod>();
 		this.nextPfms = new ArrayList<PlumbingFlowMod>();
+		this.prevPflows = new ArrayList<PlumbingFlow>();
+		this.nextPflows = new ArrayList<PlumbingFlow>();
+		this.pNode = pNode;
 	}
 
 	public void createFilter(PlumbingFlowMod nextFm) {
@@ -52,13 +60,27 @@ public class PlumbingFlowMod extends OFFlowMod {
 	}
 	
 	public Collection<PlumbingFlow> getPrevPFlows() {
-		return this.prevPflows.values();
+		return this.prevPflows;
 	}
 	
 	public Collection<PlumbingFlow> getNextPFlows() {
-		return this.nextPflows.values();
+		return this.nextPflows;
 	}
 	
+	public void addPrevPFlow(PlumbingFlow pflow) {
+		this.prevPflows.add(pflow);
+	}
 	
+	public void addNextPFlow(PlumbingFlow pflow) {
+		this.nextPflows.add(pflow);
+	}
+	
+	public OFFlowMod getOriginalOfm() {
+		return this.originalOfm;
+	}
+	
+	public PlumbingNode getPlumbingNode () {
+		return this.pNode;
+	}
 
 }

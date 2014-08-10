@@ -19,7 +19,13 @@ public class PlumbingFlow {
 			PlumbingFlowMod nextPfm, PlumbingFlow prevPflow) {
 		this.match = match;
 		this.prevPfm = prevPfm;
+		if (prevPfm != null) {
+			prevPfm.addNextPFlow(this);
+		}
 		this.nextPfm = nextPfm;
+		if (nextPfm != null) {
+			nextPfm.addPrevPFlow(this);
+		}
 		this.prevPflow = prevPflow;
 		this.nextPflow = new ArrayList<PlumbingFlow>();
 	}
@@ -42,5 +48,9 @@ public class PlumbingFlow {
 	
 	public Collection<PlumbingFlow> getNextPFlows() {
 		return this.nextPflow;
+	}
+	
+	public void addNextPFlow(PlumbingFlow pflow) {
+		this.nextPflow.add(pflow);
 	}
 }

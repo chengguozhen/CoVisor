@@ -32,7 +32,7 @@ public class PlayGroundTest extends TestCase {
     	
     	PolicyFlowTable flowTable = new PolicyFlowTable();
     	OFFlowMod fm = RuleGenerationUtil.generateMonitoringRule(1, "1.0.0.0", 24, OFFlowMod.OFPFC_ADD);
-    	PlumbingFlowMod pfm = new PlumbingFlowMod(fm);
+    	PlumbingFlowMod pfm = new PlumbingFlowMod(fm, null);
     	flowTable.update(pfm);
     	for (OFFlowMod fmi: flowTable.getFlowMods()) {
     		PlumbingFlowMod fmp = (PlumbingFlowMod) fmi;
