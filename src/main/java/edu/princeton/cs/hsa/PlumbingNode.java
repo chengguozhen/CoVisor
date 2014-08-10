@@ -49,44 +49,44 @@ public class PlumbingNode {
 	}
 	
 	public PolicyUpdateTable update(OFFlowMod ofm) {
-		PlumbingFlowMod pfm = new PlumbingFlowMod(ofm, this);
+		PlumbingFlowMod pmod = new PlumbingFlowMod(ofm, this);
 		
 		// update flow table for this node
-		this.flowTable.update(pfm);
+		this.flowTable.update(pmod);
 		
 		// calculate the update table for the real switch
-		switch (pfm.getCommand()) {
+		switch (pmod.getCommand()) {
         case OFFlowMod.OFPFC_ADD:
-            return doFlowModAdd(pfm);
+            return doFlowModAdd(pmod);
         case OFFlowMod.OFPFC_MODIFY:
         case OFFlowMod.OFPFC_MODIFY_STRICT:
             throw new NotImplementedException("don't allow OFPFC_MODIFY and OFPFC_MODIFY_STRICT");
         case OFFlowMod.OFPFC_DELETE:
         case OFFlowMod.OFPFC_DELETE_STRICT:
-            return doFlowModDelete(pfm);
+            return doFlowModDelete(pmod);
         default:
             return null;
 		}
 	}
 	
-	public PolicyUpdateTable doFlowModAdd(PlumbingFlowMod pfm) {
+	public PolicyUpdateTable doFlowModAdd(PlumbingFlowMod pmod) {
 		PolicyUpdateTable updateTable = new PolicyUpdateTable();
 		
 		// update filter to descendant
-		PlumbingNode nextHop = this.getNextHop(pfm);
+		PlumbingNode nextHop = this.getNextHop(pmod);
 		if (nextHop != null) {
 			for (OFFlowMod nextOfm : nextHop.flowTable
-					.getPotentialFlowMods(pfm)) {
-				pfm.createFilter((PlumbingFlowMod) nextOfm);
+					.getPotentialFlowMods(pmod)) {
+				pmod.createFilter((PlumbingFlowMod) nextOfm);
 			}
 		}
 		
 		// update filter to ascendant
 		for (PlumbingNode prevHop : this.getPrevHops()) {
-			for (OFFlowMod prevOfm : prevHop.flowTable.getPotentialFlowMods(pfm)) {
-				PlumbingFlowMod prevPfm = (PlumbingFlowMod) prevOfm;
-				if (prevHop.getNextHop(prevPfm) == this) {
-					prevPfm.createFilter(pfm);
+			for (OFFlowMod prevOfm : prevHop.flowTable.getPotentialFlowMods(pmod)) {
+				PlumbingFlowMod prevPmod = (PlumbingFlowMod) prevOfm;
+				if (prevHop.getNextHop(prevPmod) == this) {
+					prevPmod.createFilter(pmod);
 				}
 			}
 		}
@@ -98,9 +98,9 @@ public class PlumbingNode {
 				int wcards = OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_IN_PORT;
 				match.setWildcards(wcards);
 				match.setInputPort(isEdgePortPair.getKey());
-				PlumbingFlow pflow = new PlumbingFlow(match, null, pfm, null);
+				PlumbingFlow pflow = new PlumbingFlow(match, null, pmod, null);
 				List<Tuple<OFFlowMod, Integer>> fmTuples = fwdPropagateFlow(pflow);
-				//fmTuples = backPropagateFlow(fmTuples, null);
+				fmTuples = backPropagateFlow(fmTuples, pflow);
 				for (Tuple<OFFlowMod, Integer> fmTuple : fmTuples) {
 					updateTable.addFlowMods.add(fmTuple.first);
 				}
@@ -108,13 +108,15 @@ public class PlumbingNode {
 		}
 		
 		// generate update flowmods for non-edge port
-		for (PlumbingFlowMod prevPfm : pfm.getPrevPFlowMods()) {
-			for (PlumbingFlow prevPflow : prevPfm.getPrevPFlows()) {
-				OFMatch match = PolicyCompositionUtil.actApplyMatch(prevPflow.getMatch(), prevPfm.getActions());
-				if (PolicyCompositionUtil.intersectMatch(match, pfm.getMatch()) != null) {
-					PlumbingFlow pflow = new PlumbingFlow(match, prevPfm, pfm, prevPflow);
+		for (PlumbingFlowMod prevPmod : pmod.getPrevPMods()) {
+			for (PlumbingFlow prevPflow : prevPmod.getPrevPFlows()) {
+				OFMatch match = PolicyCompositionUtil.actApplyMatch(
+						PolicyCompositionUtil.intersectMatch(prevPmod.getMatch(), prevPflow.getMatch()),
+						prevPmod.getActions());
+				if (PolicyCompositionUtil.intersectMatch(match, pmod.getMatch()) != null) {
+					PlumbingFlow pflow = new PlumbingFlow(match, prevPmod, pmod, prevPflow);
 					List<Tuple<OFFlowMod, Integer>> fmTuples = fwdPropagateFlow(pflow);
-					//fmTuples = backPropagateFlow(fmTuples, prevPfm);
+					fmTuples = backPropagateFlow(fmTuples, pflow);
 					for (Tuple<OFFlowMod, Integer> fmTuple : fmTuples) {
 						updateTable.addFlowMods.add(fmTuple.first);
 					}
@@ -125,17 +127,17 @@ public class PlumbingNode {
 		return updateTable;
 	}
 	
-	private Tuple<OFFlowMod, Integer> revertApplyFm(Tuple<OFFlowMod, Integer> fmTuple, PlumbingFlowMod pfm) {
+	private Tuple<OFFlowMod, Integer> revertApplyFm(Tuple<OFFlowMod, Integer> fmTuple, PlumbingFlowMod pmod) {
 		OFFlowMod ofm = fmTuple.first;
 		Integer hop = fmTuple.second;
 		
 		// match
-		OFMatch newMatch = PolicyCompositionUtil.intersectMatch(pfm.getMatch(),
-				PolicyCompositionUtil.actRevertMatch(ofm.getMatch(), pfm.getActions()));
+		OFMatch newMatch = PolicyCompositionUtil.intersectMatch(pmod.getMatch(),
+				PolicyCompositionUtil.actRevertMatch(ofm.getMatch(), pmod.getActions()));
 		ofm.setMatch(newMatch);
 		
 		// action
-		for (OFAction action : pfm.getActions()) {
+		for (OFAction action : pmod.getActions()) {
 			if (action instanceof OFActionOutput) {
 				continue;
 			}
@@ -145,21 +147,22 @@ public class PlumbingNode {
 		
 		// priority
 		ofm.setPriority(
-				(short) (pfm.getPriority()* PolicyCompositionUtil.SEQUENTIAL_SHIFT + ofm.getPriority()));
+				(short) (pmod.getPriority()* PolicyCompositionUtil.SEQUENTIAL_SHIFT + ofm.getPriority()));
 		
 		return new Tuple<OFFlowMod, Integer>(ofm, hop + 1);
 	}
 	
-	public List<Tuple<OFFlowMod, Integer>> fwdPropagateFlow (PlumbingFlow pflow) {
+	private List<Tuple<OFFlowMod, Integer>> fwdPropagateFlow (PlumbingFlow pflow) {
 		List<Tuple<OFFlowMod, Integer>> fmTuples = new ArrayList<Tuple<OFFlowMod, Integer>>();
 		
 		OFMatch match = pflow.getMatch();
-		PlumbingFlowMod pfm = pflow.getNextPFlowMod();
+		PlumbingFlowMod pmod = pflow.getNextPMod();
 		
-		if (this.isEdgePFlowMod(pfm)) {
+		if (this.isEdgePFlowMod(pmod)) {
 			Tuple<OFFlowMod, Integer> fmTuple = null;
 			try {
-				fmTuple = new Tuple<OFFlowMod, Integer>(pfm.getOriginalOfm().clone(), 0);
+				// TODO: add port transformation here
+				fmTuple = new Tuple<OFFlowMod, Integer>(pmod.getOriginalOfm().clone(), 0);
 			} catch (CloneNotSupportedException e) {
 				e.printStackTrace();
 			}
@@ -167,18 +170,19 @@ public class PlumbingNode {
 			return fmTuples;
 		}
 		
-		OFMatch nextMatch = PolicyCompositionUtil.intersectMatch(pfm.getMatch(),
-				this.actApplyMatchWithInportChange(match, pfm.getActions()));
-		for (PlumbingFlowMod nextPfm : pfm.getNextPFlowMods()) {
+		OFMatch nextMatch = this.actApplyMatchWithInportChange(
+				PolicyCompositionUtil.intersectMatch(match, pmod.getMatch()),
+				pmod.getActions());
+		for (PlumbingFlowMod nextPmod : pmod.getNextPMods()) {
 			
-			if (PolicyCompositionUtil.intersectMatch(match, pfm.getMatch()) != null) {
+			if (PolicyCompositionUtil.intersectMatch(nextMatch, nextPmod.getMatch()) != null) {
 				
-				PlumbingFlow nextPflow = new PlumbingFlow(nextMatch, pfm, nextPfm, pflow);
+				PlumbingFlow nextPflow = new PlumbingFlow(nextMatch, pmod, nextPmod, pflow);
 				pflow.addNextPFlow(nextPflow);
 				
-				List<Tuple<OFFlowMod, Integer>> nextFmTuples = nextPfm.getPlumbingNode().fwdPropagateFlow(nextPflow);
+				List<Tuple<OFFlowMod, Integer>> nextFmTuples = nextPmod.getPlumbingNode().fwdPropagateFlow(nextPflow);
 				for (Tuple<OFFlowMod, Integer> nextFmTuple : nextFmTuples) {
-					fmTuples.add(revertApplyFm(nextFmTuple, pfm));
+					fmTuples.add(this.revertApplyFm(nextFmTuple, pmod));
 				}
 			}
 			
@@ -205,8 +209,8 @@ public class PlumbingNode {
 		return m;
 	}
 
-	public List<Tuple<OFFlowMod, Integer>> backPropagateFlow (List<Tuple<OFFlowMod, Integer>> fmTuples,
-			PlumbingFlowMod pfm) {
+	private List<Tuple<OFFlowMod, Integer>> backPropagateFlow (List<Tuple<OFFlowMod, Integer>> fmTuples,
+			PlumbingFlow pflow) {
 		/*List<Tuple<OFFlowMod, Integer>> fmTuples = new ArrayList<Tuple<OFFlowMod, Integer>>();
 		
 		OFMatch m = PolicyCompositionUtil.actApplyMatch(match, pfm.getActions());
@@ -220,11 +224,42 @@ public class PlumbingNode {
 			}
 		}*/
 		
+		List<Tuple<OFFlowMod, Integer>> curFmTuples = new ArrayList<Tuple<OFFlowMod, Integer>>();
+		PlumbingFlow curFlow = pflow;
+		PlumbingFlowMod prevPmod = curFlow.getPrevPMod();
+		while (prevPmod != null) {
+			
+			curFmTuples.clear();
+			for (Tuple<OFFlowMod, Integer> fmTuple : fmTuples) {
+				curFmTuples.add(prevPmod.getPlumbingNode().revertApplyFm(fmTuple, prevPmod));
+			}
+			fmTuples = curFmTuples;
+			
+			curFlow = curFlow.getPrevPFlow();
+			prevPmod = curFlow.getPrevPMod();
+		}
+		
+
+		curFmTuples.clear();
+		for (Tuple<OFFlowMod, Integer> fmTuple : fmTuples) {
+			OFFlowMod ofm = fmTuple.first;
+			ofm.setMatch(
+					PolicyCompositionUtil.intersectMatch(
+							ofm.getMatch(), pflow.getMatch()));
+			Integer hop = fmTuple.second;
+			if (hop < PlumbingGraph.PRIORITY_HOPS) {
+				ofm.setPriority(
+						(short) (ofm.getPriority()
+								* (PolicyCompositionUtil.SEQUENTIAL_SHIFT
+										^ (PlumbingGraph.PRIORITY_HOPS - hop))));
+			}
+		}
+		
 		return fmTuples;
 	}
 	
-	private PlumbingNode getNextHop(PlumbingFlowMod fm) {
-		for (OFAction action : fm.getActions()) {
+	private PlumbingNode getNextHop(PlumbingFlowMod pmod) {
+		for (OFAction action : pmod.getActions()) {
 			if (action instanceof OFActionOutput) {
 				short outport = ((OFActionOutput) action).getPort();
 				return this.nextHopMap.get(outport);
@@ -237,16 +272,16 @@ public class PlumbingNode {
 		return this.nextHopMap.values();
 	}
 
-	public PolicyUpdateTable doFlowModDelete(PlumbingFlowMod fm) {
+	public PolicyUpdateTable doFlowModDelete(PlumbingFlowMod pmod) {
 		throw new NotImplementedException("don't allow OFPFC_MODIFY and OFPFC_MODIFY_STRICT");
 	}
 
-	private boolean isEdgePFlowMod(PlumbingFlowMod pfm) {
-		if (pfm.getActions().isEmpty()) {
+	private boolean isEdgePFlowMod(PlumbingFlowMod pmod) {
+		if (pmod.getActions().isEmpty()) {
 			return true;
 		}
 		
-		for (OFAction action : pfm.getActions()) {
+		for (OFAction action : pmod.getActions()) {
 			if (action instanceof OFActionOutput) {
 				short outport = ((OFActionOutput) action).getPort();
 				return this.isEdgePortMap.get(outport);

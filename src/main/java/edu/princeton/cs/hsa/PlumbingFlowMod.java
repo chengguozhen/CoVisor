@@ -15,8 +15,8 @@ import edu.princeton.cs.policy.adv.PolicyCompositionUtil;
 public class PlumbingFlowMod extends OFFlowMod {
 	
 	private OFFlowMod originalOfm;
-	private List<PlumbingFlowMod> prevPfms;
-	private List<PlumbingFlowMod> nextPfms;
+	private List<PlumbingFlowMod> prevPmods;
+	private List<PlumbingFlowMod> nextPmods;
 	private List<PlumbingFlow> prevPflows;
 	private List<PlumbingFlow> nextPflows;
 	private PlumbingNode pNode;
@@ -35,28 +35,28 @@ public class PlumbingFlowMod extends OFFlowMod {
 		this.actions = fm.getActions();
 		
 		this.originalOfm = fm;
-		this.prevPfms = new ArrayList<PlumbingFlowMod>();
-		this.nextPfms = new ArrayList<PlumbingFlowMod>();
+		this.prevPmods = new ArrayList<PlumbingFlowMod>();
+		this.nextPmods = new ArrayList<PlumbingFlowMod>();
 		this.prevPflows = new ArrayList<PlumbingFlow>();
 		this.nextPflows = new ArrayList<PlumbingFlow>();
 		this.pNode = pNode;
 	}
 
-	public void createFilter(PlumbingFlowMod nextFm) {
+	public void createFilter(PlumbingFlowMod nextPmod) {
 		OFMatch match = PolicyCompositionUtil.intersectMatch(this.getMatch(),
-				PolicyCompositionUtil.actRevertMatch(nextFm.getMatch(), this.getActions()));
+				PolicyCompositionUtil.actRevertMatch(nextPmod.getMatch(), this.getActions()));
 		if(match != null) {
-			this.nextPfms.add(nextFm);
-			nextFm.prevPfms.add(this);
+			this.nextPmods.add(nextPmod);
+			nextPmod.prevPmods.add(this);
 		}
 	}
 	
-	public Collection<PlumbingFlowMod> getPrevPFlowMods() {
-		return this.prevPfms;
+	public Collection<PlumbingFlowMod> getPrevPMods() {
+		return this.prevPmods;
 	}
 
-	public Collection<PlumbingFlowMod> getNextPFlowMods() {
-		return this.nextPfms;
+	public Collection<PlumbingFlowMod> getNextPMods() {
+		return this.nextPmods;
 	}
 	
 	public Collection<PlumbingFlow> getPrevPFlows() {

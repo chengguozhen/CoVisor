@@ -9,22 +9,22 @@ import org.openflow.protocol.OFMatch;
 public class PlumbingFlow {
 	
 	private OFMatch match;
-	private PlumbingFlowMod prevPfm;
-	private PlumbingFlowMod nextPfm;
+	private PlumbingFlowMod prevPmod;
+	private PlumbingFlowMod nextPmod;
 	private PlumbingFlow prevPflow;
 	private List<PlumbingFlow> nextPflow;
 	
 	
-	public PlumbingFlow (OFMatch match, PlumbingFlowMod prevPfm,
-			PlumbingFlowMod nextPfm, PlumbingFlow prevPflow) {
+	public PlumbingFlow (OFMatch match, PlumbingFlowMod prevPmod,
+			PlumbingFlowMod nextPmod, PlumbingFlow prevPflow) {
 		this.match = match;
-		this.prevPfm = prevPfm;
-		if (prevPfm != null) {
-			prevPfm.addNextPFlow(this);
+		this.prevPmod = prevPmod;
+		if (prevPmod != null) {
+			prevPmod.addNextPFlow(this);
 		}
-		this.nextPfm = nextPfm;
-		if (nextPfm != null) {
-			nextPfm.addPrevPFlow(this);
+		this.nextPmod = nextPmod;
+		if (nextPmod != null) {
+			nextPmod.addPrevPFlow(this);
 		}
 		this.prevPflow = prevPflow;
 		this.nextPflow = new ArrayList<PlumbingFlow>();
@@ -34,12 +34,12 @@ public class PlumbingFlow {
 		return this.match;
 	}
 	
-	public PlumbingFlowMod getPrevPFlowMod() {
-		return this.prevPfm;
+	public PlumbingFlowMod getPrevPMod() {
+		return this.prevPmod;
 	}
 	
-	public PlumbingFlowMod getNextPFlowMod() {
-		return this.nextPfm;
+	public PlumbingFlowMod getNextPMod() {
+		return this.nextPmod;
 	}
 	
 	public PlumbingFlow getPrevPFlow() {
