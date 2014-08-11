@@ -19,6 +19,7 @@ import java.util.HashMap;
 
 import net.onrc.openvirtex.api.service.handlers.tenant.AddController;
 import net.onrc.openvirtex.api.service.handlers.tenant.ConnectHost;
+import net.onrc.openvirtex.api.service.handlers.tenant.ConnectOVXBabyLink;
 import net.onrc.openvirtex.api.service.handlers.tenant.ConnectOVXLink;
 import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXBabyPort;
 import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXMultiSwitch;
@@ -194,6 +195,7 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
             // many-to-one mapping handlers
             this.put("createMultiSwitch", new CreateOVXMultiSwitch());
     	    this.put("createBabyPort", new CreateOVXBabyPort());
+    	    this.put("connectBabyLink", new ConnectOVXBabyLink());
         }
     };
 

@@ -54,120 +54,21 @@ public class HsaTest extends TestCase {
     	graph.update(RuleGenerationUtil.generateDefaultRule(), graph.getNode((long) 2));
     	graph.update(RuleGenerationUtil.generateDefaultRule(), graph.getNode((long) 3));
     	
-    	graph.update(RuleGenerationUtil.generateRoutingRule(1, "1.0.0.0", 1, OFFlowMod.OFPFC_ADD), graph.getNode((long) 1));
-    	graph.update(RuleGenerationUtil.generateRoutingRule(1, "2.0.0.0", 2, OFFlowMod.OFPFC_ADD), graph.getNode((long) 1));
-    	graph.update(RuleGenerationUtil.generateRoutingRule(1, "3.0.0.0", 3, OFFlowMod.OFPFC_ADD), graph.getNode((long) 1));
+    	graph.update(RuleGenerationUtil.generatePrefixRoutingRule(1, "1.0.0.0", 8, 1, OFFlowMod.OFPFC_ADD), graph.getNode((long) 1));
+    	graph.update(RuleGenerationUtil.generatePrefixRoutingRule(2, "2.2.2.0", 24, 3, OFFlowMod.OFPFC_ADD), graph.getNode((long) 1));
+    	graph.update(RuleGenerationUtil.generatePrefixRoutingRule(1, "2.0.0.0", 8, 2, OFFlowMod.OFPFC_ADD), graph.getNode((long) 1));
+    	graph.update(RuleGenerationUtil.generatePrefixRoutingRule(1, "3.0.0.0", 8, 3, OFFlowMod.OFPFC_ADD), graph.getNode((long) 1));
     	
-    	graph.update(RuleGenerationUtil.generateRoutingRule(1, "1.0.0.0", 1, OFFlowMod.OFPFC_ADD), graph.getNode((long) 2));
-    	graph.update(RuleGenerationUtil.generateRoutingRule(1, "2.0.0.0", 2, OFFlowMod.OFPFC_ADD), graph.getNode((long) 2));
-    	graph.update(RuleGenerationUtil.generateRoutingRule(1, "3.0.0.0", 3, OFFlowMod.OFPFC_ADD), graph.getNode((long) 2));
+    	graph.update(RuleGenerationUtil.generatePrefixRoutingRule(1, "1.0.0.0", 8, 1, OFFlowMod.OFPFC_ADD), graph.getNode((long) 2));
+    	graph.update(RuleGenerationUtil.generatePrefixRoutingRule(1, "2.0.0.0", 8, 2, OFFlowMod.OFPFC_ADD), graph.getNode((long) 2));
+    	graph.update(RuleGenerationUtil.generatePrefixRoutingRule(1, "3.0.0.0", 8, 3, OFFlowMod.OFPFC_ADD), graph.getNode((long) 2));
     	
-    	graph.update(RuleGenerationUtil.generateRoutingRule(1, "1.0.0.0", 1, OFFlowMod.OFPFC_ADD), graph.getNode((long) 3));
-    	graph.update(RuleGenerationUtil.generateRoutingRule(1, "2.0.0.0", 2, OFFlowMod.OFPFC_ADD), graph.getNode((long) 3));
-    	graph.update(RuleGenerationUtil.generateRoutingRule(1, "3.0.0.0", 3, OFFlowMod.OFPFC_ADD), graph.getNode((long) 3));
+    	graph.update(RuleGenerationUtil.generatePrefixRoutingRule(1, "1.0.0.0", 8, 1, OFFlowMod.OFPFC_ADD), graph.getNode((long) 3));
+    	graph.update(RuleGenerationUtil.generatePrefixRoutingRule(1, "2.0.0.0", 8, 2, OFFlowMod.OFPFC_ADD), graph.getNode((long) 3));
+    	graph.update(RuleGenerationUtil.generatePrefixRoutingRule(1, "3.0.0.0", 8, 3, OFFlowMod.OFPFC_ADD), graph.getNode((long) 3));
+    	graph.update(RuleGenerationUtil.generatePrefixRoutingRule(2, "1.1.1.0", 24, 2, OFFlowMod.OFPFC_ADD), graph.getNode((long) 3));
     	
     	log.error(graph);
-    	
-    	
-    	
-    	
-    	// insert flowmods
-    	/*PolicyUpdateTable updateTable = null;
-    	updateTable = graph.getNode((long) 1).update(RuleGenerationUtil.generateDefaultRule());
-    	for (OFFlowMod fm : updateTable.addFlowMods) {
-    		log.error(fm);
-    	}
-    	for (OFFlowMod fm : updateTable.deleteFlowMods) {
-    		log.error(fm);
-    	}
-    	
-    	updateTable = graph.getNode((long) 2).update(RuleGenerationUtil.generateDefaultRule());
-    	for (OFFlowMod fm : updateTable.addFlowMods) {
-    		log.error(fm);
-    	}
-    	for (OFFlowMod fm : updateTable.deleteFlowMods) {
-    		log.error(fm);
-    	}
-    	
-    	updateTable = graph.getNode((long) 3).update(RuleGenerationUtil.generateDefaultRule());
-    	for (OFFlowMod fm : updateTable.addFlowMods) {
-    		log.error(fm);
-    	}
-    	for (OFFlowMod fm : updateTable.deleteFlowMods) {
-    		log.error(fm);
-    	}
-    	
-    	updateTable = graph.getNode((long) 1).update(RuleGenerationUtil.generateRoutingRule(1, "1.0.0.0", 1, OFFlowMod.OFPFC_ADD));
-    	for (OFFlowMod fm : updateTable.addFlowMods) {
-    		log.error(fm);
-    	}
-    	for (OFFlowMod fm : updateTable.deleteFlowMods) {
-    		log.error(fm);
-    	}
-    	
-    	updateTable = graph.getNode((long) 1).update(RuleGenerationUtil.generateRoutingRule(1, "2.0.0.0", 2, OFFlowMod.OFPFC_ADD));
-    	for (OFFlowMod fm : updateTable.addFlowMods) {
-    		log.error(fm);
-    	}
-    	for (OFFlowMod fm : updateTable.deleteFlowMods) {
-    		log.error(fm);
-    	}
-    	
-    	updateTable = graph.getNode((long) 1).update(RuleGenerationUtil.generateRoutingRule(1, "3.0.0.0", 3, OFFlowMod.OFPFC_ADD));
-    	for (OFFlowMod fm : updateTable.addFlowMods) {
-    		log.error(fm);
-    	}
-    	for (OFFlowMod fm : updateTable.deleteFlowMods) {
-    		log.error(fm);
-    	}
-    	
-    	updateTable = graph.getNode((long) 2).update(RuleGenerationUtil.generateRoutingRule(1, "1.0.0.0", 1, OFFlowMod.OFPFC_ADD));
-    	for (OFFlowMod fm : updateTable.addFlowMods) {
-    		log.error(fm);
-    	}
-    	for (OFFlowMod fm : updateTable.deleteFlowMods) {
-    		log.error(fm);
-    	}
-    	
-    	updateTable = graph.getNode((long) 2).update(RuleGenerationUtil.generateRoutingRule(1, "2.0.0.0", 2, OFFlowMod.OFPFC_ADD));
-    	for (OFFlowMod fm : updateTable.addFlowMods) {
-    		log.error(fm);
-    	}
-    	for (OFFlowMod fm : updateTable.deleteFlowMods) {
-    		log.error(fm);
-    	}
-    	
-    	updateTable = graph.getNode((long) 2).update(RuleGenerationUtil.generateRoutingRule(1, "3.0.0.0", 3, OFFlowMod.OFPFC_ADD));
-    	for (OFFlowMod fm : updateTable.addFlowMods) {
-    		log.error(fm);
-    	}
-    	for (OFFlowMod fm : updateTable.deleteFlowMods) {
-    		log.error(fm);
-    	}
-    	
-    	updateTable = graph.getNode((long) 3).update(RuleGenerationUtil.generateRoutingRule(1, "1.0.0.0", 1, OFFlowMod.OFPFC_ADD));
-    	for (OFFlowMod fm : updateTable.addFlowMods) {
-    		log.error(fm);
-    	}
-    	for (OFFlowMod fm : updateTable.deleteFlowMods) {
-    		log.error(fm);
-    	}
-    	
-    	updateTable = graph.getNode((long) 3).update(RuleGenerationUtil.generateRoutingRule(1, "2.0.0.0", 2, OFFlowMod.OFPFC_ADD));
-    	for (OFFlowMod fm : updateTable.addFlowMods) {
-    		log.error(fm);
-    	}
-    	for (OFFlowMod fm : updateTable.deleteFlowMods) {
-    		log.error(fm);
-    	}
-    	
-    	updateTable = graph.getNode((long) 3).update(RuleGenerationUtil.generateRoutingRule(1, "3.0.0.0", 3, OFFlowMod.OFPFC_ADD));
-    	for (OFFlowMod fm : updateTable.addFlowMods) {
-    		log.error(fm);
-    	}
-    	for (OFFlowMod fm : updateTable.deleteFlowMods) {
-    		log.error(fm);
-    	}*/
     	
     }
 }

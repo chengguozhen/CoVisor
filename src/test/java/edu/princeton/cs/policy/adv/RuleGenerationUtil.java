@@ -202,6 +202,34 @@ public class RuleGenerationUtil {
 		
 		return fm;
     }
+	
+	public static OFFlowMod generatePrefixRoutingRule(int priority, String dstIp, int prefix, int outPort, short command) {
+    	OFFlowMod fm = new OFFlowMod();
+		fm.setCommand(command);
+		fm.setIdleTimeout((short) 0);
+		fm.setHardTimeout((short) 0);
+		fm.setBufferId(OFPacketOut.BUFFER_ID_NONE);
+		fm.setCookie(0);
+		fm.setPriority((short) priority);
+
+		OFMatch m = new OFMatch();
+		int wcards = OFMatch.OFPFW_ALL
+				& ~OFMatch.OFPFW_DL_TYPE
+				& ((32 - prefix) << OFMatch.OFPFW_NW_DST_SHIFT | ~OFMatch.OFPFW_NW_DST_MASK);
+		m.setWildcards(wcards);
+		m.setDataLayerType((short) 2048);
+		m.setNetworkDestination((new PhysicalIPAddress(dstIp)).getIp());
+		fm.setMatch(m);
+
+		OFActionOutput action = new OFActionOutput();
+		action.setPort((short) outPort);
+		List<OFAction> actions = new ArrayList<OFAction>();
+		actions.add(action);
+		fm.setActions(actions);
+		fm.setLengthU(fm.getLengthU() + action.getLengthU());
+		
+		return fm;
+    }
     
 	public static OFFlowMod generateLBRule() {
     	String srcIp = String.format("%d.%d.%d.%d", getRandomNumber(0, 256), getRandomNumber(0, 256),

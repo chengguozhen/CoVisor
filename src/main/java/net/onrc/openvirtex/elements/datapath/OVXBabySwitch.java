@@ -6,6 +6,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMessage;
 
+import edu.princeton.cs.hsa.PlumbingNode;
+
 /**
  * The Class OVXBabySwitch.
  */
@@ -13,10 +15,16 @@ public class OVXBabySwitch extends OVXSingleSwitch {
 
 	private static Logger log = LogManager.getLogger(OVXBabySwitch.class.getName());
 	private final OVXMultiSwitch parentSwitch;
+	private PlumbingNode plumbingNode;
 
 	public OVXBabySwitch(final Long switchId, final OVXMultiSwitch parentSwitch) {
 		super(switchId, parentSwitch.getTenantId());
 		this.parentSwitch = parentSwitch;
+		this.plumbingNode = new PlumbingNode(switchId);
+	}
+	
+	public PlumbingNode getPlumbingNode() {
+		return this.plumbingNode;
 	}
 	
 	public OVXMultiSwitch getParentSwitch() {

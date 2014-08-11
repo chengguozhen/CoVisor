@@ -40,6 +40,7 @@ import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.host.Host;
+import net.onrc.openvirtex.elements.link.OVXBabyLink;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
 import net.onrc.openvirtex.elements.port.OVXBabyPort;
@@ -536,6 +537,18 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
         final int linkId = this.linkCounter.getNewIndex();
         return this.connectLink(ovxSrcDpid, ovxSrcPort, ovxDstDpid, ovxDstPort,
                 alg, numBackups, linkId);
+    }
+    
+    public synchronized OVXBabyLink connectBabyLink(final long ovxSrcDpid,
+            final short ovxSrcPort, final long ovxDstDpid,
+            final short ovxDstPort)
+            throws IndexOutOfBoundException, PortMappingException {
+        final int linkId = this.linkCounter.getNewIndex();
+        OVXBabySwitch srcSwitch = (OVXBabySwitch) this.getSwitch(ovxSrcDpid);
+        OVXBabySwitch dstSwitch = (OVXBabySwitch) this.getSwitch(ovxDstDpid);
+        OVXBabyPort srcPort = (OVXBabyPort) srcSwitch.getPort(ovxSrcPort);
+        OVXBabyPort dstPort = (OVXBabyPort) dstSwitch.getPort(ovxDstPort);
+        return new OVXBabyLink(linkId, srcSwitch, srcPort, dstSwitch, dstPort);
     }
 
     /**

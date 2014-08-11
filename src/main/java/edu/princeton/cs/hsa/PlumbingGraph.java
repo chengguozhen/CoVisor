@@ -29,6 +29,10 @@ public class PlumbingGraph {
 		this.nodes.put(dpid, node);
 	}
 	
+	public void addNode(PlumbingNode node) {
+		this.nodes.put(node.dpid, node);
+	}
+	
 	public void addPort(long dpid, Short port, Short physicalPort) {
 		this.nodes.get(dpid).addPort(port, physicalPort);
 	}
@@ -51,6 +55,14 @@ public class PlumbingGraph {
 			this.flowTable.addFlowMod(fm);
 		}
 		return updateTable;
+	}
+	
+	public String getGraph() {
+		String str = "";
+		for (PlumbingNode node : this.nodes.values()) {
+			str = str + node.toString();
+		}
+		return str;
 	}
 	
 	@Override

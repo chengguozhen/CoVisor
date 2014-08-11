@@ -148,7 +148,8 @@ public class PlumbingNode {
 		
 		// priority
 		ofm.setPriority(
-				(short) (pmod.getPriority()* PolicyCompositionUtil.SEQUENTIAL_SHIFT + ofm.getPriority()));
+				(short) (pmod.getPriority() * vanillaPow(PolicyCompositionUtil.SEQUENTIAL_SHIFT, hop)
+						+ ofm.getPriority()));
 		
 		return new Tuple<OFFlowMod, Integer>(ofm, hop + 1);
 	}
@@ -323,4 +324,16 @@ public class PlumbingNode {
 		return false;
 	}
 	
+	@Override
+	public String toString() {
+		String str = "" + this.dpid + "\n";
+		for (short port : this.portMap.values()) {
+			if (this.portMap.get(port) == null) {
+				str = str + "\t" + port + " -> null\n";
+			} else {
+				str = str + "\t" + port + " -> " + this.nextHopMap.get(port).dpid + ":" + this.nextHopPortMap.get(port) + "\n";
+			}
+		}
+		return str;
+	}
 }

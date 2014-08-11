@@ -663,6 +663,23 @@ def do_createBabyPort(gopts, opts, args):
         switch_name = '00:' + ':'.join([("%x" %int(switchId))[i:i+2] for i in range(0, len(("%x" %int(switchId))), 2)])
     print "Virtual port has been created (tenant_id %s, switch_id %s, port_id %s)" % (args[0], switch_name, portId)
 
+def pa_connectBabyLink(args, cmd):
+    usage = "%s <tenant_id> <src_virtual_dpid> <src_virtual_port> <dst_virtual_dpid> <dst_virtual_port>" % USAGE.format(cmd)
+    (sdesc, ldesc) = DESCS[cmd]
+    parser = OptionParser(usage=usage, description=ldesc)
+
+    return parser.parse_args(args)
+
+def do_connectBabyLink(gopts, opts, args):
+    if len(args) != 5:
+        print ("connectLink : Must specify tenant_id, src_virtual_dpid, src_virtual_port, dst_virtual_dpid, dst_virtual_port")
+        sys.exit()
+    req = { "tenantId" : int(args[0]), "srcDpid" : int(args[1].replace(":", ""), 16), 
+           "srcPort" : int(args[2]), "dstDpid" : int(args[3].replace(":", ""), 16), 
+           "dstPort" : int(args[4]) }
+    reply = connect(gopts, "tenant", "connectBabyLink", data=req, passwd=getPasswd(gopts))
+    print "Virtual link has been created"
+
 def pa_help(args, cmd):
     usage = "%s <cmd>" % USAGE.format(cmd)
     parser = OptionParser(usage=usage)
@@ -773,6 +790,7 @@ CMDS = {
    
     'createMultiSwitch': (pa_createMultiSwitch, do_createMultiSwitch),
     'createBabyPort': (pa_createBabyPort, do_createBabyPort),
+    'connectBabyLink': (pa_connectBabyLink, do_connectBabyLink),
 
     'help' : (pa_help, do_help)
 }
@@ -905,7 +923,11 @@ DESCS = {
                             "the dpid of the parent baby switch, and optionally the number of the " +
                             "corresponding physical port." +
                             "\nExample: createBabyPort 1 00:00:00:00:00:00:00:01 0\n" +
-                            "         createBabyPort 1 00:00:00:00:00:00:00:01 3"))
+                            "         createBabyPort 1 00:00:00:00:00:00:00:01 3")),
+    'connectBabyLink' : ("Connect two virtual baby ports through a baby virtual link", 
+                      ("Connect two virtual ports through a virtual link. Must specify a tenant_id, a virtual src_switch_id, a virtual src_port_id, " 
+                       "a virtual dst_switch_id and a virtual dst_port_id"
+                        "\nExample: connectBabyLink 1 00:a4:23:05:00:00:00:01 1 00:a4:23:05:00:00:00:02 1")), 
 }
 
 USAGE="%prog {}"

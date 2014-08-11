@@ -20,14 +20,16 @@ public class OVXBabyPort extends OVXPort {
 			throws IndexOutOfBoundException {
 		super(tenantId, port, true);
 		this.parentSwitch = babySwitch;
-		this.isMapToPhysicalPort = false;
+		this.isMapToPhysicalPort = true;
+		babySwitch.getParentSwitch().getPlumbingGraph().addPort(babySwitch.getSwitchId(), this.portNumber, port.getPortNumber());
 	}
 	
 	public OVXBabyPort(int tenantId, OVXBabySwitch babySwitch)
 			throws IndexOutOfBoundException {
 		super(tenantId, babySwitch.getPhysicalSwitch().getPort((short) 1) , true);
 		this.parentSwitch = babySwitch;
-		this.isMapToPhysicalPort = true;
+		this.isMapToPhysicalPort = false;
+		babySwitch.getParentSwitch().getPlumbingGraph().addPort(babySwitch.getSwitchId(), this.portNumber, null);
 	}
 	
 	public boolean isMapToPhysicalPort() {
