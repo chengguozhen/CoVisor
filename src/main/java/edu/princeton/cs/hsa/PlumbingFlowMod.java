@@ -8,6 +8,7 @@ import java.util.Map;
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.action.OFAction;
+import org.openflow.protocol.action.OFActionNetworkLayerDestination;
 import org.openflow.protocol.action.OFActionOutput;
 
 import edu.princeton.cs.policy.adv.PolicyCompositionUtil;

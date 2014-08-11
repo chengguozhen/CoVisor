@@ -120,6 +120,20 @@ public class PolicyFlowTable {
 		return flowMods;
 	}
 	
+	public List<OFFlowMod> getFlowModsSortByInport() {
+		List<OFFlowMod> flowMods = this.flowModStore.getFlowMods();
+		Collections.sort(flowMods, new Comparator<OFFlowMod>() {
+			public int compare(OFFlowMod fm1, OFFlowMod fm2) {
+				if (fm1.getMatch().getInputPort() != fm2.getMatch().getInputPort()) {
+					return fm1.getMatch().getInputPort() - fm2.getMatch().getInputPort();
+				} else {
+					return fm2.getPriority() - fm1.getPriority();
+				}
+			}
+		});
+		return flowMods;
+	}
+	
 	@Override
     public String toString() {
 		String str = "Flow Table:\n";

@@ -5,6 +5,10 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openflow.protocol.OFFlowMod;
+
+import edu.princeton.cs.policy.adv.PolicyFlowTable;
+import edu.princeton.cs.policy.adv.PolicyUpdateTable;
 
 public class PlumbingGraph {
 	
@@ -13,9 +17,11 @@ public class PlumbingGraph {
 	private Logger logger = LogManager.getLogger(PlumbingGraph.class.getName());
 	
 	private Map<Long, PlumbingNode> nodes;
+	private PolicyFlowTable flowTable;
 	
 	public PlumbingGraph() {
 		this.nodes = new HashMap<Long, PlumbingNode>();
+		this.flowTable = new PolicyFlowTable();
 	}
 	
 	public void addNode(long dpid) {
@@ -23,8 +29,8 @@ public class PlumbingGraph {
 		this.nodes.put(dpid, node);
 	}
 	
-	public void addPort(long dpid, short port, boolean isEdge) {
-		this.nodes.get(dpid).addPort(port, isEdge);
+	public void addPort(long dpid, Short port, Short physicalPort) {
+		this.nodes.get(dpid).addPort(port, physicalPort);
 	}
 	
 	public void addEdge(long dpid1, short port1, long dpid2, short port2) {
@@ -37,6 +43,23 @@ public class PlumbingGraph {
 	
 	public PlumbingNode getNode(long dpid) {
 		return this.nodes.get(dpid);
+	}
+	
+	public PolicyUpdateTable update(OFFlowMod ofm, PlumbingNode node) {
+		PolicyUpdateTable updateTable = node.update(ofm);
+		for (OFFlowMod fm : updateTable.addFlowMods) {
+			this.flowTable.addFlowMod(fm);
+		}
+		return updateTable;
+	}
+	
+	@Override
+    public String toString() {
+		String str = "Flow Table:\n";
+		for (OFFlowMod fm : this.flowTable.getFlowModsSortByInport()) {
+			str = str + fm.toString() + "\n";
+		}
+		return str;
 	}
 
 }

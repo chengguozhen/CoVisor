@@ -6,17 +6,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
-
 import org.apache.commons.lang.NotImplementedException;
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionNetworkLayerDestination;
 import org.openflow.protocol.action.OFActionOutput;
-
-import com.google.common.collect.Multiset.Entry;
-import com.googlecode.concurrenttrees.common.KeyValuePair;
 
 import edu.princeton.cs.policy.adv.PolicyCompositionUtil;
 import edu.princeton.cs.policy.adv.PolicyFlowTable;
@@ -27,25 +22,31 @@ public class PlumbingNode {
 	//private OVXBabySwitch babySwitch;
 	public final long dpid;
 	private PolicyFlowTable flowTable;
-	private Map<Short, Boolean> isEdgePortMap;
+	//private Map<Short, Boolean> isEdgePortMap;
+	private Map<Short, Short> portMap; // virtual port -> physical port, null if it is an internal port
 	private Map<Short, PlumbingNode> nextHopMap;
 	private Map<Short, Short> nextHopPortMap;
 	
 	public PlumbingNode(long dpid) {
 		this.dpid = dpid;
 		this.flowTable = new PolicyFlowTable();
-		this.isEdgePortMap = new HashMap<Short, Boolean>();
+		//this.isEdgePortMap = new HashMap<Short, Boolean>();
+		this.portMap = new HashMap<Short, Short>();
 		this.nextHopMap = new HashMap<Short, PlumbingNode>();
 		this.nextHopPortMap = new HashMap<Short, Short>();
 	}
 	
-	public void addPort(short port, boolean isEdge) {
-		this.isEdgePortMap.put(port, isEdge);
+	public void addPort(Short port, Short physicalPort) {
+		this.portMap.put(port, physicalPort);
 	}
 	
 	public void addNextHop(short port, PlumbingNode nextHop, short nextHopPort) {
 		this.nextHopMap.put(port, nextHop);
 		this.nextHopPortMap.put(port, nextHopPort);
+	}
+	
+	public Short getPhysicalPort(short port) {
+		return this.portMap.get(port);
 	}
 	
 	public PolicyUpdateTable update(OFFlowMod ofm) {
@@ -92,12 +93,12 @@ public class PlumbingNode {
 		}
 		
 		// generate update flowmodes for edge port
-		for (Map.Entry<Short, Boolean> isEdgePortPair : this.isEdgePortMap.entrySet()) {
-			if (isEdgePortPair.getValue()) {
+		for (Map.Entry<Short, Short> portPair : this.portMap.entrySet()) {
+			if (portPair.getValue() != null) {
 				OFMatch match = new OFMatch();
 				int wcards = OFMatch.OFPFW_ALL & ~OFMatch.OFPFW_IN_PORT;
 				match.setWildcards(wcards);
-				match.setInputPort(isEdgePortPair.getKey());
+				match.setInputPort(portPair.getValue());
 				PlumbingFlow pflow = new PlumbingFlow(match, null, pmod, null);
 				List<Tuple<OFFlowMod, Integer>> fmTuples = fwdPropagateFlow(pflow);
 				fmTuples = backPropagateFlow(fmTuples, pflow);
@@ -162,7 +163,8 @@ public class PlumbingNode {
 			Tuple<OFFlowMod, Integer> fmTuple = null;
 			try {
 				// TODO: add port transformation here
-				fmTuple = new Tuple<OFFlowMod, Integer>(pmod.getOriginalOfm().clone(), 0);
+				fmTuple = new Tuple<OFFlowMod, Integer>(pmod.getOriginalOfm().clone(), 1);
+				this.updateActionOutputPort(fmTuple.first);
 			} catch (CloneNotSupportedException e) {
 				e.printStackTrace();
 			}
@@ -189,6 +191,19 @@ public class PlumbingNode {
 		}
 		
 		return fmTuples;
+	}
+	
+	private void updateActionOutputPort(OFFlowMod fm) {
+		for (OFAction action : fm.getActions()) {
+			if (action instanceof OFActionOutput) {
+				OFActionOutput actionOutput = (OFActionOutput) action;
+				short outport = actionOutput.getPort();
+				Short physicalOutPort = this.getPhysicalPort(outport);
+				if (physicalOutPort != null) {
+					actionOutput.setPort(physicalOutPort);
+				}
+			}
+		}
 	}
 	
 	private OFMatch actApplyMatchWithInportChange(OFMatch match,
@@ -224,12 +239,12 @@ public class PlumbingNode {
 			}
 		}*/
 		
-		List<Tuple<OFFlowMod, Integer>> curFmTuples = new ArrayList<Tuple<OFFlowMod, Integer>>();
+		List<Tuple<OFFlowMod, Integer>> curFmTuples = null;
 		PlumbingFlow curFlow = pflow;
 		PlumbingFlowMod prevPmod = curFlow.getPrevPMod();
 		while (prevPmod != null) {
 			
-			curFmTuples.clear();
+			curFmTuples = new ArrayList<Tuple<OFFlowMod, Integer>>();
 			for (Tuple<OFFlowMod, Integer> fmTuple : fmTuples) {
 				curFmTuples.add(prevPmod.getPlumbingNode().revertApplyFm(fmTuple, prevPmod));
 			}
@@ -240,7 +255,7 @@ public class PlumbingNode {
 		}
 		
 
-		curFmTuples.clear();
+		curFmTuples = new ArrayList<Tuple<OFFlowMod, Integer>>();
 		for (Tuple<OFFlowMod, Integer> fmTuple : fmTuples) {
 			OFFlowMod ofm = fmTuple.first;
 			ofm.setMatch(
@@ -249,13 +264,31 @@ public class PlumbingNode {
 			Integer hop = fmTuple.second;
 			if (hop < PlumbingGraph.PRIORITY_HOPS) {
 				ofm.setPriority(
-						(short) (ofm.getPriority()
-								* (PolicyCompositionUtil.SEQUENTIAL_SHIFT
-										^ (PlumbingGraph.PRIORITY_HOPS - hop))));
+						(short) (ofm.getPriority() * vanillaPow(
+								PolicyCompositionUtil.SEQUENTIAL_SHIFT,
+								PlumbingGraph.PRIORITY_HOPS - hop)));
 			}
 		}
 		
 		return fmTuples;
+	}
+	
+	private int vanillaPow(int num, int power) {
+		if (power == 0) {
+			return 1;
+		} else if (power == 1) {
+			return num;
+		} else if (power == 2) {
+			return num * num;
+		} else if (power == 3) {
+			return num * num * num;
+		} else if (power == 4) {
+			return num * num * num * num;
+		} else if (power == 5) {
+			return num * num * num * num * num;
+		} else{
+			return (int) Math.pow(num, power);
+		}
 	}
 	
 	private PlumbingNode getNextHop(PlumbingFlowMod pmod) {
@@ -284,7 +317,7 @@ public class PlumbingNode {
 		for (OFAction action : pmod.getActions()) {
 			if (action instanceof OFActionOutput) {
 				short outport = ((OFActionOutput) action).getPort();
-				return this.isEdgePortMap.get(outport);
+				return this.portMap.get(outport) != null;
 			}
 		}
 		return false;
