@@ -1,5 +1,6 @@
 package net.onrc.openvirtex.elements.link;
 
+import net.onrc.openvirtex.elements.datapath.OVXMultiSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXBabySwitch;
 import net.onrc.openvirtex.elements.port.OVXBabyPort;
 
@@ -19,6 +20,9 @@ public class OVXBabyLink {
 		this.dstSwitch = dstSwitch;
 		this.dstPort = dstPort;
 		
+        OVXMultiSwitch sw = this.srcSwitch.getParentSwitch();
+        PlumbingGraph graph = sw.getPlumbingGraph();
+
 		this.srcSwitch.getParentSwitch().getPlumbingGraph().addEdge(
 				srcSwitch.getSwitchId(), srcPort.getPortNumber(),
 				dstSwitch.getSwitchId(), dstPort.getPortNumber());

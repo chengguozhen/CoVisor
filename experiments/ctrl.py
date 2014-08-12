@@ -139,9 +139,11 @@ def addVirtController(topo):
     print "*****************************"
     cmd = "%s -n createNetwork tcp:%s:10000 10.0.0.0 16" % (ovxctlPy,
         CONTROLLER_IP)
+    print cmd
     subprocess.call(cmd, shell=True)
 
     cmd = "%s -n createMultiSwitch 1 00:00:00:00:00:00:01:00 3" % ovxctlPy
+    print cmd
     subprocess.call(cmd, shell=True)
 
     cmd = "%s -n createBabyPort 1 00:a4:23:05:00:00:00:02 1" % ovxctlPy
@@ -165,7 +167,8 @@ def addVirtController(topo):
     cmd = "%s -n createBabyPort 1 00:a4:23:05:00:00:00:04 0" % ovxctlPy
     subprocess.call(cmd, shell=True)
 
-    cmd = "%s -n createBabyLink 1 00:a4:23:05:00:00:00:02 2 00:a4:23:05:00:00:00:03 1"
+    cmd = "%s -n connectBabyLink 1 00:a4:23:05:00:00:00:02 2 00:a4:23:05:00:00:00:03 1" % ovxctlPy
+    subprocess.call(cmd, shell=True)
 
     cmd = "%s -n startNetwork 1" % ovxctlPy
     subprocess.call(cmd, shell=True)
