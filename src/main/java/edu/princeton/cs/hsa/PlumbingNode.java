@@ -330,8 +330,10 @@ public class PlumbingNode {
 		for (short port : this.portMap.keySet()) {
 			if (this.portMap.get(port) != null) {
 				str = str + "\t" + port + " -> physical:" + this.portMap.get(port) + "\n";
-			} else {
+			} else if (this.nextHopMap.get(port) != null) {
 				str = str + "\t" + port + " -> " + this.nextHopMap.get(port).dpid + ":" + this.nextHopPortMap.get(port) + "\n";
+			} else {
+				str = str + "\t" + port + " -> internal\n";
 			}
 		}
 		return str;
