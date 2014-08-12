@@ -1,10 +1,16 @@
 package net.onrc.openvirtex.elements.link;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import edu.princeton.cs.hsa.PlumbingGraph;
 import net.onrc.openvirtex.elements.datapath.OVXMultiSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXBabySwitch;
 import net.onrc.openvirtex.elements.port.OVXBabyPort;
 
 public class OVXBabyLink {
+	
+	private static Logger log = LogManager.getLogger(OVXBabyLink.class.getName());
 	
 	private int linkId;
 	private OVXBabySwitch srcSwitch;
@@ -22,6 +28,7 @@ public class OVXBabyLink {
 		
         OVXMultiSwitch sw = this.srcSwitch.getParentSwitch();
         PlumbingGraph graph = sw.getPlumbingGraph();
+        log.error(graph.getGraph());
 
 		this.srcSwitch.getParentSwitch().getPlumbingGraph().addEdge(
 				srcSwitch.getSwitchId(), srcPort.getPortNumber(),
