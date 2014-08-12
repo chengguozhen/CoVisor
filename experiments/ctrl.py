@@ -4,7 +4,7 @@ import time
 import subprocess
 import random
 from ExprTopo.mtopo import *
-from apps import RoutingApp, FirewallApp
+from apps import RoutingApp, FirewallApp, SDXApp
 
 WorkDir = "/home/xinjin/xin-flowmaster"
 #SWITCH_NUM = 2
@@ -167,7 +167,11 @@ def addVirtController(topo):
     cmd = "%s -n createBabyPort 1 00:a4:23:05:00:00:00:04 0" % ovxctlPy
     subprocess.call(cmd, shell=True)
 
-    cmd = "%s -n connectBabyLink 1 00:a4:23:05:00:00:00:02 2 00:a4:23:05:00:00:00:03 1" % ovxctlPy
+    cmd = "%s -n connectBabyLink 1 00:a4:23:05:00:00:00:02 2 00:a4:23:05:00:00:00:03 5" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+    cmd = "%s -n connectBabyLink 1 00:a4:23:05:00:00:00:02 3 00:a4:23:05:00:00:00:04 9" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+    cmd = "%s -n connectBabyLink 1 00:a4:23:05:00:00:00:03 6 00:a4:23:05:00:00:00:04 8" % ovxctlPy
     subprocess.call(cmd, shell=True)
 
     cmd = "%s -n startNetwork 1" % ovxctlPy
@@ -392,6 +396,8 @@ def exprVirt():
     (topo, net) = startMininetWithoutCLI()
     time.sleep(5)
     addVirtController(topo)
+    app = SDXApp()
+    app.installRules()
     CLI(net)
 
 def expr(algo, outLog):
