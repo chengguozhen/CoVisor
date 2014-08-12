@@ -29,10 +29,13 @@ public class OVXBabyLink {
         OVXMultiSwitch sw = this.srcSwitch.getParentSwitch();
         PlumbingGraph graph = sw.getPlumbingGraph();
         log.error(graph.getGraph());
+        
+        long src = srcSwitch.getSwitchId();
+        short sport = srcPort.getPortNumber();
+        long dst = dstSwitch.getSwitchId();
+        short dport = dstPort.getPortNumber();
 
-		this.srcSwitch.getParentSwitch().getPlumbingGraph().addEdge(
-				srcSwitch.getSwitchId(), srcPort.getPortNumber(),
-				dstSwitch.getSwitchId(), dstPort.getPortNumber());
+		this.srcSwitch.getParentSwitch().getPlumbingGraph().addEdge(src, sport, dst, dport);
 	}
 
 	public int getLinkId() {
