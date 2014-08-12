@@ -545,10 +545,8 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
             throws IndexOutOfBoundException, PortMappingException {
         final int linkId = this.linkCounter.getNewIndex();
         OVXBabySwitch srcSwitch = (OVXBabySwitch) this.getSwitch(ovxSrcDpid);
-        OVXBabySwitch dstSwitch = (OVXBabySwitch) this.getSwitch(ovxDstDpid);
-        OVXBabyPort srcPort = (OVXBabyPort) srcSwitch.getPort(ovxSrcPort);
-        OVXBabyPort dstPort = (OVXBabyPort) dstSwitch.getPort(ovxDstPort);
-        return new OVXBabyLink(linkId, srcSwitch, srcPort, dstSwitch, dstPort);
+        OVXMultiSwitch multiSwitch = srcSwitch.getParentSwitch();
+        return new OVXBabyLink(linkId, ovxSrcDpid, ovxSrcPort, ovxDstDpid, ovxDstPort, multiSwitch);
     }
 
     /**

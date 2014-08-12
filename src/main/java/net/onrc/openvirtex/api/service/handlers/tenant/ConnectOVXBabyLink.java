@@ -7,6 +7,8 @@ import net.onrc.openvirtex.api.service.handlers.ApiHandler;
 import net.onrc.openvirtex.api.service.handlers.HandlerUtils;
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
 import net.onrc.openvirtex.elements.OVXMap;
+import net.onrc.openvirtex.elements.datapath.OVXBabySwitch;
+import net.onrc.openvirtex.elements.datapath.OVXMultiSwitch;
 import net.onrc.openvirtex.elements.link.OVXBabyLink;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.network.OVXNetwork;
@@ -53,15 +55,13 @@ public class ConnectOVXBabyLink extends ApiHandler<Map<String, Object>> {
                     srcDpid.longValue(), srcPort.shortValue(),
                     dstDpid.longValue(), dstPort.shortValue());
 
-            this.log.info(virtualLink.getSrcSwitch().getParentSwitch().getPlumbingGraph().getGraph());
+            OVXMultiSwitch multiSwitch = ((OVXBabySwitch) (virtualNetwork.getSwitch((Long) srcDpid))).getParentSwitch();
+            this.log.info(multiSwitch.getPlumbingGraph().getGraph());
 
             this.log.info(
 			        "Created bi-directional virtual link {} between ports {}/{} - {}/{} in virtual network {}",
-			        virtualLink.getLinkId(), virtualLink.getSrcSwitch()
-			                .getSwitchName(), virtualLink.getSrcPort()
-			                .getPortNumber(), virtualLink.getDstSwitch()
-			                .getSwitchName(), virtualLink.getDstPort()
-			                .getPortNumber(), virtualNetwork.getTenantId());
+			        virtualLink.linkId, virtualLink.srcSwitch, virtualLink.srcPort,
+			        virtualLink.dstSwitch, virtualLink.dstPort, virtualNetwork.getTenantId());
 			resp = new JSONRPC2Response(0);
         } catch (final MissingRequiredField e) {
             resp = new JSONRPC2Response(new JSONRPC2Error(
