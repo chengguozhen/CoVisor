@@ -3,7 +3,6 @@ package net.onrc.openvirtex.elements.datapath;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.exceptions.SwitchMappingException;
 
 import org.apache.logging.log4j.LogManager;
@@ -13,7 +12,6 @@ import org.openflow.protocol.OFMessage;
 import org.openflow.protocol.OFType;
 
 import edu.princeton.cs.hsa.PlumbingGraph;
-import edu.princeton.cs.hsa.PlumbingNode;
 
 /**
  * The Class OVXMultiSwitch.  Inherits from OVXSwitch, but also implements
@@ -21,7 +19,7 @@ import edu.princeton.cs.hsa.PlumbingNode;
  */
 public class OVXMultiSwitch extends OVXSingleSwitch {
 
-	private static Logger log = LogManager.getLogger(OVXMultiSwitch.class.getName());
+	private static Logger logger = LogManager.getLogger(OVXMultiSwitch.class.getName());
 	
 	private List<OVXBabySwitch> babySwitches;
 	private PlumbingGraph plumbingGraph;
@@ -51,16 +49,17 @@ public class OVXMultiSwitch extends OVXSingleSwitch {
 		try {
 			psw = this.map.getPhysicalSwitches(this).get(0);
 		} catch (SwitchMappingException e) {
-			log.warn("Cannot recover physical switch : {}", e);
+			logger.warn("Cannot recover physical switch : {}", e);
 		}
 		return psw;
     }
 
 	public void sendSouth(final OFMessage msg, final OVXBabySwitch babySwitch) {
-        log.info("Sending packet to sw {}: {}", this.getPhysicalSwitch().getName(), msg);
+        //log.info("Sending packet to sw {}: {}", this.getPhysicalSwitch().getName(), msg);
         
         if (msg.getType() == OFType.FLOW_MOD) {
         	this.plumbingGraph.update((OFFlowMod) msg, babySwitch.getPlumbingNode());
+        	logger.info(this.plumbingGraph);
         } else {
         	this.getPhysicalSwitch().sendMsg(msg, this);
         }

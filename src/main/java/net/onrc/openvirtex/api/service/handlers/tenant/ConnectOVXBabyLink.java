@@ -56,7 +56,7 @@ public class ConnectOVXBabyLink extends ApiHandler<Map<String, Object>> {
                     dstDpid.longValue(), dstPort.shortValue());
 
             OVXMultiSwitch multiSwitch = ((OVXBabySwitch) (virtualNetwork.getSwitch((Long) srcDpid))).getParentSwitch();
-            this.log.info(multiSwitch.getPlumbingGraph().getGraph());
+            this.log.info(multiSwitch.getPlumbingGraph().getGraphString());
 
             this.log.info(
 			        "Created bi-directional virtual link {} between ports {}/{} - {}/{} in virtual network {}",

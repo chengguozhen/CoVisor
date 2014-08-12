@@ -2,8 +2,6 @@ package net.onrc.openvirtex.elements.datapath;
 
 import net.onrc.openvirtex.elements.port.OVXPort;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMessage;
 
 import edu.princeton.cs.hsa.PlumbingNode;
@@ -13,7 +11,6 @@ import edu.princeton.cs.hsa.PlumbingNode;
  */
 public class OVXBabySwitch extends OVXSingleSwitch {
 
-	private static Logger log = LogManager.getLogger(OVXBabySwitch.class.getName());
 	private final OVXMultiSwitch parentSwitch;
 	private PlumbingNode plumbingNode;
 
@@ -37,7 +34,6 @@ public class OVXBabySwitch extends OVXSingleSwitch {
 	
 	@Override
     public void sendSouth(final OFMessage msg, final OVXPort inPort) {
-        log.info("babyswitch {} get msg {}", this.getName(), msg);
         this.parentSwitch.sendSouth(msg, this);
     }
 

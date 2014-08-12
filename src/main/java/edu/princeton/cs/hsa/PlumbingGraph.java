@@ -57,7 +57,7 @@ public class PlumbingGraph {
 		return updateTable;
 	}
 	
-	public String getGraph() {
+	public String getGraphString() {
 		String str = "";
 		for (PlumbingNode node : this.nodes.values()) {
 			str = str + node.toString();

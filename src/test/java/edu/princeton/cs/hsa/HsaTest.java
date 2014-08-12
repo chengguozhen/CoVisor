@@ -1,18 +1,11 @@
 package edu.princeton.cs.hsa;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFFlowMod;
-import org.openflow.protocol.OFMatch;
-
-import edu.princeton.cs.policy.adv.PolicyFlowTable;
-import edu.princeton.cs.policy.adv.PolicyUpdateTable;
 import edu.princeton.cs.policy.adv.RuleGenerationUtil;
 
 public class HsaTest extends TestCase {
