@@ -12,6 +12,7 @@ import org.openflow.protocol.OFMessage;
 import org.openflow.protocol.OFType;
 
 import edu.princeton.cs.hsa.PlumbingGraph;
+import edu.princeton.cs.policy.adv.PolicyUpdateTable;
 
 /**
  * The Class OVXMultiSwitch.  Inherits from OVXSwitch, but also implements
@@ -58,9 +59,11 @@ public class OVXMultiSwitch extends OVXSingleSwitch {
         //log.info("Sending packet to sw {}: {}", this.getPhysicalSwitch().getName(), msg);
         
         if (msg.getType() == OFType.FLOW_MOD) {
-        	this.plumbingGraph.update((OFFlowMod) msg, babySwitch.getPlumbingNode());
+        	PolicyUpdateTable updateTable = this.plumbingGraph.update((OFFlowMod) msg, babySwitch.getPlumbingNode());
         	logger.info(this.plumbingGraph);
-        	this.getPhysicalSwitch().sendMsg(msg, this);
+        	for (OFFlowMod ofm : updateTable.addFlowMods) {
+        		this.getPhysicalSwitch().sendMsg(ofm, this);
+        	}
         } else {
         	this.getPhysicalSwitch().sendMsg(msg, this);
         }
