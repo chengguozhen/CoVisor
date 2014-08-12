@@ -433,13 +433,14 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
      */
     @Override
     public String toString() {
-        return "OFFlowMod [actionFactory=" + this.actionFactory + ", actions="
+        /*return "OFFlowMod [actionFactory=" + this.actionFactory + ", actions="
                 + this.actions + ", bufferId=" + this.bufferId + ", command="
                 + this.command + ", cookie=" + Long.toHexString(this.cookie)
                 + ", flags=" + this.flags + ", hardTimeout=" + this.hardTimeout
                 + ", idleTimeout=" + this.idleTimeout + ", match=" + this.match
                 + ", outPort=" + this.outPort + ", priority=" + this.priority
                 + ", length=" + this.length + ", type=" + this.type
-                + ", version=" + this.version + ", xid=" + this.xid + "]";
+                + ", version=" + this.version + ", xid=" + this.xid + "]";*/
+    	return "priority=" + this.priority + ", match=" + this.match + ", actions=" + this.actions;
     }
 }

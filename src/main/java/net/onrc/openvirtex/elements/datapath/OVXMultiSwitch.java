@@ -60,6 +60,7 @@ public class OVXMultiSwitch extends OVXSingleSwitch {
         if (msg.getType() == OFType.FLOW_MOD) {
         	this.plumbingGraph.update((OFFlowMod) msg, babySwitch.getPlumbingNode());
         	logger.info(this.plumbingGraph);
+        	this.getPhysicalSwitch().sendMsg(msg, this);
         } else {
         	this.getPhysicalSwitch().sendMsg(msg, this);
         }
