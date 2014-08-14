@@ -15,24 +15,24 @@ class SDXApp():
 
         dpid = "00:a4:23:05:00:00:00:02"
         self.rules[dpid] = {}
-        self.genDefaultRuleHelper("s1d0", dpid)
+        #self.genDefaultRuleHelper("s1d0", dpid)
         self.genRoutingRuleHelper("s1r1", dpid, "1", "1.0.0.0", 1)
         self.genRoutingRuleHelper("s1r2", dpid, "1", "2.0.0.0", 2)
         self.genRoutingRuleHelper("s1r3", dpid, "1", "3.0.0.0", 3)
 
         dpid = "00:a4:23:05:00:00:00:03"
         self.rules[dpid] = {}
-        self.genDefaultRuleHelper("s2d0", dpid)
-        self.genRoutingRuleHelper("s2r1", dpid, "1", "1.0.0.0", 1)
-        self.genRoutingRuleHelper("s2r2", dpid, "1", "2.0.0.0", 2)
+        #self.genDefaultRuleHelper("s2d0", dpid)
+        self.genRoutingRuleHelper("s2r1", dpid, "1", "1.0.0.0", 2)
+        self.genRoutingRuleHelper("s2r2", dpid, "1", "2.0.0.0", 1)
         self.genRoutingRuleHelper("s2r3", dpid, "1", "3.0.0.0", 3)
 
         dpid = "00:a4:23:05:00:00:00:04"
         self.rules[dpid] = {}
-        self.genDefaultRuleHelper("s3d0", dpid)
-        self.genRoutingRuleHelper("s3r1", dpid, "1", "1.0.0.0", 1)
+        #self.genDefaultRuleHelper("s3d0", dpid)
+        self.genRoutingRuleHelper("s3r1", dpid, "1", "1.0.0.0", 3)
         self.genRoutingRuleHelper("s3r2", dpid, "1", "2.0.0.0", 2)
-        self.genRoutingRuleHelper("s3r3", dpid, "1", "3.0.0.0", 3)
+        self.genRoutingRuleHelper("s3r3", dpid, "1", "3.0.0.0", 1)
 
     def genDefaultRuleHelper(self, name, dpid):
         rule = '{"switch":"%s", ' % dpid + \
@@ -55,9 +55,9 @@ class SDXApp():
         dpid = "00:a4:23:05:00:00:00:02"
         self.installRulesHelper(dpid, "10001")
         dpid = "00:a4:23:05:00:00:00:03"
-        self.installRulesHelper(dpid, "10001")
-        dpid = "00:a4:23:05:00:00:00:04"
         self.installRulesHelper(dpid, "20001")
+        dpid = "00:a4:23:05:00:00:00:04"
+        self.installRulesHelper(dpid, "30001")
 
     def installRulesHelper(self, dpid, port):
         for rule in self.rules[dpid].values():

@@ -660,7 +660,7 @@ def do_createBabySwitch(gopts, opts, args):
     tenantId = reply.get('tenantId')
     switchId = reply.get("babyDpid")
     print "Virtual switch has been created (tenant_id %s, switch_id %s)" \
-        % (tenantId, switchId)
+        % (args[2], switchId)
 
 
 def pa_createBabyPort(args, cmd):
