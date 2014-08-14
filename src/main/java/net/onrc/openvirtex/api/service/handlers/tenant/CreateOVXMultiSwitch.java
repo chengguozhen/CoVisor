@@ -75,8 +75,12 @@ public class CreateOVXMultiSwitch extends ApiHandler<Map<String, Object>> {
 				Map<String, Object> reply = new HashMap<String, Object>(
 						ovxMultiSwitch.getDBObject());
 				reply.put(TenantHandler.TENANT, ovxMultiSwitch.getTenantId());
-				reply.put(TenantHandler.BABY_DPIDS,
-						StringUtils.join(babyDpids, ", "));
+				if (babyDpids.isEmpty()) {
+					reply.put(TenantHandler.BABY_DPIDS, "none");
+				} else {
+					reply.put(TenantHandler.BABY_DPIDS,
+							StringUtils.join(babyDpids, ", "));
+				}
 				resp = new JSONRPC2Response(reply, 0);
 			}
 
