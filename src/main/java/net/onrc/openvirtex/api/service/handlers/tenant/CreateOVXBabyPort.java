@@ -51,7 +51,7 @@ public class CreateOVXBabyPort extends ApiHandler<Map<String, Object>> {
 			final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
 					.intValue());
 			boolean pportExists = pport.intValue() != 0;
-			if (pportExists) {
+			/*if (pportExists) {
 				OVXMultiSwitch multiSwitch = ((OVXBabySwitch) virtualNetwork
 						.getSwitch(babyDpid.longValue())).getParentSwitch();
 				List<PhysicalSwitch> physicalSwitches = map
@@ -64,7 +64,7 @@ public class CreateOVXBabyPort extends ApiHandler<Map<String, Object>> {
 				PhysicalSwitch physicalSwitch = physicalSwitches.get(0);
 				HandlerUtils.isValidPhysicalPort(tenantId.intValue(),
 						physicalSwitch.getSwitchId(), pport.shortValue());
-			}
+			}*/
 
 			final OVXBabyPort ovxBabyPort;
 			if (pportExists) {

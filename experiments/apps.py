@@ -14,18 +14,21 @@ class SDXApp():
         self.rules = {}
 
         dpid = "00:a4:23:05:00:00:00:02"
+        self.rules[dpid] = {}
         self.genDefaultRuleHelper("s1d0", dpid)
         self.genRoutingRuleHelper("s1r1", dpid, "1", "1.0.0.0", 1)
         self.genRoutingRuleHelper("s1r2", dpid, "1", "2.0.0.0", 2)
         self.genRoutingRuleHelper("s1r3", dpid, "1", "3.0.0.0", 3)
 
         dpid = "00:a4:23:05:00:00:00:03"
+        self.rules[dpid] = {}
         self.genDefaultRuleHelper("s2d0", dpid)
         self.genRoutingRuleHelper("s2r1", dpid, "1", "1.0.0.0", 5)
         self.genRoutingRuleHelper("s2r2", dpid, "1", "2.0.0.0", 4)
         self.genRoutingRuleHelper("s2r3", dpid, "1", "3.0.0.0", 6)
 
         dpid = "00:a4:23:05:00:00:00:04"
+        self.rules[dpid] = {}
         self.genDefaultRuleHelper("s3d0", dpid)
         self.genRoutingRuleHelper("s3r1", dpid, "1", "1.0.0.0", 9)
         self.genRoutingRuleHelper("s3r2", dpid, "1", "2.0.0.0", 8)
@@ -36,7 +39,7 @@ class SDXApp():
             '"name":"%s", ' % name + \
             '"priority":"0", ' + \
             '"active":"true", "actions":""}'
-        self.rules[name] = rule
+        self.rules[dpid][name] = rule
 
     def genRoutingRuleHelper(self, name, dpid, priority, dstip, outport):
         rule = '{"switch":"%s", ' % dpid + \
@@ -46,12 +49,21 @@ class SDXApp():
             '"dst-ip":"%s", ' % dstip + \
             '"active":"true", "actions":"output=%s"}' % outport
         self.rules[name] = rule
+        self.rules[dpid][name] = rule
 
     def installRules(self):
-        for rule in self.rules.values():
-            #print rule
-            cmd = "curl -d '%s' http://localhost:10001/wm/staticflowentrypusher/json" % rule
-            subprocess.call(cmd, shell=True)
+        dpid = "00:a4:23:05:00:00:00:02"
+        self.installRulesHelper(dpid, "10001")
+        dpid = "00:a4:23:05:00:00:00:03"
+        self.installRulesHelper(dpid, "10001")
+        dpid = "00:a4:23:05:00:00:00:04"
+        self.installRulesHelper(dpid, "20001")
+
+    def installRulesHelper(self, dpid, port):
+        for rule in self.rules[dpid].values():
+            print rule
+            #cmd = "curl -d '%s' http://localhost:%s/wm/staticflowentrypusher/json" % (rule, port)
+            #subprocess.call(cmd, shell=True)
             print ""
 
 

@@ -659,10 +659,8 @@ def do_createBabySwitch(gopts, opts, args):
     reply = connect(gopts, "tenant", "createBabySwitch", data=req, passwd=getPasswd(gopts))
     tenantId = reply.get('tenantId')
     switchId = reply.get("babyDpid")
-    if tenantId and babyDpid:
-        switch_name = '00:' + ':'.join([("%x" % switchId)[i:i+2] for i in range(0, len(("%x" % switchId)), 2)])
-        print "Virtual switch has been created (tenant_id %s, switch_id %s)" \
-            % (tenantId, switch_name)
+    print "Virtual switch has been created (tenant_id %s, switch_id %s)" \
+        % (tenantId, switchId)
 
 
 def pa_createBabyPort(args, cmd):
