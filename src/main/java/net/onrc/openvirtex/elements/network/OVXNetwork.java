@@ -346,11 +346,15 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
 				switchId);
 	}
 	
-	public OVXBabySwitch createBabySwitch(OVXMultiSwitch multiSwitch)
+	public long getNewDpid()
 			throws IndexOutOfBoundException {
-		final long babyId = (long) 0xa42305 << 32
+		return (long) 0xa42305 << 32
 				| this.dpidCounter.getNewIndex();
-		OVXBabySwitch babySwitch = new OVXBabySwitch(babyId, this.tenantId, (OVXMultiSwitch) multiSwitch);
+	}
+	
+	public OVXBabySwitch createBabySwitch(long switchId, OVXMultiSwitch multiSwitch)
+			throws IndexOutOfBoundException {
+		OVXBabySwitch babySwitch = new OVXBabySwitch(switchId, this.tenantId, (OVXMultiSwitch) multiSwitch);
 		multiSwitch.addSwitch(babySwitch);
 		addSwitch(babySwitch);
 		return babySwitch;

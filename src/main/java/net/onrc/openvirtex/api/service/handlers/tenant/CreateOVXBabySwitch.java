@@ -48,7 +48,8 @@ public class CreateOVXBabySwitch extends ApiHandler<Map<String, Object>> {
 			
 			// create babySwitch
 			final OVXNetwork virtualNetworkBabySwitch = map.getVirtualNetwork(babyTenantId.intValue());
-			OVXBabySwitch ovxBabySwitch = virtualNetworkBabySwitch.createBabySwitch(ovxMultiSwitch);
+			OVXBabySwitch ovxBabySwitch = virtualNetworkBabySwitch
+					.createBabySwitch(virtualNetworkMultiSwitch.getNewDpid(), ovxMultiSwitch);
 			
 			// generate response
 			this.log.info(
