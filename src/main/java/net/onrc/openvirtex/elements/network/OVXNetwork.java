@@ -393,7 +393,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
 			throws IndexOutOfBoundException {
 		final OVXBabySwitch babySwitch = (OVXBabySwitch) getSwitch(babyDpid);
 		OVXBabyPort babyPort = new OVXBabyPort(this.tenantId, babySwitch);
-		babyPort.register();
+		//babyPort.register();
 		return babyPort;
 	}
 	

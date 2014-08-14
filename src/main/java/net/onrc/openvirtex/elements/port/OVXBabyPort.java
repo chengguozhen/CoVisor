@@ -1,27 +1,30 @@
 package net.onrc.openvirtex.elements.port;
 
 import net.onrc.openvirtex.elements.datapath.OVXBabySwitch;
-import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 
-public class OVXBabyPort extends OVXPort {
+public class OVXBabyPort {//extends OVXPort {
 
 	final private OVXBabySwitch parentSwitch;
+	final short portNumber;
 	final private boolean isMapToPhysicalPort;
+	
 	
 	public OVXBabyPort(int tenantId, OVXBabySwitch babySwitch, PhysicalPort port)
 			throws IndexOutOfBoundException {
-		super(tenantId, port, true);
+		//super(tenantId, port, true);
 		this.parentSwitch = babySwitch;
+		this.portNumber = this.parentSwitch.getNextPortNumber();
 		this.isMapToPhysicalPort = true;
 		babySwitch.getParentSwitch().getPlumbingGraph().addPort(babySwitch.getSwitchId(), this.portNumber, port.getPortNumber());
 	}
 	
 	public OVXBabyPort(int tenantId, OVXBabySwitch babySwitch)
 			throws IndexOutOfBoundException {
-		super(tenantId, babySwitch.getPhysicalSwitch().getPort((short) 1) , true);
+		//super(tenantId, babySwitch.getPhysicalSwitch().getPort((short) 1) , true);
 		this.parentSwitch = babySwitch;
+		this.portNumber = this.parentSwitch.getNextPortNumber();
 		this.isMapToPhysicalPort = false;
 		babySwitch.getParentSwitch().getPlumbingGraph().addPort(babySwitch.getSwitchId(), this.portNumber, null);
 	}
@@ -31,7 +34,7 @@ public class OVXBabyPort extends OVXPort {
 	}
 	
 	
-	@Override
+	//@Override
 	public OVXBabySwitch getParentSwitch() {
 		return this.parentSwitch;
 	}
