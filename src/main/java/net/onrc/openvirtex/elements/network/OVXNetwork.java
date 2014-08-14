@@ -407,7 +407,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
 		final PhysicalSwitch physicalSwitch = physicalSwitches.get(0);
 		final PhysicalPort physicalPort = physicalSwitch.getPort(physicalPortNumber);
 		final OVXBabyPort babyPort = new OVXBabyPort(this.tenantId, babySwitch, physicalPort);
-		babyPort.register();
+		//babyPort.register();
 		return babyPort;
 	}
 
