@@ -640,6 +640,31 @@ def do_createMultiSwitch(gopts, opts, args):
         print "Virtual switch has been created (tenant_id %s, switch_id %s) with internal baby switches %s" \
             % (args[0], switch_name, babyDpids)
 
+def pa_createBabySwitch(args, cmd):
+    usage = "%s [options] <tenant_id> <multi_switch_dpid> <baby_switch_tenant_id>" % \
+        USAGE.format(cmd)
+    (sdesc, ldesc) = DESCS[cmd]
+    parser = OptionParser(usage=usage, description=ldesc)
+    return parser.parse_args(args)
+
+def do_createBabySwitch(gopts, opts, args):
+    if len(args) != 3:
+        print ("createBabySwitch : must specify: " +
+            "virtual tenant_id, multi_switch_dpid (e.g. 00:a4:23:05:00:00:00:01)," +
+            "baby_switch_tenant_id")
+        sys.exit()
+    req = { "tenantId" : int(args[0]), "multiDpid" : int(args[1].replace(":", ""), 16),
+            "babyTenantId" : int(args[2]) };
+    print "req:  " + str(req)
+    reply = connect(gopts, "tenant", "createBabySwitch", data=req, passwd=getPasswd(gopts))
+    tenantId = reply.get('tenantId')
+    switchId = reply.get("babyDpid")
+    if tenantId and babyDpid:
+        switch_name = '00:' + ':'.join([("%x" % switchId)[i:i+2] for i in range(0, len(("%x" % switchId)), 2)])
+        print "Virtual switch has been created (tenant_id %s, switch_id %s)" \
+            % (tenantId, switch_name)
+
+
 def pa_createBabyPort(args, cmd):
     usage = "%s [options] <tenant_id> <baby_dpid>" % USAGE.format(cmd)
     (sdesc, ldesc) = DESCS[cmd]
@@ -789,6 +814,7 @@ CMDS = {
     'setComposeAlgo': (pa_setComposeAlgo, do_setComposeAlgo),
    
     'createMultiSwitch': (pa_createMultiSwitch, do_createMultiSwitch),
+    'createBabySwitch': (pa_createBabySwitch, do_createBabySwitch),
     'createBabyPort': (pa_createBabyPort, do_createBabyPort),
     'connectBabyLink': (pa_connectBabyLink, do_connectBabyLink),
 
@@ -918,6 +944,10 @@ DESCS = {
                                 "physical switch corresponding to this multi switch, and the number of " +
                                 "baby switches internal to this multi switch." +
                                 "\nExample: createMultiSwitch 1 00:00:00:00:00:00:00:01 4")),
+    'createBabySwitch' : ("Create virtual baby switch",
+                                ("Create a virtual baby switch. Must specify a tenant_id, the dpid of the " +
+                                "multi switch, and the tenant_id of the baby switch" +
+                                "\nExample: createBabySwitch 1 00:a4:23:05:00:00:00:01 2")),
     'createBabyPort' : ("Create virtual port on baby switch",
                             ("Create a virtual port on a baby switch. Must specify a tenant_id, " +
                             "the dpid of the parent baby switch, and optionally the number of the " +

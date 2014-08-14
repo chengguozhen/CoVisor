@@ -22,6 +22,7 @@ import net.onrc.openvirtex.api.service.handlers.tenant.ConnectHost;
 import net.onrc.openvirtex.api.service.handlers.tenant.ConnectOVXBabyLink;
 import net.onrc.openvirtex.api.service.handlers.tenant.ConnectOVXLink;
 import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXBabyPort;
+import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXBabySwitch;
 import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXMultiSwitch;
 import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXNetwork;
 import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXPort;
@@ -155,8 +156,10 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
     public static final String PHYSICAL_DPID = "physicalDpid";
     public static final String PPORT = "pport";
     public static final String NUMBER_OF_BABY_SWITCHES = "numberOfBabySwitches";
+    public static final String MULTI_DPID = "multiDpid";
     public static final String BABY_DPID = "babyDpid";
     public static final String BABY_DPIDS = "babyDpids";
+    public static final String BABY_TENANT = "babyTenantId";
 
     @SuppressWarnings({ "serial", "rawtypes" })
     private HashMap<String, ApiHandler> handlers = new HashMap<String, ApiHandler>() {
@@ -194,6 +197,7 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
             
             // many-to-one mapping handlers
             this.put("createMultiSwitch", new CreateOVXMultiSwitch());
+            this.put("createBabySwitch", new CreateOVXBabySwitch());
     	    this.put("createBabyPort", new CreateOVXBabyPort());
     	    this.put("connectBabyLink", new ConnectOVXBabyLink());
         }

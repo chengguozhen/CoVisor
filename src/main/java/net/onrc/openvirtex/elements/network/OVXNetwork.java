@@ -322,7 +322,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
 		for (int i = 0; i < numberOfBabySwitches; i++) {
 			final long babyId = (long) 0xa42305 << 32
 					| this.dpidCounter.getNewIndex();
-			OVXSwitch babySwitch = new OVXBabySwitch(babyId, (OVXMultiSwitch) virtualSwitch);
+			OVXSwitch babySwitch = new OVXBabySwitch(babyId, this.tenantId, (OVXMultiSwitch) virtualSwitch);
 			((OVXMultiSwitch) virtualSwitch).addSwitch((OVXBabySwitch) babySwitch);
 			/*
 			 * Store babySwitches in network dpidMap and neighborMap (in
@@ -344,6 +344,16 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
 				| this.dpidCounter.getNewIndex();
 		return this.createMultiSwitch(physicalDpid, numberOfBabySwitches,
 				switchId);
+	}
+	
+	public OVXBabySwitch createBabySwitch(OVXMultiSwitch multiSwitch)
+			throws IndexOutOfBoundException {
+		final long babyId = (long) 0xa42305 << 32
+				| this.dpidCounter.getNewIndex();
+		OVXBabySwitch babySwitch = new OVXBabySwitch(babyId, this.tenantId, (OVXMultiSwitch) multiSwitch);
+		multiSwitch.addSwitch(babySwitch);
+		addSwitch(babySwitch);
+		return babySwitch;
 	}
 
     /**
