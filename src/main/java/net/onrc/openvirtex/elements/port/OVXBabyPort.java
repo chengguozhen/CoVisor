@@ -10,7 +10,7 @@ import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 
 public class OVXBabyPort {//extends OVXPort {
 
-	final private int tenantId;
+	final private Integer tenantId;
 	final private OVXBabySwitch parentSwitch;
 	final short portNumber;
 	final private boolean isMapToPhysicalPort;
@@ -43,7 +43,7 @@ public class OVXBabyPort {//extends OVXPort {
 		return this.portNumber;
 	}
 	
-	public int getTenantId() {
+	public Integer getTenantId() {
 		return this.tenantId;
 	}
 	

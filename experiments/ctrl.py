@@ -208,25 +208,25 @@ def addVirtMultiController(topo):
     cmd = "%s -n createBabyPort 1 00:a4:23:05:00:00:00:02 0" % ovxctlPy
     subprocess.call(cmd, shell=True)
 
+    cmd = "%s -n createBabyPort 1 00:a4:23:05:00:00:00:03 0" % ovxctlPy
+    subprocess.call(cmd, shell=True)
     cmd = "%s -n createBabyPort 1 00:a4:23:05:00:00:00:03 2" % ovxctlPy
     subprocess.call(cmd, shell=True)
     cmd = "%s -n createBabyPort 1 00:a4:23:05:00:00:00:03 0" % ovxctlPy
     subprocess.call(cmd, shell=True)
-    cmd = "%s -n createBabyPort 1 00:a4:23:05:00:00:00:03 0" % ovxctlPy
+
+    cmd = "%s -n createBabyPort 2 00:a4:23:05:00:00:00:04 0" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+    cmd = "%s -n createBabyPort 2 00:a4:23:05:00:00:00:04 0" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+    cmd = "%s -n createBabyPort 2 00:a4:23:05:00:00:00:04 3" % ovxctlPy
     subprocess.call(cmd, shell=True)
 
-    cmd = "%s -n createBabyPort 1 00:a4:23:05:00:00:00:04 3" % ovxctlPy
+    cmd = "%s -n connectBabyLink 1 00:a4:23:05:00:00:00:02 2 00:a4:23:05:00:00:00:03 1" % ovxctlPy
     subprocess.call(cmd, shell=True)
-    cmd = "%s -n createBabyPort 1 00:a4:23:05:00:00:00:04 0" % ovxctlPy
+    cmd = "%s -n connectBabyLink 1 00:a4:23:05:00:00:00:02 3 00:a4:23:05:00:00:00:04 1" % ovxctlPy
     subprocess.call(cmd, shell=True)
-    cmd = "%s -n createBabyPort 1 00:a4:23:05:00:00:00:04 0" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-
-    cmd = "%s -n connectBabyLink 1 00:a4:23:05:00:00:00:02 2 00:a4:23:05:00:00:00:03 5" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n connectBabyLink 1 00:a4:23:05:00:00:00:02 3 00:a4:23:05:00:00:00:04 9" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n connectBabyLink 1 00:a4:23:05:00:00:00:03 6 00:a4:23:05:00:00:00:04 8" % ovxctlPy
+    cmd = "%s -n connectBabyLink 1 00:a4:23:05:00:00:00:03 3 00:a4:23:05:00:00:00:04 2" % ovxctlPy
     subprocess.call(cmd, shell=True)
 
     cmd = "%s -n startNetwork 1" % ovxctlPy

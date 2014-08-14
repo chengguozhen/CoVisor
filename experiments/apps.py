@@ -23,16 +23,16 @@ class SDXApp():
         dpid = "00:a4:23:05:00:00:00:03"
         self.rules[dpid] = {}
         self.genDefaultRuleHelper("s2d0", dpid)
-        self.genRoutingRuleHelper("s2r1", dpid, "1", "1.0.0.0", 5)
-        self.genRoutingRuleHelper("s2r2", dpid, "1", "2.0.0.0", 4)
-        self.genRoutingRuleHelper("s2r3", dpid, "1", "3.0.0.0", 6)
+        self.genRoutingRuleHelper("s2r1", dpid, "1", "1.0.0.0", 1)
+        self.genRoutingRuleHelper("s2r2", dpid, "1", "2.0.0.0", 2)
+        self.genRoutingRuleHelper("s2r3", dpid, "1", "3.0.0.0", 3)
 
         dpid = "00:a4:23:05:00:00:00:04"
         self.rules[dpid] = {}
         self.genDefaultRuleHelper("s3d0", dpid)
-        self.genRoutingRuleHelper("s3r1", dpid, "1", "1.0.0.0", 9)
-        self.genRoutingRuleHelper("s3r2", dpid, "1", "2.0.0.0", 8)
-        self.genRoutingRuleHelper("s3r3", dpid, "1", "3.0.0.0", 7)
+        self.genRoutingRuleHelper("s3r1", dpid, "1", "1.0.0.0", 1)
+        self.genRoutingRuleHelper("s3r2", dpid, "1", "2.0.0.0", 2)
+        self.genRoutingRuleHelper("s3r3", dpid, "1", "3.0.0.0", 3)
 
     def genDefaultRuleHelper(self, name, dpid):
         rule = '{"switch":"%s", ' % dpid + \
@@ -62,8 +62,8 @@ class SDXApp():
     def installRulesHelper(self, dpid, port):
         for rule in self.rules[dpid].values():
             print rule
-            #cmd = "curl -d '%s' http://localhost:%s/wm/staticflowentrypusher/json" % (rule, port)
-            #subprocess.call(cmd, shell=True)
+            cmd = "curl -d '%s' http://localhost:%s/wm/staticflowentrypusher/json" % (rule, port)
+            subprocess.call(cmd, shell=True)
             print ""
 
 
