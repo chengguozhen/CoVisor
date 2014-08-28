@@ -447,7 +447,7 @@ def killFloodlight():
 #    print "update monitor rules"
 
 #********************************************************************
-# expr script
+# expr utils
 #********************************************************************
 def cleanAll():
     killMininet()
@@ -460,7 +460,10 @@ def processLog(fout):
     cmd = "python log_process.py ovx.log %s" % fout
     subprocess.call(cmd, shell=True)
 
-def exprParallel():
+#********************************************************************
+# expr: parallel
+#********************************************************************
+def exprParallelHelper(algo, outLog):
     cleanAll()
     startFloodlight(2)
     startOVX()
@@ -472,17 +475,24 @@ def exprParallel():
     startComposition()
     app2 = MACLearnerApp(topo, perSwRule = perSwRoutingRule)
     app2.installRules()
-    app1 = MonitorApp(topo, app2.macs, perSwRule = perSwRoutingRule, addRuleCount = 2)
+    app1 = MonitorApp(topo, app2.macs, perSwRule = perSwRoutingRule, addRuleCount = 10)
     app1.installRules()
-
-    CLI(net)
+    time.sleep(1)
     setComposeAlgo(algo)
     app1.updateRules()
     cleanAll()
-    #processLog('res.' + algo)
     processLog(outLog)
 
+def exprParallel():
+    global perSwRoutingRule
+    perSwRoutingRule = 100
+    for perSwRoutingRule in [100, 200, 300, 400, 500]:
+        exprParallelHelper('strawman', 'res_strawman_%d' %  perSwRoutingRule)
+        exprParallelHelper('inc', 'res_inc_%d' %  perSwRoutingRule)
 
+#********************************************************************
+# expr: SDX
+#********************************************************************
 def exprVirt():
     cleanAll()
     startOneFloodlight(1)
