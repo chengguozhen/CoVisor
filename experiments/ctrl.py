@@ -4,7 +4,7 @@ import time
 import subprocess
 import random
 from ExprTopo.mtopo import *
-from apps import RoutingApp, FirewallApp, SDXApp
+from apps import *
 
 WorkDir = "/home/xinjin/xin-flowmaster"
 #SWITCH_NUM = 2
@@ -27,7 +27,7 @@ fwFile = "%s/OpenVirteX/experiments/classbench/" % WorkDir + \
     "acl1_10"
     #"test"
 swNumber = 1
-perSwRoutingRule = 5
+perSwRoutingRule = 2
 
 #********************************************************************
 # mininet: start, kill
@@ -326,10 +326,13 @@ def startOneFloodlight(index):
             "ctrl/ctrl%d.floodlight &" % index,
             shell=True, stdout=logfile, stderr=subprocess.STDOUT)
 
-def startFloodlight():
-    startOneFloodlight(1)
-    startOneFloodlight(2)
-    startOneFloodlight(3)
+def startFloodlight(count):
+    if count > 3:
+        print "warning: bigger than 3 controllers, only start 3 controllers"
+        count = 3
+    for i in range(count):
+        startOneFloodlight(i+1)
+    #startOneFloodlight(2)
 
 def showFloodlight():
     subprocess.call("ps ax | grep floodlight | grep -v grep", shell=True)
@@ -457,6 +460,29 @@ def processLog(fout):
     cmd = "python log_process.py ovx.log %s" % fout
     subprocess.call(cmd, shell=True)
 
+def exprParallel():
+    cleanAll()
+    startFloodlight(2)
+    startOVX()
+    (topo, net) = startMininetWithoutCLI()
+    time.sleep(5)
+    addController1(topo)
+    addController2(topo)
+    addPolicy()
+    startComposition()
+    app2 = MACLearnerApp(topo, perSwRule = perSwRoutingRule)
+    app2.installRules()
+    app1 = MonitorApp(topo, app2.macs, perSwRule = perSwRoutingRule, addRuleCount = 2)
+    app1.installRules()
+
+    CLI(net)
+    setComposeAlgo(algo)
+    app1.updateRules()
+    cleanAll()
+    #processLog('res.' + algo)
+    processLog(outLog)
+
+
 def exprVirt():
     cleanAll()
     startOneFloodlight(1)
@@ -554,12 +580,20 @@ def startAll():
     cleanAll()
 
 def testApp():
-    topo = MNTopo(topoFile=topoFile)
-    app = FirewallApp(topo, fwFile)
+    topo = MNTopo(sw_number = 2, topoFile=topoFile)
+    #topo = MNTopo(topoFile=topoFile)
+    app1 = MACLearnerApp(topo, perSwRule = 5)
+    #app = FirewallApp(topo, fwFile)
     #app = RoutingApp(topo, prefixFile, perSwRule = 5)
-    app.genRules()
-    app.installRules()
-    app.updateRules()
+    #app.genRules()
+    app1.installRules()
+    #app.updateRules()
+
+    print "----------"
+    app2 = MonitorApp(topo, app1.macs, perSwRule = 5, addRuleCount = 5)
+    app2.installRules()
+    print "----------"
+    app2.updateRules()
 
 
 def printHelp():
@@ -598,7 +632,8 @@ if __name__ == '__main__':
     elif sys.argv[1] == "expr":
         #expr(sys.argv[2])
         #exprAll()
-        exprVirtMultiController()
+        #exprVirtMultiController()
+        exprParallel()
     else:
         printHelp()
 

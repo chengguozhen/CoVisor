@@ -6,6 +6,129 @@ import random
 from ExprTopo.mtopo import *
 
 #********************************************************************
+# Monitor App
+#********************************************************************
+class MonitorApp():
+
+    def __init__(self, topo, macs, perSwRule = 100, addRuleCount = 5):
+        self.graph = topo.graph
+        self.perSwRule = perSwRule
+        self.addRuleCount = addRuleCount
+        self.rules = {}
+        self.addRules = {}
+        self.macpairs = []
+
+        random.seed(1)
+        macPairIndex = [i for i in range(len(macs) * len(macs))]
+        random.shuffle(macPairIndex)
+        for i in range(perSwRule + addRuleCount):
+            index = macPairIndex[i]
+            srcMac = macs[index/len(macs)]
+            dstMac = macs[index%len(macs)]
+            self.macpairs.append((srcMac, dstMac))
+
+        for switch in self.graph.nodes():
+            ridx = self.graph.node[switch]['ridx']
+            vdpid = self.graph.node[switch]['vdpid']
+            
+            # default rule
+            name = "MonitorAppS%dD0" % ridx
+            rule = '{"switch":"%s", ' % vdpid + \
+                '"name":"%s", ' % name + \
+                '"priority":"0", ' + \
+                '"active":"true", "actions":""}'
+            self.rules[name] = rule
+            # mac routing rules
+            for index in range(perSwRule):
+                macpair = self.macpairs[index]
+                name = "MonitorAppS%dR%d" % (ridx, index)
+                rule = '{"switch":"%s", ' % vdpid + \
+                    '"name":"%s", ' % name + \
+                    '"priority":"1", ' + \
+                    '"src-mac":"%s", ' % macpair[0] + \
+                    '"dst-mac":"%s", ' % macpair[1] + \
+                    '"active":"true", "actions":""}'
+                self.rules[name] = rule
+            for i in range(addRuleCount):
+                index = perSwRule + i
+                macpair = self.macpairs[index]
+                name = "MonitorAppS%dR%d" % (ridx, index)
+                rule = '{"switch":"%s", ' % vdpid + \
+                    '"name":"%s", ' % name + \
+                    '"priority":"1", ' + \
+                    '"src-mac":"%s", ' % macpair[0] + \
+                    '"dst-mac":"%s", ' % macpair[1] + \
+                    '"active":"true", "actions":""}'
+                self.addRules[name] = rule
+
+    def installRules(self):
+        for rule in self.rules.values():
+            #print rule
+            cmd = "curl -d '%s' http://localhost:10001/wm/staticflowentrypusher/json" % rule
+            subprocess.call(cmd, shell=True)
+            print ""
+
+    def updateRules(self):
+        for rule in self.addRules.values():
+            #print rule
+            cmd = "curl -d '%s' http://localhost:10001/wm/staticflowentrypusher/json" % rule
+            subprocess.call(cmd, shell=True)
+            print ""
+
+
+#********************************************************************
+# MAC Learner App
+#********************************************************************
+class MACLearnerApp():
+
+    def __init__(self, topo, perSwRule = 100):
+        self.graph = topo.graph
+        self.perSwRule = perSwRule
+        self.rules = {}
+        self.macs = []
+
+        random.seed(1)
+        for i in range(perSwRule):
+            self.macs.append(self.genRandomMAC())
+
+        for switch in self.graph.nodes():
+            ridx = self.graph.node[switch]['ridx']
+            vdpid = self.graph.node[switch]['vdpid']
+            
+            # default rule
+            name = "MACAppS%dD0" % ridx
+            rule = '{"switch":"%s", ' % vdpid + \
+                '"name":"%s", ' % name + \
+                '"priority":"0", ' + \
+                '"active":"true", "actions":""}'
+            self.rules[name] = rule
+            # mac routing rules
+            for index, mac in enumerate(self.macs):
+                name = "MACAppS%dR%d" % (ridx, index)
+                rule = '{"switch":"%s", ' % vdpid + \
+                    '"name":"%s", ' % name + \
+                    '"priority":"1", ' + \
+                    '"dst-mac":"%s", ' % mac + \
+                    '"active":"true", "actions":"output=1"}'
+                self.rules[name] = rule
+
+    def genRandomMAC(self):
+        return '{:02x}'.format(random.randint(0,255)) + ":" + \
+            '{:02x}'.format(random.randint(0,255)) + ":" + \
+            '{:02x}'.format(random.randint(0,255)) + ":" + \
+            '{:02x}'.format(random.randint(0,255)) + ":" + \
+            '{:02x}'.format(random.randint(0,255)) + ":" + \
+            '{:02x}'.format(random.randint(0,255)) + ":"
+
+    def installRules(self):
+        for rule in self.rules.values():
+            #print rule
+            cmd = "curl -d '%s' http://localhost:20001/wm/staticflowentrypusher/json" % rule
+            subprocess.call(cmd, shell=True)
+            print ""
+
+
+#********************************************************************
 # SDX App
 #********************************************************************
 class SDXApp():
