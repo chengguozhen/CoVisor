@@ -53,6 +53,12 @@ public class CreatePolicy extends ApiHandler<Map<String, Object>> {
     		
     		storeKeys.add(PolicyFlowModStoreKey.DATA_DST);
     		storeKeys.add(PolicyFlowModStoreKey.ALL);
+		} else if (policy.charAt(1) == '2') {
+			storeTypes.add(PolicyFlowModStoreType.PREFIX);
+    		storeTypes.add(PolicyFlowModStoreType.WILDCARD);
+    		
+    		storeKeys.add(PolicyFlowModStoreKey.NETWORK_DST);
+    		storeKeys.add(PolicyFlowModStoreKey.ALL);
 		}
     	
 		// install policy
