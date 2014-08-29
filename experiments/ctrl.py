@@ -21,10 +21,10 @@ topoFile = "%s/OpenVirteX/experiments/ExprTopo/Rocketfuel/" % WorkDir + \
     "internet2/weights.intra"
     #"test/weights.intra"
 prefixFile = "%s/OpenVirteX/experiments/classbench/" % WorkDir + \
-    "acl1_prefix"
+    "fw1_prefix"
     #"test"
 fwFile = "%s/OpenVirteX/experiments/classbench/" % WorkDir + \
-    "acl1_10"
+    "fw1_10"
     #"test"
 swNumber = 1
 perSwRoutingRule = 2
@@ -312,8 +312,11 @@ def stopComposition():
 def setComposeAlgo(algo):
     subprocess.call("%s -n setComposeAlgo %s" % (ovxctlPy, algo), shell=True)
 
-def addPolicy():
-    subprocess.call([ovxctlPy, "-n", "createPolicy", "01"])
+# policy: ab
+# a: 0 -> parallel, 1 -> sequential
+# b: 0 -> normal, 1 -> exact, 2 -> trie
+def addPolicy(policy):
+    subprocess.call([ovxctlPy, "-n", "createPolicy", policy])
 
 #********************************************************************
 # floodlight: start, show, kill
@@ -463,7 +466,7 @@ def processLog(fout):
 #********************************************************************
 # expr: parallel
 #********************************************************************
-def exprParallelHelper(algo, outLog):
+def exprParallelHelper(algo, policy, outLog):
     cleanAll()
     startFloodlight(2)
     startOVX()
@@ -471,7 +474,7 @@ def exprParallelHelper(algo, outLog):
     time.sleep(5)
     addController1(topo)
     addController2(topo)
-    addPolicy()
+    addPolicy(policy)
     startComposition()
     app2 = MACLearnerApp(topo, perSwRule = perSwRoutingRule)
     app2.installRules()
@@ -488,9 +491,10 @@ def exprParallelRule():
     global swNumber
     perSwRoutingRule = 100
     swNumber = 1
-    for perSwRoutingRule in [1000, 2000, 3000, 4000, 5000]:
-        #exprParallelHelper('strawman', 'res_strawman_%d' %  perSwRoutingRule)
-        exprParallelHelper('inc', 'res_inc_acl_%d' %  perSwRoutingRule)
+    for perSwRoutingRule in [3000, 4000, 5000]:
+        #exprParallelHelper('strawman', '00', 'res_strawman_%d' %  perSwRoutingRule)
+        exprParallelHelper('inc', '00', 'res_inc_%d' %  perSwRoutingRule)
+        #exprParallelHelper('inc', '01', 'res_inc_acl_%d' %  perSwRoutingRule)
 
 def exprParallelSw():
     global perSwRoutingRule
@@ -499,13 +503,52 @@ def exprParallelSw():
     perSwRoutingRule = 100
     swNumber = 1
     for swNumber in [16, 32, 64, 128, 256]:
-        #exprParallelHelper('strawman', 'res_strawman_%d' %  swNumber)
-        exprParallelHelper('inc', 'res_inc_%d' %  swNumber)
-
+        #exprParallelHelper('strawman', '00', 'res_strawman_%d' %  swNumber)
+        exprParallelHelper('inc', '00', 'res_inc_%d' %  swNumber)
 
 def exprParallel():
     exprParallelRule()
     #exprParallelSw()
+
+#********************************************************************
+# expr: sequential
+#********************************************************************
+def exprSequentialHelper(algo, policy, outLog):
+    cleanAll()
+    startFloodlight(2)
+    startOVX()
+    (topo, net) = startMininetWithoutCLI()
+    time.sleep(5)
+    addController1(topo)
+    addController2(topo)
+    addPolicy(policy)
+    startComposition()
+    app1 = FirewallApp(topo, fwFile, 10)
+    app1.genRules()
+    app1.installRules()
+    app2 = RoutingApp(topo, prefixFile, perSwRule = perSwRoutingRule)
+    app2.genRules()
+    app2.installRules()
+    time.sleep(1)
+    setComposeAlgo(algo)
+    app1.updateRules()
+    cleanAll()
+    #processLog('res.' + algo)
+    processLog(outLog)
+
+def exprSequentialRule():
+    global fwFile
+    global perSwRoutingRule
+
+    perSwRoutingRule = 100
+    for perSwRoutingRule in [1000]:#[100, 200, 300, 400, 500]:
+        fwFile = 'classbench/fw1_%d' % perSwRoutingRule
+        #exprSequentialHelper('strawman', '10', 'res_strawman_%d' % perSwRoutingRule)
+        exprSequentialHelper('inc', '10', 'res_inc_%d' % perSwRoutingRule)
+        exprSequentialHelper('inc', '12', 'res_inc_acl_%d' % perSwRoutingRule)
+
+def exprSequential():
+    exprSequentialRule()
 
 #********************************************************************
 # expr: SDX
@@ -532,30 +575,6 @@ def exprVirtMultiController():
     app = SDXApp()
     app.installRules()
     CLI(net)
-
-
-def expr(algo, outLog):
-    cleanAll()
-    startFloodlight()
-    startOVX()
-    (topo, net) = startMininetWithoutCLI()
-    time.sleep(5)
-    addController1(topo)
-    addController2(topo)
-    addPolicy()
-    startComposition()
-    app1 = FirewallApp(topo, fwFile)
-    app1.genRules()
-    app1.installRules()
-    app2 = RoutingApp(topo, prefixFile, perSwRule = perSwRoutingRule)
-    app2.genRules()
-    app2.installRules()
-    time.sleep(1)
-    setComposeAlgo(algo)
-    app1.updateRules()
-    cleanAll()
-    #processLog('res.' + algo)
-    processLog(outLog)
 
 def exprAll1():
     global fwFile
@@ -660,7 +679,8 @@ if __name__ == '__main__':
         #expr(sys.argv[2])
         #exprAll()
         #exprVirtMultiController()
-        exprParallel()
+        #exprParallel()
+        exprSequential()
     else:
         printHelp()
 

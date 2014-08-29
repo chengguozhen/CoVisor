@@ -26,10 +26,12 @@ def generateSubnets(policyFile):
         subnets.add(temp[1])
         oneline = fin.readline()
     fin.close()
+    if '0.0.0.0/0' in subnets:
+        subnets.remove('0.0.0.0/0')
     print len(subnets)
     #subnets = list(subnets)
 
-    fout = open(policyFile + '_prefix', 'w')
+    fout = open(policyFile.split('_')[0] + '_prefix', 'w')
     for subnet in subnets:
         fout.write(subnet + '\n')
     fout.close()

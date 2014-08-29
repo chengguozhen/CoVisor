@@ -184,7 +184,7 @@ class SDXApp():
 
     def installRulesHelper(self, dpid, port):
         for rule in self.rules[dpid].values():
-            print rule
+            #print rule
             cmd = "curl -d '%s' http://localhost:%s/wm/staticflowentrypusher/json" % (rule, port)
             subprocess.call(cmd, shell=True)
             print ""
@@ -208,6 +208,8 @@ class RoutingApp():
             oneline = f.readline()
         f.close()
         random.shuffle(self.subnets)
+
+        self.genRules()
 
     def genRules(self):
         for switch in self.graph.nodes():
@@ -234,6 +236,7 @@ class RoutingApp():
 
     def installRules(self):
         for rule in self.rules.values():
+            print rule
             cmd = "curl -d '%s' http://localhost:20001/wm/staticflowentrypusher/json" % rule
             subprocess.call(cmd, shell=True)
             print ""
@@ -243,13 +246,13 @@ class RoutingApp():
 #********************************************************************
 class FirewallApp():
 
-    def __init__(self, topo, classbenchFile):
+    def __init__(self, topo, classbenchFile, addRuleCount):
         self.graph = topo.graph
         self.rules = {}
         self.ruleCount = 0
 
         self.addRules = {}
-        self.addRuleCount = 5
+        self.addRuleCount = addRuleCount
 
         random.seed(1)
         self.metaRules = []
@@ -284,6 +287,8 @@ class FirewallApp():
             oneline = f.readline()
         f.close()
 
+        self.genRules()
+
     def genRules(self):
         for switch in self.graph.nodes():
             ridx = self.graph.node[switch]['ridx'] 
@@ -313,12 +318,14 @@ class FirewallApp():
 
     def installRules(self):
         for rule in self.rules.values():
+            #print rule
             cmd = "curl -d '%s' http://localhost:10001/wm/staticflowentrypusher/json" % rule
             subprocess.call(cmd, shell=True)
             print ""
 
     def updateRules(self):
         for rule in self.addRules.values():
+            #print rule
             cmd = "curl -d '%s' http://localhost:10001/wm/staticflowentrypusher/json" % rule
             subprocess.call(cmd, shell=True)
             print ""
