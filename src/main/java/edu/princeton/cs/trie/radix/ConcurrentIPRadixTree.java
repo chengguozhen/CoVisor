@@ -1119,6 +1119,7 @@ public class ConcurrentIPRadixTree<O> implements IPRadixTree<O>, PrettyPrintable
             if (nextNode == null) {
                 // Next node is a dead end...
                 //noinspection UnnecessaryLabelOnBreakStatement
+            	prefixNodeList.add(currentNode);
                 break outer_loop;
             }
 
@@ -1131,6 +1132,7 @@ public class ConcurrentIPRadixTree<O> implements IPRadixTree<O>, PrettyPrintable
                 if (currentNodeEdgeCharacters.charAt(i) != key.charAt(charsMatched)) {
                     // Found a difference in chars between character in key and a character in current node.
                     // Current node is the deepest match (inexact match)....
+                	prefixNodeList.add(currentNode);
                     break outer_loop;
                 }
                 charsMatched++;

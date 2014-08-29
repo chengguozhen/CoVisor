@@ -61,7 +61,7 @@ public class PlayGroundTest extends TestCase {
         System.out.println("Keys closest to 'TEMPLE': " + Iterables.toString(tree.getClosestKeys("TEMPLE")));
     }*/
     
-    public void testIP() {
+    public void testIP1() {
     	
     	//RadixTree<Integer> tree = new ConcurrentRadixTree<Integer>(new DefaultCharArrayNodeFactory());
     	//tree.put("10.0.0.0", arg1)
@@ -94,7 +94,31 @@ public class PlayGroundTest extends TestCase {
         System.out.println("Keys starting with '1': " + tree.getIPKeyValuePairsForKeysStartingWith("1"));
         System.out.println("Keys starting with '': " + tree.getIPKeyValuePairsForKeysStartingWith(""));
         System.out.println();
+        
+        
     	
+    }
+    
+    public void testIP2() {
+		IPRadixTree<Integer> tree = new ConcurrentIPRadixTree<Integer>(new DefaultCharArrayNodeFactory());
+
+        tree.put("000", 1);
+        tree.put("100", 2);
+        tree.put("100000", 3);
+        tree.put("10000000", 4);
+
+        System.out.println("Tree structure:");
+        // PrettyPrintable is a non-public API for testing, prints semi-graphical representations of trees...
+        PrettyPrinter.prettyPrint((PrettyPrintable) tree, System.out);
+
+        System.out.println();
+        System.out.println("Keys starting with '10': " + tree.getIPKeyValuePairsForKeysStartingWith("10"));
+        System.out.println("Keys starting with '11': " + tree.getIPKeyValuePairsForKeysStartingWith("11"));
+        System.out.println("Keys starting with '100': " + tree.getIPKeyValuePairsForKeysStartingWith("100"));
+        System.out.println("Keys starting with '101': " + tree.getIPKeyValuePairsForKeysStartingWith("101"));
+        System.out.println("Keys starting with '1001': " + tree.getIPKeyValuePairsForKeysStartingWith("1001"));
+        System.out.println("Keys starting with '10000': " + tree.getIPKeyValuePairsForKeysStartingWith("10000"));
+        System.out.println("Keys starting with '10001': " + tree.getIPKeyValuePairsForKeysStartingWith("10001"));
     }
     
     public void helper(int totalNum) {
