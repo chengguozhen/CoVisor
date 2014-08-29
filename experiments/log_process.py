@@ -25,7 +25,7 @@ def processLog(logFile, resLogFile):
     while oneline != "":
         if oneline.find("MagicTimestamp\t2") != -1:
             info = oneline.strip().split('\t')
-            time = int(info[2]) / 1e6
+            time = int(info[2]) / 1e6 # in ms
             fout.write(str(time) + '\t' + '\t'.join(info[3:]) + '\n')
         oneline = fin.readline()
     fin.close()

@@ -313,7 +313,7 @@ def setComposeAlgo(algo):
     subprocess.call("%s -n setComposeAlgo %s" % (ovxctlPy, algo), shell=True)
 
 def addPolicy():
-    subprocess.call([ovxctlPy, "-n", "createPolicy", "1+2"])
+    subprocess.call([ovxctlPy, "-n", "createPolicy", "01"])
 
 #********************************************************************
 # floodlight: start, show, kill
@@ -483,12 +483,29 @@ def exprParallelHelper(algo, outLog):
     cleanAll()
     processLog(outLog)
 
-def exprParallel():
+def exprParallelRule():
+    global perSwRoutingRule
+    global swNumber
+    perSwRoutingRule = 100
+    swNumber = 1
+    for perSwRoutingRule in [1000, 2000, 3000, 4000, 5000]:
+        #exprParallelHelper('strawman', 'res_strawman_%d' %  perSwRoutingRule)
+        exprParallelHelper('inc', 'res_inc_acl_%d' %  perSwRoutingRule)
+
+def exprParallelSw():
+    global perSwRoutingRule
+    global swNumber
     global perSwRoutingRule
     perSwRoutingRule = 100
-    for perSwRoutingRule in [100, 200, 300, 400, 500]:
-        exprParallelHelper('strawman', 'res_strawman_%d' %  perSwRoutingRule)
-        exprParallelHelper('inc', 'res_inc_%d' %  perSwRoutingRule)
+    swNumber = 1
+    for swNumber in [16, 32, 64, 128, 256]:
+        #exprParallelHelper('strawman', 'res_strawman_%d' %  swNumber)
+        exprParallelHelper('inc', 'res_inc_%d' %  swNumber)
+
+
+def exprParallel():
+    exprParallelRule()
+    #exprParallelSw()
 
 #********************************************************************
 # expr: SDX
