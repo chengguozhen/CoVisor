@@ -30,13 +30,16 @@ public class PlayGroundTest extends TestCase {
 
     public void test1() {
     	
-    	PolicyFlowTable flowTable = new PolicyFlowTable();
-    	OFFlowMod fm = RuleGenerationUtil.generateMonitoringRule(1, "1.0.0.0", 24, OFFlowMod.OFPFC_ADD);
-    	PlumbingFlowMod pfm = new PlumbingFlowMod(fm, null);
-    	flowTable.update(pfm);
-    	for (OFFlowMod fmi: flowTable.getFlowMods()) {
-    		PlumbingFlowMod fmp = (PlumbingFlowMod) fmi;
-    		//log.error("{} {}", fmp.myNum, fmp);
+    	List<Integer> x = new ArrayList<Integer>();
+    	x.add(null);
+    	x.add(1);
+    	
+    	if(x.get(0) == null) {
+    		log.error("null");
+    	}
+    	
+    	if(x.get(1) != null) {
+    		log.error("not null");
     	}
     	
     	

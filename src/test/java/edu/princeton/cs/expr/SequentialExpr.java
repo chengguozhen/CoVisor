@@ -25,6 +25,7 @@ import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharArrayNodeFa
 import com.googlecode.concurrenttrees.radix.node.util.PrettyPrintable;
 
 import edu.princeton.cs.policy.adv.PolicyTree;
+import edu.princeton.cs.policy.adv.PolicyTree.PolicyUpdateMechanism;
 import edu.princeton.cs.policy.adv.PolicyUpdateTable;
 import edu.princeton.cs.policy.adv.RuleGenerationUtil;
 import edu.princeton.cs.policy.adv.PolicyTree.PolicyOperator;
@@ -45,6 +46,41 @@ public class SequentialExpr extends TestCase {
     public static TestSuite suite() {
         return new TestSuite(SequentialExpr.class);
     }
+    
+    public void atestIPTrie() {
+		// init policy tree
+		List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
+		storeTypes.add(PolicyFlowModStoreType.PREFIX);
+		storeTypes.add(PolicyFlowModStoreType.WILDCARD);
+		List<PolicyFlowModStoreKey> storeKeys = new ArrayList<PolicyFlowModStoreKey>();
+		storeKeys.add(PolicyFlowModStoreKey.NETWORK_DST);
+		storeKeys.add(PolicyFlowModStoreKey.ALL);
+
+		PolicyTree leftTree = new PolicyTree(storeTypes, storeKeys);
+		leftTree.tenantId = 1;
+
+		PolicyTree rightTree = new PolicyTree(storeTypes, storeKeys);
+		rightTree.tenantId = 2;
+
+		PolicyTree policyTree = new PolicyTree();
+		policyTree.operator = PolicyOperator.Sequential;
+		policyTree.leftChild = leftTree;
+		policyTree.rightChild = rightTree;
+		
+		policyTree.update(OFFlowModHelper.genFlowMod("ether-type=2048,dst-ip=0.0.0.0/8"), 1);
+		policyTree.update(OFFlowModHelper.genFlowMod("ether-type=2048,dst-ip=1.0.0.0/8,actions=output:1"), 1);
+		policyTree.update(OFFlowModHelper.genFlowMod("ether-type=2048,dst-ip=1.0.0.0/20"), 1);
+		policyTree.update(OFFlowModHelper.genFlowMod("ether-type=2048,dst-ip=1.0.0.0/24,actions=output:1"), 1);
+		policyTree.update(OFFlowModHelper.genFlowMod("ether-type=2048,dst-ip=1.0.0.0/32,actions=output:1"), 1);
+		policyTree.update(OFFlowModHelper.genFlowMod("ether-type=2048,dst-ip=1.0.0.0/16,actions=output:2"), 2);
+		policyTree.update(OFFlowModHelper.genFlowMod("ether-type=2048,dst-ip=1.1.0.0/16,actions=output:3"), 2);
+		
+		
+		log.error(policyTree.leftChild.flowTable);
+		log.error(policyTree.rightChild.flowTable);
+		log.error(policyTree.flowTable);
+    	
+    }
 
 	public void testEmpty() {
 		
@@ -53,7 +89,8 @@ public class SequentialExpr extends TestCase {
 		Collections.shuffle(fwRules, rand);
 		List<OFFlowMod> routingRules = readRoutingRules("experiments/classbench/fw1_prefix");
 		
-		emptyHelper(fwRules, routingRules, 1000, 10);
+		//emptyHelper(fwRules, routingRules, 5, 10);
+		emptyHelper(fwRules, routingRules, 10, 10);
 		emptyHelper(fwRules, routingRules, 3000, 10);
 		emptyHelper(fwRules, routingRules, 5000, 10);
 		
@@ -63,10 +100,10 @@ public class SequentialExpr extends TestCase {
 			int initialRuleCount, int updateRuleCount) {
 		// init policy tree
 		List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
-		//storeTypes.add(PolicyFlowModStoreType.PREFIX);
+		storeTypes.add(PolicyFlowModStoreType.PREFIX);
 		storeTypes.add(PolicyFlowModStoreType.WILDCARD);
 		List<PolicyFlowModStoreKey> storeKeys = new ArrayList<PolicyFlowModStoreKey>();
-		//storeKeys.add(PolicyFlowModStoreKey.NETWORK_DST);
+		storeKeys.add(PolicyFlowModStoreKey.NETWORK_DST);
 		storeKeys.add(PolicyFlowModStoreKey.ALL);
 
 		PolicyTree leftTree = new PolicyTree(storeTypes, storeKeys);
@@ -90,21 +127,27 @@ public class SequentialExpr extends TestCase {
 		}
 
 		// install update rules
-		long startTime = System.nanoTime();
+		/*PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Strawman;
 		for (int i = 0; i < updateRuleCount; i++) {
-			//long startTime = System.nanoTime();
+			long startTime = System.nanoTime();
 			PolicyUpdateTable updateTable = policyTree.update(fwRules.get(initialRuleCount + i), 1);
-			//long elapseTime = System.nanoTime() - startTime;
-			//log.error("Time: {} ms", elapseTime / 1e6);
-			/*log.error("Time: {} ms\t{}\t{}\t{}\t{}",
+			long elapseTime = System.nanoTime() - startTime;
+			log.error("Time: {} ms\t{}\t{}\t{}\t{}\t{}",
 					elapseTime / 1e6,
 					updateTable.addFlowMods.size(),
 					updateTable.deleteFlowMods.size(),
 					policyTree.leftChild.flowTable.getFlowMods().size(),
-					policyTree.rightChild.flowTable.getFlowMods().size());*/
+					policyTree.rightChild.flowTable.getFlowMods().size(),
+					policyTree.flowTable.getFlowMods().size());
+		}*/
+		
+		PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Strawman;
+		long startTime = System.nanoTime();
+		for (int i = 0; i < updateRuleCount; i++) {
+			PolicyUpdateTable updateTable = policyTree.update(fwRules.get(initialRuleCount + i), 1);
 		}
 		long elapseTime = System.nanoTime() - startTime;
-		log.error("Time: {} ms", elapseTime / 1e6);
+		log.error("Count: {}\tTime: {} ms", initialRuleCount, elapseTime / 1e6);
 		
 	}
 	
