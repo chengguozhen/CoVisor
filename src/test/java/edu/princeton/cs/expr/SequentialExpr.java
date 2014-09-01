@@ -47,7 +47,7 @@ public class SequentialExpr extends TestCase {
         return new TestSuite(SequentialExpr.class);
     }
     
-    public void atestIPTrie() {
+    public void atestTrie() {
 		// init policy tree
 		List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
 		storeTypes.add(PolicyFlowModStoreType.PREFIX);
@@ -67,13 +67,14 @@ public class SequentialExpr extends TestCase {
 		policyTree.leftChild = leftTree;
 		policyTree.rightChild = rightTree;
 		
-		policyTree.update(OFFlowModHelper.genFlowMod("ether-type=2048,dst-ip=0.0.0.0/8"), 1);
-		policyTree.update(OFFlowModHelper.genFlowMod("ether-type=2048,dst-ip=1.0.0.0/8,actions=output:1"), 1);
-		policyTree.update(OFFlowModHelper.genFlowMod("ether-type=2048,dst-ip=1.0.0.0/20"), 1);
-		policyTree.update(OFFlowModHelper.genFlowMod("ether-type=2048,dst-ip=1.0.0.0/24,actions=output:1"), 1);
-		policyTree.update(OFFlowModHelper.genFlowMod("ether-type=2048,dst-ip=1.0.0.0/32,actions=output:1"), 1);
-		policyTree.update(OFFlowModHelper.genFlowMod("ether-type=2048,dst-ip=1.0.0.0/16,actions=output:2"), 2);
-		policyTree.update(OFFlowModHelper.genFlowMod("ether-type=2048,dst-ip=1.1.0.0/16,actions=output:3"), 2);
+		policyTree.update(OFFlowModHelper.genFlowMod("priority=8,ether-type=2048,dst-ip=0.0.0.0/8"), 1);
+		policyTree.update(OFFlowModHelper.genFlowMod("priority=8,ether-type=2048,dst-ip=1.0.0.0/8,actions=output:1"), 1);
+		policyTree.update(OFFlowModHelper.genFlowMod("priority=20,ether-type=2048,dst-ip=1.0.0.0/20"), 1);
+		policyTree.update(OFFlowModHelper.genFlowMod("priority=24,ether-type=2048,dst-ip=1.0.0.0/24,actions=output:1"), 1);
+		policyTree.update(OFFlowModHelper.genFlowMod("priority=32,ether-type=2048,dst-ip=1.0.0.0/32,actions=output:1"), 1);
+		policyTree.update(OFFlowModHelper.genFlowMod("priority=16,ether-type=2048,dst-ip=1.0.0.0/16,actions=output:2"), 2);
+		policyTree.update(OFFlowModHelper.genFlowMod("priority=16,ether-type=2048,dst-ip=1.1.0.0/16,actions=output:3"), 2);
+		policyTree.update(OFFlowModHelper.genFlowMod("priority=16,ether-type=2048,dst-ip=0.0.0.0/0,actions=output:4"), 2);
 		
 		
 		log.error(policyTree.leftChild.flowTable);
@@ -82,21 +83,27 @@ public class SequentialExpr extends TestCase {
     	
     }
 
-	public void testEmpty() {
+	public void testExpr() {
 		
 		// init rules
 		List<OFFlowMod> fwRules = readFwRules("experiments/classbench/fw1_5000");
 		Collections.shuffle(fwRules, rand);
 		List<OFFlowMod> routingRules = readRoutingRules("experiments/classbench/fw1_prefix");
 		
-		//emptyHelper(fwRules, routingRules, 5, 10);
-		emptyHelper(fwRules, routingRules, 10, 10);
-		emptyHelper(fwRules, routingRules, 3000, 10);
-		emptyHelper(fwRules, routingRules, 5000, 10);
+		//exprHelper(fwRules, routingRules, 5, 10);
+		exprHelper(fwRules, routingRules, 3000, 10);
+		exprHelper(fwRules, routingRules, 3000, 10);
+		exprHelper(fwRules, routingRules, 3000, 10);
+		exprHelper(fwRules, routingRules, 3000, 10);
+		exprHelper(fwRules, routingRules, 1000, 10);
+		exprHelper(fwRules, routingRules, 2000, 10);
+		exprHelper(fwRules, routingRules, 3000, 10);
+		exprHelper(fwRules, routingRules, 4000, 10);
+		exprHelper(fwRules, routingRules, 5000, 10);
 		
 	}
 	
-	private void emptyHelper (List<OFFlowMod> fwRules, List<OFFlowMod> routingRules,
+	private void exprHelper (List<OFFlowMod> fwRules, List<OFFlowMod> routingRules,
 			int initialRuleCount, int updateRuleCount) {
 		// init policy tree
 		List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
@@ -119,9 +126,9 @@ public class SequentialExpr extends TestCase {
 
 		// install initial rules
 		initialRuleCount = Math.min(initialRuleCount, fwRules.size() - updateRuleCount);
-		for (int i = 0; i < initialRuleCount; i++) {
+		/*for (int i = 0; i < initialRuleCount; i++) {
 			policyTree.update(fwRules.get(i), 1);
-		}
+		}*/
 		for (int i = 0; i < initialRuleCount; i++) {
 			policyTree.update(routingRules.get(i), 2);
 		}
@@ -141,10 +148,11 @@ public class SequentialExpr extends TestCase {
 					policyTree.flowTable.getFlowMods().size());
 		}*/
 		
-		PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Strawman;
+		//PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Strawman;
 		long startTime = System.nanoTime();
 		for (int i = 0; i < updateRuleCount; i++) {
-			PolicyUpdateTable updateTable = policyTree.update(fwRules.get(initialRuleCount + i), 1);
+			//log.error(fwRules.get(initialRuleCount + i));
+			policyTree.update(fwRules.get(initialRuleCount + i), 1);
 		}
 		long elapseTime = System.nanoTime() - startTime;
 		log.error("Count: {}\tTime: {} ms", initialRuleCount, elapseTime / 1e6);
@@ -189,9 +197,10 @@ public class SequentialExpr extends TestCase {
 				}
 				
 				// action
-				if (rand.nextInt() % 2 == 1) {
+				/*if (rand.nextInt() % 2 == 1) {
 					str = str + ",actions=output:1";
-				}
+				}*/
+				str = str + ",actions=output:1";
 				
 				OFFlowMod fm = OFFlowModHelper.genFlowMod(str);
 				flowMods.add(fm);

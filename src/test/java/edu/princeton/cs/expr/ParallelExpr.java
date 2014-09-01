@@ -33,28 +33,77 @@ public class ParallelExpr extends TestCase {
     public static TestSuite suite() {
         return new TestSuite(ParallelExpr.class);
     }
+    
+    public void atestCorrectness() {
+    	List<String> MACs = getMACs(50);
+		List<OFFlowMod> MACLearnerRules = initMACLearnerRules(MACs);
+		
+		int initialRuleCount = 5;
+		
+		// init policy tree
+		List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
+		storeTypes.add(PolicyFlowModStoreType.EXACT);
+		storeTypes.add(PolicyFlowModStoreType.WILDCARD);
+		List<PolicyFlowModStoreKey> storeKeys = new ArrayList<PolicyFlowModStoreKey>();
+		storeKeys.add(PolicyFlowModStoreKey.DATA_DST);
+		storeKeys.add(PolicyFlowModStoreKey.ALL);
 
-	public void testEmpty() {
+		PolicyTree leftTree = new PolicyTree(storeTypes, storeKeys);
+		leftTree.tenantId = 1;
+
+		PolicyTree rightTree = new PolicyTree(storeTypes, storeKeys);
+		rightTree.tenantId = 2;
+
+		PolicyTree policyTree = new PolicyTree();
+		policyTree.operator = PolicyOperator.Parallel;
+		policyTree.leftChild = leftTree;
+		policyTree.rightChild = rightTree;
+
+		// install initial rules
+		for (int i = 0; i < initialRuleCount; i++) {
+			policyTree.update(MACLearnerRules.get(i), 2);
+		}
+
+		//PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Strawman;
+		policyTree.update(OFFlowModHelper.genFlowMod(
+				String.format("priority=1,src-mac=0f:a3:70:21:95:7c,dst-mac=61:4e:a2:7c:3e:93")), 1);
+		log.error("----------------------------------------");
+		log.error(policyTree.leftChild.flowTable);
+		log.error(policyTree.rightChild.flowTable);
+		log.error(policyTree.flowTable);
+		
+		policyTree.update(OFFlowModHelper.genFlowMod(
+				String.format("priority=1,src-mac=2c:5b:b2:0d:f4:85,dst-mac=49:c5:d7:c9:67:f0")), 1);
+		log.error("----------------------------------------");
+		log.error(policyTree.leftChild.flowTable);
+		log.error(policyTree.rightChild.flowTable);
+		log.error(policyTree.flowTable);
+
+    }
+
+	public void testExpr() {
 		
 		// init rules
 		List<String> MACs = getMACs(5000);
 		List<OFFlowMod> monitorRules = initMonitorRules(MACs, 5000);
 		List<OFFlowMod> MACLearnerRules = initMACLearnerRules(MACs);
 		
-		emptyHelper(monitorRules, MACLearnerRules, 1000, 10);
-		emptyHelper(monitorRules, MACLearnerRules, 3000, 10);
-		//emptyHelper(monitorRules, MACLearnerRules, 5000, 10);
+		exprHelper(monitorRules, MACLearnerRules, 100, 10);
+		exprHelper(monitorRules, MACLearnerRules, 200, 10);
+		exprHelper(monitorRules, MACLearnerRules, 300, 10);
+		exprHelper(monitorRules, MACLearnerRules, 400, 10);
+		exprHelper(monitorRules, MACLearnerRules, 500, 10);
 		
 	}
 	
-	private void emptyHelper (List<OFFlowMod> monitorRules, List<OFFlowMod> MACLearnerRules,
+	private void exprHelper (List<OFFlowMod> monitorRules, List<OFFlowMod> MACLearnerRules,
 			int initialRuleCount, int updateRuleCount) {
 		// init policy tree
 		List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
-		storeTypes.add(PolicyFlowModStoreType.PREFIX);
+		//storeTypes.add(PolicyFlowModStoreType.EXACT);
 		storeTypes.add(PolicyFlowModStoreType.WILDCARD);
 		List<PolicyFlowModStoreKey> storeKeys = new ArrayList<PolicyFlowModStoreKey>();
-		storeKeys.add(PolicyFlowModStoreKey.DATA_DST);
+		//storeKeys.add(PolicyFlowModStoreKey.DATA_DST);
 		storeKeys.add(PolicyFlowModStoreKey.ALL);
 
 		PolicyTree leftTree = new PolicyTree(storeTypes, storeKeys);
@@ -90,10 +139,10 @@ public class ParallelExpr extends TestCase {
 					policyTree.rightChild.flowTable.getFlowMods().size());
 		}*/
 		
-		//PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Strawman;
+		PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Strawman;
 		long startTime = System.nanoTime();
 		for (int i = 0; i < updateRuleCount; i++) {
-			PolicyUpdateTable updateTable = policyTree.update(monitorRules.get(initialRuleCount + i), 1);
+			policyTree.update(monitorRules.get(initialRuleCount + i), 1);
 		}
 		long elapseTime = System.nanoTime() - startTime;
 		log.error("Time: {} ms", elapseTime / 1e6);
@@ -109,10 +158,11 @@ public class ParallelExpr extends TestCase {
 		Collections.shuffle(MACPairs, rand);
 		
 		for (int i = 0; i < ruleCount; i++) {
+			int index = MACPairs.get(i);
 			OFFlowMod fm = OFFlowModHelper.genFlowMod(
-					String.format("priority=1,src-mac=%s,dst-mac=%s,actions=output:1",
-							MACs.get(i / MACs.size()),
-							MACs.get(i % MACs.size())));
+					String.format("priority=1,src-mac=%s,dst-mac=%s",
+							MACs.get(index / MACs.size()),
+							MACs.get(index % MACs.size())));
 			flowMods.add(fm);
 		}
 		return flowMods;

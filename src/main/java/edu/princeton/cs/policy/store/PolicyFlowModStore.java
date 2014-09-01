@@ -84,7 +84,7 @@ public abstract class PolicyFlowModStore {
 			break;
 		}
 		case PREFIX: {
-			flowModStore = new PolicyFlowModStoreTrie(storeTypes, storeKeys);
+			flowModStore = new PolicyFlowModStoreGoogleTrie(storeTypes, storeKeys);
 			break;
 		}
 		case WILDCARD: {

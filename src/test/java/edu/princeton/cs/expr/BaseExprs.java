@@ -11,7 +11,7 @@ public class BaseExprs {
     public static Test suite() {
         final TestSuite suite = new TestSuite(BaseExprs.class.getName());
         // $JUnit-BEGIN$
-        suite.addTest(SequentialExpr.suite());
+        suite.addTest(ParallelExpr.suite());
         // $JUnit-END$
         return suite;
     }
