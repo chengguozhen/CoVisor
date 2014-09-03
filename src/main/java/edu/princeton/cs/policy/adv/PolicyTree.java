@@ -161,8 +161,8 @@ public class PolicyTree {
 		// calculate difference between old and new table
 		List<OFFlowMod> oldFlowMods = this.flowTable.getFlowMods();
 		PolicyUpdateTable updateTable = new PolicyUpdateTable();
-		updateTable.addFlowMods = PolicyCompositionUtil.diffFlowMods(newFlowMods, oldFlowMods);
-		updateTable.deleteFlowMods = PolicyCompositionUtil.diffFlowMods(oldFlowMods, newFlowMods);
+		//updateTable.addFlowMods = PolicyCompositionUtil.diffFlowMods(newFlowMods, oldFlowMods);
+		//updateTable.deleteFlowMods = PolicyCompositionUtil.diffFlowMods(oldFlowMods, newFlowMods);
 		
 		// update flow table
 		this.flowTable.setTable(newFlowMods);
@@ -211,7 +211,16 @@ public class PolicyTree {
 					}
 				}
 				
-				for (OFFlowMod fm2: rightChild.flowTable.getPotentialFlowMods(fm1)) {
+				// check point 1
+				long startTime = System.nanoTime();
+				List<OFFlowMod> potentialFlowMods = rightChild.flowTable.getPotentialFlowMods(fm1);
+				long elapseTime = System.nanoTime() - startTime;
+				//System.out.println("check point 1: " + elapseTime / 1e6 + " size: " + potentialFlowMods.size());
+				
+				// check point 2
+				startTime = System.nanoTime();
+				int count = 0;
+				for (OFFlowMod fm2: potentialFlowMods) {
 					
 					OFFlowMod composedFm = null;
 					if (this.operator == PolicyOperator.Parallel) {
@@ -219,6 +228,7 @@ public class PolicyTree {
 					} else {
 						composedFm = PolicyCompositionUtil.sequentialComposition(fm1, fm2);
 					}
+					count++;
 					if (composedFm != null) {
 						this.flowTable.addFlowMod(composedFm);
 						leftChild.flowTable.addGeneratedParentFlowMod(fm1, composedFm);
@@ -226,6 +236,8 @@ public class PolicyTree {
 						updateTable.addFlowMods.add(composedFm);
 					}
 				}
+				elapseTime = System.nanoTime() - startTime;
+				//System.out.println("check point 2: " + elapseTime / 1e6 + " count: " + count + " " + updateTable.addFlowMods.size());
 			}
 			
 			for (OFFlowMod fm2 : rightUpdateTable.addFlowMods) {

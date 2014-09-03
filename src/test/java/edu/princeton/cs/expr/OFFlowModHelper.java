@@ -9,8 +9,11 @@ import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFPacketOut;
 import org.openflow.protocol.action.OFAction;
+import org.openflow.protocol.action.OFActionDataLayerDestination;
+import org.openflow.protocol.action.OFActionDataLayerSource;
 import org.openflow.protocol.action.OFActionNetworkLayerDestination;
 import org.openflow.protocol.action.OFActionOutput;
+import org.openflow.util.HexString;
 
 public class OFFlowModHelper {
 	
@@ -48,6 +51,9 @@ public class OFFlowModHelper {
 			
 			if (field.equals("priority")) {
 				fm.setPriority(Short.parseShort(value));
+			} else if (field.equals("inport")) {
+				wcards = wcards & ~OFMatch.OFPFW_IN_PORT;
+				m.setInputPort(Short.parseShort(value));
 			} else if (field.equals("ether-type")) {
 				wcards = wcards & ~OFMatch.OFPFW_DL_TYPE;
 				m.setDataLayerType(Short.parseShort(value));
@@ -63,10 +69,18 @@ public class OFFlowModHelper {
 					String ip = ipPrefix[0];
 					int prefix = Integer.parseInt(ipPrefix[1]);
 					wcards = wcards & ((32-prefix) << OFMatch.OFPFW_NW_SRC_SHIFT | ~OFMatch.OFPFW_NW_SRC_MASK);
-					m.setNetworkSource((new PhysicalIPAddress(ip)).getIp());
+					if (ip.contains(".")) {
+						m.setNetworkSource((new PhysicalIPAddress(ip)).getIp());
+					} else {
+						m.setNetworkSource(Integer.parseInt(ip));
+					}
 				} else {
 					wcards = wcards & ~OFMatch.OFPFW_NW_SRC_MASK;
-					m.setNetworkSource((new PhysicalIPAddress(value)).getIp());
+					if (value.contains(".")) {
+						m.setNetworkSource((new PhysicalIPAddress(value)).getIp());
+					} else {
+						m.setNetworkSource(Integer.parseInt(value));
+					}
 				}
 			} else if (field.equals("dst-ip")) {
 				String[] ipPrefix = value.split("/");
@@ -74,10 +88,18 @@ public class OFFlowModHelper {
 					String ip = ipPrefix[0];
 					int prefix = Integer.parseInt(ipPrefix[1]);
 					wcards = wcards & ((32-prefix) << OFMatch.OFPFW_NW_DST_SHIFT | ~OFMatch.OFPFW_NW_DST_MASK);
-					m.setNetworkDestination((new PhysicalIPAddress(ip)).getIp());
+					if (ip.contains(".")) {
+						m.setNetworkDestination((new PhysicalIPAddress(ip)).getIp());
+					} else {
+						m.setNetworkDestination(Integer.parseInt(ip));
+					}
 				} else {
 					wcards = wcards & ~OFMatch.OFPFW_NW_DST_MASK;
-					m.setNetworkDestination((new PhysicalIPAddress(value)).getIp());
+					if (value.contains(".")) {
+						m.setNetworkDestination((new PhysicalIPAddress(value)).getIp());
+					} else {
+						m.setNetworkDestination(Integer.parseInt(value));
+					}
 				}
 			} else if (field.equals("src-port")) {
 				wcards = wcards & ~OFMatch.OFPFW_TP_SRC;
@@ -98,6 +120,14 @@ public class OFFlowModHelper {
 				} else if (actionType.equals("set-dst-ip")) {
 					OFActionNetworkLayerDestination action = new OFActionNetworkLayerDestination();
 					action.setNetworkAddress((new PhysicalIPAddress(actionValue)).getIp());
+					actions.add(action);
+				} else if (actionType.equals("set-src-mac")) {
+					OFActionDataLayerSource action = new OFActionDataLayerSource();
+					action.setDataLayerAddress(HexString.fromHexString(value.substring(12)));
+					actions.add(action);
+				} else if (actionType.equals("set-dst-mac")) {
+					OFActionDataLayerDestination action = new OFActionDataLayerDestination();
+					action.setDataLayerAddress(HexString.fromHexString(value.substring(12)));
 					actions.add(action);
 				}
 			}

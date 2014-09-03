@@ -8,8 +8,11 @@ import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFPacketOut;
 import org.openflow.protocol.action.OFAction;
+import org.openflow.protocol.action.OFActionDataLayerDestination;
+import org.openflow.protocol.action.OFActionDataLayerSource;
 import org.openflow.protocol.action.OFActionNetworkLayerDestination;
 import org.openflow.protocol.action.OFActionOutput;
+import org.openflow.util.HexString;
 
 public class PolicyCompositionUtil {
 	
@@ -146,6 +149,14 @@ public class PolicyCompositionUtil {
 				OFActionNetworkLayerDestination modNwDst = (OFActionNetworkLayerDestination) action;
 				m.setWildcards(m.getWildcards() & ~OFMatch.OFPFW_NW_DST_MASK);
 				m.setNetworkDestination(modNwDst.getNetworkAddress());
+			} else if (action instanceof OFActionDataLayerSource) {
+				OFActionDataLayerSource modDataSrc = (OFActionDataLayerSource) action;
+				m.setWildcards(m.getWildcards() & ~OFMatch.OFPFW_DL_SRC);
+				m.setDataLayerSource(modDataSrc.getDataLayerAddress());
+			} else if (action instanceof OFActionDataLayerDestination) {
+				OFActionDataLayerDestination modDataDst = (OFActionDataLayerDestination) action;
+				m.setWildcards(m.getWildcards() & ~OFMatch.OFPFW_DL_DST);
+				m.setDataLayerDestination(modDataDst.getDataLayerAddress());
 			}
 		}
 		return m;
@@ -167,9 +178,104 @@ public class PolicyCompositionUtil {
 				else {
 					return null;
 				}
+			} else if (action instanceof OFActionDataLayerSource) {
+				m.setWildcards(m.getWildcards() | OFMatch.OFPFW_DL_SRC);
+				m.setDataLayerSource(HexString.fromHexString("00:00:00:00:00:00"));
+			} else if (action instanceof OFActionDataLayerDestination) {
+				m.setWildcards(m.getWildcards() | OFMatch.OFPFW_DL_DST);
+				m.setDataLayerDestination(HexString.fromHexString("00:00:00:00:00:00"));
 			}
 		}
 		return m;
+	}
+	
+	public static OFMatch intersectMatchIgnoreInport (OFMatch m1, OFMatch m2) {
+		if (m1 == null || m2 == null) {
+			return null;
+		}
+		
+		OFMatch match = new OFMatch();
+		int wcard1 = m1.getWildcards();
+		int wcard2 = m2.getWildcards();
+		
+		match.setWildcards(match.getWildcards() | OFMatch.OFPFW_IN_PORT);
+		match.setInputPort((short) 0);
+		
+		if (!intersectMatchField(match, wcard1, wcard2, OFMatch.OFPFW_DL_VLAN,
+				m1.getDataLayerVirtualLan(), m2.getDataLayerVirtualLan())) {
+			return null;
+		}
+		if (!intersectMatchField(match, wcard1, wcard2, OFMatch.OFPFW_DL_SRC,
+				m1.getDataLayerSource(), m2.getDataLayerSource())) {
+			return null;
+		}
+		if (!intersectMatchField(match, wcard1, wcard2, OFMatch.OFPFW_DL_DST,
+				m1.getDataLayerDestination(), m2.getDataLayerDestination())) {
+			return null;
+		}
+		if (!intersectMatchField(match, wcard1, wcard2, OFMatch.OFPFW_DL_TYPE,
+				m1.getDataLayerType(), m2.getDataLayerType())) {
+			return null;
+		}
+		if (!intersectMatchField(match, wcard1, wcard2, OFMatch.OFPFW_NW_PROTO,
+				m1.getNetworkProtocol(), m2.getNetworkProtocol())) {
+			return null;
+		}
+		if (!intersectMatchField(match, wcard1, wcard2, OFMatch.OFPFW_TP_SRC,
+				m1.getTransportSource(), m2.getTransportSource())) {
+			return null;
+		}
+		if (!intersectMatchField(match, wcard1, wcard2, OFMatch.OFPFW_TP_DST,
+				m1.getTransportDestination(), m2.getTransportDestination())) {
+			return null;
+		}
+		
+		{
+			int mask1 = wcard1 & OFMatch.OFPFW_NW_SRC_MASK;
+			int mask2 = wcard2 & OFMatch.OFPFW_NW_SRC_MASK;
+			int shift = Math.min(Math.max(mask1, mask2) >> OFMatch.OFPFW_NW_SRC_SHIFT, 32);
+			int ip1 = (m1.getNetworkSource() >> shift) << shift;
+			int ip2 = (m2.getNetworkSource() >> shift) << shift;
+			if (shift == 32 || ip1 == ip2) {
+				int wcard = match.getWildcards() & (Math.min(mask1, mask2) | ~OFMatch.OFPFW_NW_SRC_MASK);
+				match.setWildcards(wcard);
+				
+				int ip = mask1 <= mask2 ? m1.getNetworkSource() : m2.getNetworkSource();
+				setMatchField(match, OFMatch.OFPFW_NW_SRC_ALL, ip);
+			}
+			else {
+				return null;
+			}
+		}
+		
+		{
+			int mask1 = wcard1 & OFMatch.OFPFW_NW_DST_MASK;
+			int mask2 = wcard2 & OFMatch.OFPFW_NW_DST_MASK;
+			int shift = Math.min(Math.max(mask1, mask2) >> OFMatch.OFPFW_NW_DST_SHIFT, 32);
+			int ip1 = (m1.getNetworkDestination() >> shift) << shift;
+			int ip2 = (m2.getNetworkDestination() >> shift) << shift;
+			if (shift == 32 || ip1 == ip2) {
+				int wcard = match.getWildcards() & (Math.min(mask1, mask2) | ~OFMatch.OFPFW_NW_DST_MASK);
+				match.setWildcards(wcard);
+				
+				int ip = mask1 <= mask2 ? m1.getNetworkDestination() : m2.getNetworkDestination();
+				setMatchField(match, OFMatch.OFPFW_NW_DST_ALL, ip);
+			}
+			else {
+				return null;
+			}
+		}
+		
+		if (!intersectMatchField(match, wcard1, wcard2, OFMatch.OFPFW_DL_VLAN_PCP,
+				m1.getDataLayerVirtualLanPriorityCodePoint(), m2.getDataLayerVirtualLanPriorityCodePoint())) {
+			return null;
+		}
+		if (!intersectMatchField(match, wcard1, wcard2, OFMatch.OFPFW_NW_TOS,
+				m1.getNetworkTypeOfService(), m2.getNetworkTypeOfService())) {
+			return null;
+		}
+		
+		return match;
 	}
 
 	public static OFMatch intersectMatch (OFMatch m1, OFMatch m2) {

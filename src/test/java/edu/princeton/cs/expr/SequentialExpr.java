@@ -18,6 +18,8 @@ import junit.framework.TestSuite;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFFlowMod;
+import org.openflow.protocol.action.OFAction;
+import org.openflow.protocol.action.OFActionOutput;
 
 import com.googlecode.concurrenttrees.common.Iterables;
 import com.googlecode.concurrenttrees.common.PrettyPrinter;
@@ -82,6 +84,41 @@ public class SequentialExpr extends TestCase {
 		log.error(policyTree.flowTable);
     	
     }
+    
+    public void atestTriePerformance() {
+    	
+    	int initialRuleCount = 100000;
+    	int updateRuleCount = 10;
+    	List<OFFlowMod> fwRules = new ArrayList<OFFlowMod>();
+    	for (int i = 0; i < updateRuleCount; i++) {
+    		int priority = getRandomNumber(1, 33);
+    		int ip = (rand.nextInt() >> priority) << priority;
+    		fwRules.add(
+    				OFFlowModHelper.genFlowMod(
+    						String.format("priority=%d,src-ip=1.0.0.0/16,dst-ip=%d/%d,actions=output:2",
+    								priority, ip, priority)));
+    	}
+    	
+    	List<OFFlowMod> routingRules = new ArrayList<OFFlowMod>();
+    	for (int i = 0; i < initialRuleCount; i++) {
+    		int priority = getRandomNumber(1, 33);
+    		int ip = (rand.nextInt() >> priority) << priority;
+    		routingRules.add(
+    				OFFlowModHelper.genFlowMod(
+    						String.format("priority=%d,dst-ip=%d/%d,actions=output:2",
+    								priority, ip, priority)));
+    	}
+    	
+    	exprHelper(fwRules, routingRules, 2000, 10);
+    	/*exprHelper(fwRules, routingRules, 40000, 2);
+    	exprHelper(fwRules, routingRules, 80000, 2);
+    	exprHelper(fwRules, routingRules, 4000, 1);
+    	exprHelper(fwRules, routingRules, 5000, 1);
+    	exprHelper(fwRules, routingRules, 6000, 1);
+    	exprHelper(fwRules, routingRules, 7000, 1);
+    	exprHelper(fwRules, routingRules, 8000, 1);
+    	exprHelper(fwRules, routingRules, 9000, 1);*/
+    }
 
 	public void testExpr() {
 		
@@ -91,26 +128,32 @@ public class SequentialExpr extends TestCase {
 		List<OFFlowMod> routingRules = readRoutingRules("experiments/classbench/fw1_prefix");
 		
 		//exprHelper(fwRules, routingRules, 5, 10);
-		exprHelper(fwRules, routingRules, 3000, 10);
-		exprHelper(fwRules, routingRules, 3000, 10);
-		exprHelper(fwRules, routingRules, 3000, 10);
-		exprHelper(fwRules, routingRules, 3000, 10);
-		exprHelper(fwRules, routingRules, 1000, 10);
-		exprHelper(fwRules, routingRules, 2000, 10);
+		//exprHelper(fwRules, routingRules, 3000, 10);
+		//exprHelper(fwRules, routingRules, 1000, 10);
+		//exprHelper(fwRules, routingRules, 1000, 10);
+		exprHelper(fwRules, routingRules, 512, 10);
+		exprHelper(fwRules, routingRules, 512, 10);
+		exprHelper(fwRules, routingRules, 128, 10);
+		exprHelper(fwRules, routingRules, 256, 10);
+		exprHelper(fwRules, routingRules, 512, 10);
+		exprHelper(fwRules, routingRules, 1024, 10);
+		exprHelper(fwRules, routingRules, 2048, 10);
+		//exprHelper(fwRules, routingRules, 4096, 10);
+		
+		/*exprHelper(fwRules, routingRules, 2000, 10);
 		exprHelper(fwRules, routingRules, 3000, 10);
 		exprHelper(fwRules, routingRules, 4000, 10);
-		exprHelper(fwRules, routingRules, 5000, 10);
-		
+		exprHelper(fwRules, routingRules, 5000, 10);*/
 	}
 	
 	private void exprHelper (List<OFFlowMod> fwRules, List<OFFlowMod> routingRules,
 			int initialRuleCount, int updateRuleCount) {
 		// init policy tree
 		List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
-		storeTypes.add(PolicyFlowModStoreType.PREFIX);
+		//storeTypes.add(PolicyFlowModStoreType.PREFIX);
 		storeTypes.add(PolicyFlowModStoreType.WILDCARD);
 		List<PolicyFlowModStoreKey> storeKeys = new ArrayList<PolicyFlowModStoreKey>();
-		storeKeys.add(PolicyFlowModStoreKey.NETWORK_DST);
+		//storeKeys.add(PolicyFlowModStoreKey.NETWORK_DST);
 		storeKeys.add(PolicyFlowModStoreKey.ALL);
 
 		PolicyTree leftTree = new PolicyTree(storeTypes, storeKeys);
@@ -125,15 +168,44 @@ public class SequentialExpr extends TestCase {
 		policyTree.rightChild = rightTree;
 
 		// install initial rules
+		PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Incremental;
 		initialRuleCount = Math.min(initialRuleCount, fwRules.size() - updateRuleCount);
-		/*for (int i = 0; i < initialRuleCount; i++) {
+		for (int i = 0; i < initialRuleCount; i++) {
 			policyTree.update(fwRules.get(i), 1);
-		}*/
+		}
+		//log.error("finish firewall");
 		for (int i = 0; i < initialRuleCount; i++) {
 			policyTree.update(routingRules.get(i), 2);
+			/*if (i % 500 == 0) {
+				log.error("{}: {} {} {}",
+						i,
+						policyTree.leftChild.flowTable.getFlowMods().size(),
+						policyTree.rightChild.flowTable.getFlowMods().size(),
+						policyTree.flowTable.getFlowMods().size());
+			}*/
 		}
+		//log.error("finish routing: {}", policyTree.rightChild.flowTable.getFlowMods().size());
 
 		// install update rules
+		for (int i = 0; i < updateRuleCount; i++) {
+			//log.error(fwRules.get(initialRuleCount + i));
+			OFFlowMod fm = fwRules.get(initialRuleCount + i);
+			//if (i % 2 == 0) {
+				List<OFAction> actions = new ArrayList<OFAction>();
+				fm.setActions(actions);
+				
+				OFActionOutput action = new OFActionOutput();
+				action.setPort((short) 1);
+				actions.add(action);
+				
+				fm.setLengthU(OFFlowMod.MINIMUM_LENGTH + action.getLengthU());
+			/*} else {
+				List<OFAction> actions = new ArrayList<OFAction>();
+				fm.setActions(actions);
+				fm.setLengthU(OFFlowMod.MINIMUM_LENGTH);
+			}*/
+		}
+		
 		/*PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Strawman;
 		for (int i = 0; i < updateRuleCount; i++) {
 			long startTime = System.nanoTime();
@@ -148,14 +220,16 @@ public class SequentialExpr extends TestCase {
 					policyTree.flowTable.getFlowMods().size());
 		}*/
 		
-		//PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Strawman;
+		
+		PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Strawman;
 		long startTime = System.nanoTime();
 		for (int i = 0; i < updateRuleCount; i++) {
-			//log.error(fwRules.get(initialRuleCount + i));
-			policyTree.update(fwRules.get(initialRuleCount + i), 1);
+			//policyTree.update(fwRules.get(initialRuleCount + i), 1);
+			policyTree.update(fwRules.get(i), 1);
 		}
 		long elapseTime = System.nanoTime() - startTime;
-		log.error("Count: {}\tTime: {} ms", initialRuleCount, elapseTime / 1e6);
+		//log.error("Count: {}\tTime: {} ms", initialRuleCount, elapseTime / 1e6);
+		System.out.println(elapseTime / 1e6);
 		
 	}
 	
@@ -197,10 +271,9 @@ public class SequentialExpr extends TestCase {
 				}
 				
 				// action
-				/*if (rand.nextInt() % 2 == 1) {
+				if (rand.nextInt() % 2 == 1) {
 					str = str + ",actions=output:1";
-				}*/
-				str = str + ",actions=output:1";
+				}
 				
 				OFFlowMod fm = OFFlowModHelper.genFlowMod(str);
 				flowMods.add(fm);
@@ -222,7 +295,7 @@ public class SequentialExpr extends TestCase {
 			while ((line = reader.readLine()) != null) {
 				String[] parts = line.trim().split("/");
 				OFFlowMod fm = OFFlowModHelper.genFlowMod(
-						String.format("priority=%s,src-ip=%s,actions=output:1",
+						String.format("priority=%s,dst-ip=%s,actions=output:1",
 								parts[1],
 								line.trim()));
 				flowMods.add(fm);

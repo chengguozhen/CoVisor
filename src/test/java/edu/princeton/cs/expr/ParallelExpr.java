@@ -88,11 +88,19 @@ public class ParallelExpr extends TestCase {
 		List<OFFlowMod> monitorRules = initMonitorRules(MACs, 5000);
 		List<OFFlowMod> MACLearnerRules = initMACLearnerRules(MACs);
 		
-		exprHelper(monitorRules, MACLearnerRules, 100, 10);
-		exprHelper(monitorRules, MACLearnerRules, 200, 10);
-		exprHelper(monitorRules, MACLearnerRules, 300, 10);
-		exprHelper(monitorRules, MACLearnerRules, 400, 10);
-		exprHelper(monitorRules, MACLearnerRules, 500, 10);
+		/*exprHelper(monitorRules, MACLearnerRules, 1000, 10);
+		exprHelper(monitorRules, MACLearnerRules, 2000, 10);
+		exprHelper(monitorRules, MACLearnerRules, 3000, 10);
+		exprHelper(monitorRules, MACLearnerRules, 4000, 10);
+		exprHelper(monitorRules, MACLearnerRules, 5000, 10);*/
+		
+		exprHelper(monitorRules, MACLearnerRules, 2048, 10);
+		exprHelper(monitorRules, MACLearnerRules, 2048, 10);
+		exprHelper(monitorRules, MACLearnerRules, 128, 10);
+		exprHelper(monitorRules, MACLearnerRules, 256, 10);
+		exprHelper(monitorRules, MACLearnerRules, 512, 10);
+		exprHelper(monitorRules, MACLearnerRules, 1024, 10);
+		exprHelper(monitorRules, MACLearnerRules, 2048, 10);
 		
 	}
 	
@@ -100,10 +108,10 @@ public class ParallelExpr extends TestCase {
 			int initialRuleCount, int updateRuleCount) {
 		// init policy tree
 		List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
-		//storeTypes.add(PolicyFlowModStoreType.EXACT);
+		storeTypes.add(PolicyFlowModStoreType.EXACT);
 		storeTypes.add(PolicyFlowModStoreType.WILDCARD);
 		List<PolicyFlowModStoreKey> storeKeys = new ArrayList<PolicyFlowModStoreKey>();
-		//storeKeys.add(PolicyFlowModStoreKey.DATA_DST);
+		storeKeys.add(PolicyFlowModStoreKey.DATA_DST);
 		storeKeys.add(PolicyFlowModStoreKey.ALL);
 
 		PolicyTree leftTree = new PolicyTree(storeTypes, storeKeys);
@@ -118,16 +126,20 @@ public class ParallelExpr extends TestCase {
 		policyTree.rightChild = rightTree;
 
 		// install initial rules
+		PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Incremental;
 		initialRuleCount = Math.min(initialRuleCount, monitorRules.size() - updateRuleCount);
 		for (int i = 0; i < initialRuleCount; i++) {
 			policyTree.update(monitorRules.get(i), 1);
 		}
+		//log.error("finish monitor");
 		for (int i = 0; i < initialRuleCount; i++) {
 			policyTree.update(MACLearnerRules.get(i), 2);
 		}
+		log.error("finish mac learner");
 
 		// install update rules
-		/*for (int i = 0; i < updateRuleCount; i++) {
+		/*PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Strawman;
+		for (int i = 0; i < updateRuleCount; i++) {
 			long startTime = System.nanoTime();
 			PolicyUpdateTable updateTable = policyTree.update(monitorRules.get(initialRuleCount + i), 1);
 			long elapseTime = System.nanoTime() - startTime;
@@ -139,13 +151,14 @@ public class ParallelExpr extends TestCase {
 					policyTree.rightChild.flowTable.getFlowMods().size());
 		}*/
 		
-		PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Strawman;
+		//PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Strawman;
 		long startTime = System.nanoTime();
 		for (int i = 0; i < updateRuleCount; i++) {
 			policyTree.update(monitorRules.get(initialRuleCount + i), 1);
 		}
 		long elapseTime = System.nanoTime() - startTime;
-		log.error("Time: {} ms", elapseTime / 1e6);
+		//log.error("Time: {} ms", elapseTime / 1e6);
+		System.out.println(elapseTime / 1e6);
 	}
 	
 	private List<OFFlowMod> initMonitorRules(List<String> MACs, int ruleCount) {
