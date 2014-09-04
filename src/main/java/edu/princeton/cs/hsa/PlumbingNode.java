@@ -118,6 +118,7 @@ public class PlumbingNode {
 				for (Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer> fmTuple : fmTuples) {
 					OFFlowMod flowMod = fmTuple.first.first;
 					updateTable.addFlowMods.add(flowMod);
+					//System.out.println("checkpoint 1:" + flowMod);
 					for (PlumbingFlowMod pFlowMod : fmTuple.first.second) {
 						pFlowMod.getPlumbingNode().flowTable.addGeneratedParentFlowMod(pFlowMod, flowMod);
 					}
@@ -136,6 +137,7 @@ public class PlumbingNode {
 					for (Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer> fmTuple : fmTuples) {
 						OFFlowMod flowMod = fmTuple.first.first;
 						updateTable.addFlowMods.add(flowMod);
+						//System.out.println("checkpoint 2:" + flowMod);
 						for (PlumbingFlowMod pFlowMod : fmTuple.first.second) {
 							pFlowMod.getPlumbingNode().flowTable.addGeneratedParentFlowMod(pFlowMod, flowMod);
 						}
@@ -147,16 +149,33 @@ public class PlumbingNode {
 		// generate update flowmods for non-edge port
 		for (PlumbingFlowMod prevPmod : pmod.getPrevPMods()) {
 			for (PlumbingFlow prevPflow : prevPmod.getPrevPFlows()) {
+				try {
+					if (prevPflow.getPrevPFlow().getPrevPMod().getPlumbingNode() == prevPflow.getNextPMod().getPlumbingNode()) {
+						continue;
+					}
+				} catch (NullPointerException e) {
+					;
+				}
 				OFMatch match = prevPmod.getPlumbingNode().actApplyMatchWithInportChange(
 						PolicyCompositionUtil.intersectMatch(prevPmod.getMatch(), prevPflow.getMatch()),
 						prevPmod.getActions());
 				if (PolicyCompositionUtil.intersectMatch(match, pmod.getMatch()) != null) {
+					/*System.out.println("\t" + prevPmod);
+					System.out.println("\t" + prevPflow.getMatch());
+					try {
+						System.out.println("\t" + prevPflow.getPrevPFlow().getPrevPMod().getPlumbingNode().dpid);
+						System.out.println("\t" + prevPflow.getNextPMod().getPlumbingNode().dpid);
+					} catch (NullPointerException e) {
+						;
+					}
+					printX(prevPflow);*/
 					PlumbingFlow pflow = new PlumbingFlow(match, prevPmod, pmod, prevPflow);
 					List<Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer>> fmTuples = fwdPropagateFlow(pflow);
 					fmTuples = backPropagateFlow(fmTuples, pflow);
 					for (Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer> fmTuple : fmTuples) {
 						OFFlowMod flowMod = fmTuple.first.first;
 						updateTable.addFlowMods.add(flowMod);
+						//System.out.println("checkpoint 3:" + flowMod);
 						for (PlumbingFlowMod pFlowMod : fmTuple.first.second) {
 							pFlowMod.getPlumbingNode().flowTable.addGeneratedParentFlowMod(pFlowMod, flowMod);
 						}
@@ -166,6 +185,15 @@ public class PlumbingNode {
 		}
 
 		return updateTable;
+	}
+	
+	private void printX(PlumbingFlow pflow) {
+		while (pflow.getPrevPFlow() != null) {
+			System.out.println("\t\t" + pflow.getPrevPMod());
+			//System.out.println("\t\t" + pflow.getMatch());
+			pflow = pflow.getPrevPFlow();
+		}
+		System.out.println("\t\t" + pflow.getMatch());
 	}
 	
 	private Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer> revertApplyFm(
@@ -301,6 +329,9 @@ public class PlumbingNode {
 			
 			curFmTuples = new ArrayList<Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer>>();
 			for (Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer> fmTuple : fmTuples) {
+				if (fmTuple.second == PlumbingGraph.PRIORITY_HOPS) {
+					continue;
+				}
 				curFmTuples.add(prevPmod.getPlumbingNode().revertApplyFm(fmTuple, prevPmod));
 				fmTuple.first.second.add(prevPmod);
 			}
@@ -310,7 +341,6 @@ public class PlumbingNode {
 			prevPmod = curFlow.getPrevPMod();
 		}
 
-		curFmTuples = new ArrayList<Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer>>();
 		for (Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer> fmTuple : fmTuples) {
 			OFFlowMod ofm = fmTuple.first.first;
 			OFMatch match = PolicyCompositionUtil.intersectMatchIgnoreInport(ofm.getMatch(), curFlow.getMatch());
@@ -394,9 +424,10 @@ public class PlumbingNode {
 			return updateTable;
 		}
 		
+		// TODO: clean delete, better index
 		List<OFFlowMod> generatedParentFlowMods = this.flowTable.getGenerateParentFlowMods(nodeUpdateTable.deleteFlowMods.get(0));
-		List<OFFlowMod> deletedFlowMods = this.graph.flowTable.deleteFlowMods(generatedParentFlowMods);
-		updateTable.deleteFlowMods.addAll(deletedFlowMods);
+		//List<OFFlowMod> deletedFlowMods = this.graph.flowTable.deleteFlowMods(generatedParentFlowMods);
+		updateTable.deleteFlowMods.addAll(generatedParentFlowMods);
 		
 		return updateTable;
 	}

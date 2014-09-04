@@ -13,6 +13,7 @@ import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.action.OFActionOutput;
 
 import edu.princeton.cs.hsa.PlumbingGraph;
+import edu.princeton.cs.policy.adv.PolicyUpdateTable;
 import edu.princeton.cs.policy.adv.RuleGenerationUtil;
 
 public class GatewayExpr extends TestCase {
@@ -91,11 +92,53 @@ public class GatewayExpr extends TestCase {
     }
     
     public void testExpr() {
-    	List<String> macs = genMACs(500);
-    	List<String> ips = genIPs(500);
-    	List<OFFlowMod> ipRouterRules = initIPRouterRules(2);
-    	List<OFFlowMod> gatewayRules = initGatewayRules(2, ips, macs);
-    	List<OFFlowMod> macLearnerRules = initMACLearnerRules(3, macs);
+    	
+    	List<String> macs = genMACs(5000);
+    	List<String> ips = genIPs(5000);
+    	//exprHelperIP(3, 3, 3, 1, macs, ips);
+    	//exprHelperMAC(4, 3, 3, 1, macs, ips);
+    	
+    	/*exprHelperIP(16, 3, 3, 2);
+    	exprHelperIP(32, 3, 3, 2);
+    	exprHelperIP(64, 3, 3, 2);
+    	exprHelperIP(128, 3, 3, 2);
+    	exprHelperIP(256, 3, 3, 2);
+    	exprHelperIP(512, 3, 3, 2);
+    	exprHelperIP(1024, 3, 3, 2);*/
+    	
+    	/*exprHelperIP(8, 100, 500, 1, macs, ips);
+    	exprHelperIP(2, 100, 500, 1, macs, ips);
+    	exprHelperIP(4, 100, 500, 1, macs, ips);
+    	exprHelperIP(8, 100, 500, 1, macs, ips);
+    	exprHelperIP(16, 100, 500, 1, macs, ips);
+    	exprHelperIP(64, 100, 500, 1, macs, ips);
+    	exprHelperIP(128, 100, 500, 1, macs, ips);
+    	exprHelperIP(256, 100, 500, 1, macs, ips);
+    	exprHelperIP(512, 100, 500, 1, macs, ips);
+    	exprHelperIP(1024, 100, 500, 1, macs, ips);*/
+    	
+    	exprHelperIP(100, 10, 500, 1, macs, ips);
+    	exprHelperIP(100, 100, 500, 1, macs, ips);
+    	exprHelperIP(100, 500, 500, 1, macs, ips);
+    	
+    	/*exprHelperMAC(10, 100, 500, 1, macs, ips);
+    	exprHelperMAC(100, 100, 500, 1, macs, ips);
+    	exprHelperMAC(1000, 100, 500, 1, macs, ips);*/
+    	
+    	/*exprHelperMAC(100, 10, 500, 1, macs, ips);
+    	exprHelperMAC(100, 100, 500, 1, macs, ips);
+    	exprHelperMAC(100, 200, 500, 1, macs, ips);
+    	exprHelperMAC(100, 300, 500, 1, macs, ips);
+    	exprHelperMAC(100, 400, 500, 1, macs, ips);
+    	exprHelperMAC(100, 500, 500, 1, macs, ips);*/
+
+    }
+    
+    public void exprHelperIP(int ipCount, int macExternal, int macInternal, int ipUpdate, List<String> macs, List<String> ips) {
+    	
+    	List<OFFlowMod> ipRouterRules = initIPRouterRules(ipCount);
+    	List<OFFlowMod> gatewayRules = initGatewayRules(macExternal, ips, macs);
+    	List<OFFlowMod> macLearnerRules = initMACLearnerRules(macExternal, macInternal, macs);
     	
     	// build topology
     	PlumbingGraph graph = new PlumbingGraph();
@@ -131,30 +174,123 @@ public class GatewayExpr extends TestCase {
     		graph.update(fm, graph.getNode((long) 3));
     	}
     	
-    	log.error(graph);
+    	//log.error(graph);
     	
-    	// delete
-    	OFFlowMod fm = ipRouterRules.get(0);
-    	fm.setCommand(OFFlowMod.OFPFC_DELETE);
-    	graph.update(fm, graph.getNode((long) 1));
-    	log.error(graph);
+    	// delete old, add new
+    	int fmCount = 0;
+    	long startTime = System.nanoTime();
+    	for (int i = 0; i < ipUpdate; i++) {
+    		OFFlowMod fm = ipRouterRules.get(i);
+			fm.setCommand(OFFlowMod.OFPFC_DELETE);
+			PolicyUpdateTable updateTable = graph.update(fm, graph.getNode((long) 1));
+			fmCount += updateTable.addFlowMods.size();
+			fmCount += updateTable.deleteFlowMods.size();
+    	}
+    	//log.error(graph);
+    	for (int i = 0; i < ipUpdate; i++) {
+			OFFlowMod fm = ipRouterRules.get(i);
+			((OFActionOutput) fm.getActions().get(0)).setPort((short) 6);
+			fm.setCommand(OFFlowMod.OFPFC_ADD);
+			PolicyUpdateTable updateTable = graph.update(fm, graph.getNode((long) 1));
+			fmCount += updateTable.addFlowMods.size();
+			fmCount += updateTable.deleteFlowMods.size();
+    	}
+    	//log.error(graph);
+    	long elapseTime = System.nanoTime() - startTime;
+		System.out.println(elapseTime / 1e6 + "\t" + fmCount + "\t" + graph.flowTable.getFlowMods().size());
+    }
+    
+    public void exprHelperMAC(int ipCount, int macExternal, int macInternal, int macUpdate, List<String> macs, List<String> ips) {
     	
-    	((OFActionOutput) fm.getActions().get(0)).setPort((short) 6);
-    	fm.setCommand(OFFlowMod.OFPFC_ADD);
-    	graph.update(fm, graph.getNode((long) 1));
-    	log.error(graph);
+    	System.out.println("------------------------------");
+    	
+    	List<OFFlowMod> ipRouterRules = initIPRouterRules(ipCount);
+    	List<OFFlowMod> gatewayRules = initGatewayRules(macExternal, ips, macs);
+    	List<OFFlowMod> macLearnerRules = initMACLearnerRules(macExternal, macInternal, macs);
+    	
+    	// build topology
+    	PlumbingGraph graph = new PlumbingGraph();
+    	graph.addNode((long) 1);
+    	graph.addNode((long) 2);
+    	graph.addNode((long) 3);
+    	graph.addPort((long) 1, (short) 5, (short) 1);
+    	graph.addPort((long) 1, (short) 6, (short) 2);
+    	graph.addPort((long) 1, (short) 7, null);
+    	graph.addPort((long) 2, (short) 8, null);
+    	graph.addPort((long) 2, (short) 9, null);
+    	graph.addPort((long) 3, (short) 10, null);
+    	graph.addPort((long) 3, (short) 11, (short) 3);
+    	graph.addPort((long) 3, (short) 12, (short) 4);
+    	graph.addEdge((long) 1, (short) 7, (long) 2, (short) 8);
+    	graph.addEdge((long) 2, (short) 9, (long) 3, (short) 10);
+    	
+    	// ip router
+    	for (OFFlowMod fm : ipRouterRules) {
+    		//System.out.println(fm);
+    		graph.update(fm, graph.getNode((long) 1));
+    	}
+    	
+    	// gateway switch
+    	for (OFFlowMod fm : gatewayRules){
+    		//System.out.println(fm);
+    		graph.update(fm, graph.getNode((long) 2));
+    	}
+    	
+    	// mac learner
+    	for (OFFlowMod fm : macLearnerRules){
+    		//System.out.println(fm);
+    		graph.update(fm, graph.getNode((long) 3));
+    	}
+    	
+    	//log.error(graph);
+    	
+    	
+    	List<OFFlowMod> gatewayUpdateRules = initGatewayRules(macUpdate, ips.subList(macExternal, ips.size()), macs.subList(macExternal, macs.size()));
+    	List<OFFlowMod> macLearnerUpdateRules = initMACLearnerRules(macUpdate, 0, macs.subList(macExternal, macs.size()));
+    	// delete old, add new
+    	int fmCount = 0;
+    	long startTime = System.nanoTime();
+    	for (int i = 0; i < macUpdate; i++) {
+    		OFFlowMod fm = gatewayUpdateRules.get(i);
+    		//System.out.println(fm);
+    		PolicyUpdateTable updateTable = graph.update(fm, graph.getNode((long) 2));
+    		fmCount += updateTable.addFlowMods.size();
+			fmCount += updateTable.deleteFlowMods.size();
+    	}
+    	//log.error(graph);
+    	long elapseTime = System.nanoTime() - startTime;
+		System.out.println(elapseTime / 1e6 + "\t" + fmCount + "\t" + graph.flowTable.getFlowMods().size());
+    	
+		//startTime = System.nanoTime();
+    	for (OFFlowMod fm : macLearnerUpdateRules){
+    		//System.out.println(fm);
+    		startTime = System.nanoTime();
+			PolicyUpdateTable updateTable = graph.update(fm, graph.getNode((long) 3));
+			fmCount += updateTable.addFlowMods.size();
+			fmCount += updateTable.deleteFlowMods.size();
+			elapseTime = System.nanoTime() - startTime;
+			System.out.println(elapseTime / 1e6 + "\t" + fmCount + "\t" + graph.flowTable.getFlowMods().size());
+			//log.error(graph);
+    	}
+    	
+    	//elapseTime = System.nanoTime() - startTime;
+		//System.out.println(elapseTime / 1e6 + "\t" + fmCount + "\t" + graph.flowTable.getFlowMods().size());
+		
+		//log.error(graph);
     }
     
     private List<OFFlowMod> initIPRouterRules(int count) {
     	List<OFFlowMod> flowMods = new ArrayList<OFFlowMod>();
-    	for (int i = 0; i < count; i++) {
-    		int priority = OFFlowModHelper.getRandomNumber(1, 33);
-    		int ip = (rand.nextInt() >> priority) << priority;
-    		String rule = String.format("priority=%d,ether-type=2048,dst-ip=%d/%d,actions=output:5", priority, ip, priority);
+    	for (int i = 0; i < 254 && i < count; i++) {
+    		String rule = String.format("priority=16,ether-type=2048,dst-ip=%d.0.0.0/16,actions=output:5", i + 2);
+    		flowMods.add(OFFlowModHelper.genFlowMod(rule));
+    	}
+    	for (int i = 254; i < 254*256 && i < count; i++) {
+    		String rule = String.format("priority=16,ether-type=2048,dst-ip=%d.%d.0.0/16,actions=output:5", i % 254 + 2, i / 254);
     		flowMods.add(OFFlowModHelper.genFlowMod(rule));
     	}
     	
-    	String rule = "priority=24,ether-type=2048,dst-ip=1.0.0.0/24,actions=output:7";
+    	String rule = "priority=16,ether-type=2048,dst-ip=1.0.0.0/16,actions=output:7";
     	flowMods.add(OFFlowModHelper.genFlowMod(rule));
     	
     	return flowMods;
@@ -175,21 +311,21 @@ public class GatewayExpr extends TestCase {
     	return flowMods;
     }
     
-    private List<OFFlowMod> initMACLearnerRules(int count, List<String> macs) {
+    private List<OFFlowMod> initMACLearnerRules(int external, int internal,  List<String> macs) {
     	List<OFFlowMod> flowMods = new ArrayList<OFFlowMod>();
-    	for (int i = 0; i < count/3; i++) {
+    	for (int i = 0; i < external; i++) {
     		String rule = String.format("priority=1,inport=10,"
     				+ "src-mac=11:11:11:11:11:11,dst-mac=%s,actions=output:12", macs.get(i));
     		flowMods.add(OFFlowModHelper.genFlowMod(rule));
     	}
-    	for (int i = 0; i < count/3; i++) {
+    	for (int i = 0; i < external; i++) {
     		String rule = String.format("priority=1,inport=12,"
     				+ "src-mac=%s,dst-mac=11:11:11:11:11:11,actions=output:10", macs.get(i));
     		flowMods.add(OFFlowModHelper.genFlowMod(rule));
     	}
-    	for (int i = 0; i < count/3; i++) {
+    	for (int i = 0; i < internal; i++) {
     		String rule = String.format("priority=1,inport=11,"
-    				+ "src-mac=00:00:00:00:11:11,dst-mac=00:00:00:00:22:22,actions=output:12");
+    				+ "src-mac=00:00:00:00:11:11,dst-mac=%s,actions=output:12", macs.get(i));
     		flowMods.add(OFFlowModHelper.genFlowMod(rule));
     	}
     	
