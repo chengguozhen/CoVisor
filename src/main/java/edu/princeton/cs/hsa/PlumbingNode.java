@@ -118,10 +118,8 @@ public class PlumbingNode {
 				for (Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer> fmTuple : fmTuples) {
 					OFFlowMod flowMod = fmTuple.first.first;
 					updateTable.addFlowMods.add(flowMod);
-					System.out.println("checkpoint 1:" + flowMod);
 					for (PlumbingFlowMod pFlowMod : fmTuple.first.second) {
 						pFlowMod.getPlumbingNode().flowTable.addGeneratedParentFlowMod(pFlowMod, flowMod);
-						System.out.println("\t" + pFlowMod);
 					}
 				}
 			}
@@ -138,10 +136,8 @@ public class PlumbingNode {
 					for (Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer> fmTuple : fmTuples) {
 						OFFlowMod flowMod = fmTuple.first.first;
 						updateTable.addFlowMods.add(flowMod);
-						System.out.println("checkpoint 2:" + flowMod);
 						for (PlumbingFlowMod pFlowMod : fmTuple.first.second) {
 							pFlowMod.getPlumbingNode().flowTable.addGeneratedParentFlowMod(pFlowMod, flowMod);
-							System.out.println("\t" + pFlowMod);
 						}
 					}
 				}
@@ -161,10 +157,8 @@ public class PlumbingNode {
 					for (Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer> fmTuple : fmTuples) {
 						OFFlowMod flowMod = fmTuple.first.first;
 						updateTable.addFlowMods.add(flowMod);
-						System.out.println("checkpoint 3:" + flowMod);
 						for (PlumbingFlowMod pFlowMod : fmTuple.first.second) {
 							pFlowMod.getPlumbingNode().flowTable.addGeneratedParentFlowMod(pFlowMod, flowMod);
-							System.out.println("\t" + pFlowMod);
 						}
 					}
 				}
