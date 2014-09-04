@@ -2,6 +2,7 @@ package edu.princeton.cs.expr;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 
@@ -16,6 +17,8 @@ import org.openflow.protocol.action.OFActionOutput;
 import org.openflow.util.HexString;
 
 public class OFFlowModHelper {
+	
+	private static Random rand = new Random(1);
 	
 	/* Example
 	 * 
@@ -141,6 +144,10 @@ public class OFFlowModHelper {
 		fm.setLengthU(length);
 		
 		return fm;
+	}
+	
+	public static int getRandomNumber(int min, int max) {
+		return rand.nextInt(max - min) + min;
 	}
 
 }

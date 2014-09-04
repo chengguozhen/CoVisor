@@ -44,7 +44,11 @@ public class PlumbingFlowMod extends OFFlowMod {
 	}
 
 	public void createFilter(PlumbingFlowMod nextPmod) {
-		OFMatch match = PolicyCompositionUtil.intersectMatchIgnoreInport(this.getMatch(),
+		OFMatch thisMatch = this.getMatch().clone();
+		thisMatch.setWildcards(thisMatch.getWildcards() & ~OFMatch.OFPFW_IN_PORT);
+		thisMatch.setInputPort(this.pNode.getNextHopPort(this));
+		
+		OFMatch match = PolicyCompositionUtil.intersectMatch(thisMatch,
 				PolicyCompositionUtil.actRevertMatch(nextPmod.getMatch(), this.getActions()));
 		if(match != null) {
 			this.nextPmods.add(nextPmod);

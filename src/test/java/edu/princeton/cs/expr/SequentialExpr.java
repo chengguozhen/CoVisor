@@ -91,7 +91,7 @@ public class SequentialExpr extends TestCase {
     	int updateRuleCount = 10;
     	List<OFFlowMod> fwRules = new ArrayList<OFFlowMod>();
     	for (int i = 0; i < updateRuleCount; i++) {
-    		int priority = getRandomNumber(1, 33);
+    		int priority = OFFlowModHelper.getRandomNumber(1, 33);
     		int ip = (rand.nextInt() >> priority) << priority;
     		fwRules.add(
     				OFFlowModHelper.genFlowMod(
@@ -101,7 +101,7 @@ public class SequentialExpr extends TestCase {
     	
     	List<OFFlowMod> routingRules = new ArrayList<OFFlowMod>();
     	for (int i = 0; i < initialRuleCount; i++) {
-    		int priority = getRandomNumber(1, 33);
+    		int priority = OFFlowModHelper.getRandomNumber(1, 33);
     		int ip = (rand.nextInt() >> priority) << priority;
     		routingRules.add(
     				OFFlowModHelper.genFlowMod(
@@ -247,7 +247,7 @@ public class SequentialExpr extends TestCase {
 				// source ip prefix
 				// destination ip prefix
 				String str = String.format("priority=%d,src-ip=%s,dst-ip=%s",
-						getRandomNumber(1, 101),
+						OFFlowModHelper.getRandomNumber(1, 101),
 						parts[0].substring(1),
 						parts[1]
 						);
@@ -306,11 +306,6 @@ public class SequentialExpr extends TestCase {
 		}
 		
 		return flowMods;
-	}
-	
-	// get random number in [min, max)
-	public static int getRandomNumber(int min, int max) {
-		return rand.nextInt(max - min) + min;
 	}
 	
 	@Override
