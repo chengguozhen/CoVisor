@@ -17,7 +17,7 @@ public class PlumbingGraph {
 	private Logger logger = LogManager.getLogger(PlumbingGraph.class.getName());
 	
 	private Map<Long, PlumbingNode> nodes;
-	private PolicyFlowTable flowTable;
+	public PolicyFlowTable flowTable;
 	
 	public PlumbingGraph() {
 		this.nodes = new HashMap<Long, PlumbingNode>();
@@ -25,12 +25,13 @@ public class PlumbingGraph {
 	}
 	
 	public void addNode(long dpid) {
-		PlumbingNode node = new PlumbingNode(dpid);
+		PlumbingNode node = new PlumbingNode(dpid, this);
 		this.nodes.put(dpid, node);
 	}
 	
 	public void addNode(PlumbingNode node) {
 		this.nodes.put(node.dpid, node);
+		node.graph = this;
 	}
 	
 	public void addPort(long dpid, Short port, Short physicalPort) {
@@ -72,9 +73,9 @@ public class PlumbingGraph {
 			str = str + fm.toString() + "\n";
 		}
 		
-		for (PlumbingNode node : this.nodes.values()) {
+		/*for (PlumbingNode node : this.nodes.values()) {
 			str = str + node.dpid + "\n" + node.getFlowModString();
-		}
+		}*/
 		return str;
 	}
 

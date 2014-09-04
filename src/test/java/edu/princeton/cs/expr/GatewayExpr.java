@@ -10,6 +10,7 @@ import junit.framework.TestSuite;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFFlowMod;
+import org.openflow.protocol.action.OFActionOutput;
 
 import edu.princeton.cs.hsa.PlumbingGraph;
 import edu.princeton.cs.policy.adv.RuleGenerationUtil;
@@ -27,7 +28,7 @@ public class GatewayExpr extends TestCase {
         return new TestSuite(GatewayExpr.class);
     }
     
-    public void testCorrectness() {
+    public void atestCorrectness() {
     	PlumbingGraph graph = new PlumbingGraph();
     	graph.addNode((long) 1);
     	graph.addNode((long) 2);
@@ -74,7 +75,7 @@ public class GatewayExpr extends TestCase {
     	
     	log.error(graph);
     	
-    	List<String> macs = genMACs(500);
+    	/*List<String> macs = genMACs(500);
     	List<String> ips = genIPs(500);
     	System.out.println(macs.get(0));
     	System.out.println(macs.get(100));
@@ -86,10 +87,10 @@ public class GatewayExpr extends TestCase {
     	System.out.println(ips.get(100));
     	System.out.println(ips.get(255));
     	System.out.println(ips.get(256));
-    	System.out.println(ips.get(300));
+    	System.out.println(ips.get(300));*/
     }
     
-    public void atestExpr() {
+    public void testExpr() {
     	List<String> macs = genMACs(500);
     	List<String> ips = genIPs(500);
     	List<OFFlowMod> ipRouterRules = initIPRouterRules(2);
@@ -132,7 +133,16 @@ public class GatewayExpr extends TestCase {
     	
     	log.error(graph);
     	
-    	// 
+    	// delete
+    	OFFlowMod fm = ipRouterRules.get(0);
+    	fm.setCommand(OFFlowMod.OFPFC_DELETE);
+    	graph.update(fm, graph.getNode((long) 1));
+    	log.error(graph);
+    	
+    	((OFActionOutput) fm.getActions().get(0)).setPort((short) 6);
+    	fm.setCommand(OFFlowMod.OFPFC_ADD);
+    	graph.update(fm, graph.getNode((long) 1));
+    	log.error(graph);
     }
     
     private List<OFFlowMod> initIPRouterRules(int count) {
@@ -154,7 +164,7 @@ public class GatewayExpr extends TestCase {
     	List<OFFlowMod> flowMods = new ArrayList<OFFlowMod>();
     	for (int i = 0; i < count; i++) {
     		String rule = String.format("priority=1,ether-type=2048,inport=8,dst-ip=%s,"
-					+ "actions=output:9,actions=set-src-mac:10:00:00:00:00:00,actions=set-dst-mac:%s",
+					+ "actions=output:9,actions=set-src-mac:11:11:11:11:11:11,actions=set-dst-mac:%s",
 					ips.get(i), macs.get(i));
     		flowMods.add(OFFlowModHelper.genFlowMod(rule));
     	}
@@ -169,12 +179,12 @@ public class GatewayExpr extends TestCase {
     	List<OFFlowMod> flowMods = new ArrayList<OFFlowMod>();
     	for (int i = 0; i < count/3; i++) {
     		String rule = String.format("priority=1,inport=10,"
-    				+ "src-mac=10:00:00:00:00:00,dst-mac=%s,actions=output:12", macs.get(i));
+    				+ "src-mac=11:11:11:11:11:11,dst-mac=%s,actions=output:12", macs.get(i));
     		flowMods.add(OFFlowModHelper.genFlowMod(rule));
     	}
     	for (int i = 0; i < count/3; i++) {
     		String rule = String.format("priority=1,inport=12,"
-    				+ "src-mac=%s,dst-mac=10:00:00:00:00:00,actions=output:10", macs.get(i));
+    				+ "src-mac=%s,dst-mac=11:11:11:11:11:11,actions=output:10", macs.get(i));
     		flowMods.add(OFFlowModHelper.genFlowMod(rule));
     	}
     	for (int i = 0; i < count/3; i++) {

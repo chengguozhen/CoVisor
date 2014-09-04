@@ -19,7 +19,7 @@ public class OVXBabySwitch extends OVXSingleSwitch {
 	public OVXBabySwitch(final Long switchId, final Integer tenantId, final OVXMultiSwitch parentSwitch) {
 		super(switchId, tenantId);
 		this.parentSwitch = parentSwitch;
-		this.plumbingNode = new PlumbingNode(switchId);
+		this.plumbingNode = new PlumbingNode(switchId, null);
 	}
 	
 	public PlumbingNode getPlumbingNode() {

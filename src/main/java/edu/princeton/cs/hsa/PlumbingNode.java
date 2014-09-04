@@ -27,6 +27,7 @@ public class PlumbingNode {
 	
 	//private OVXBabySwitch babySwitch;
 	public final long dpid;
+	public PlumbingGraph graph;
 	private PolicyFlowTable flowTable;
 	//private Map<Short, Boolean> isEdgePortMap;
 	private Map<Short, Short> portMap; // virtual port -> physical port, null if it is an internal port
@@ -34,8 +35,9 @@ public class PlumbingNode {
 	private Map<Short, PlumbingNode> nextHopMap;
 	private Map<Short, Short> nextHopPortMap;
 	
-	public PlumbingNode(long dpid) {
+	public PlumbingNode(long dpid, PlumbingGraph graph) {
 		this.dpid = dpid;
+		this.graph = graph;
 		this.flowTable = new PolicyFlowTable();
 		//this.isEdgePortMap = new HashMap<Short, Boolean>();
 		this.portMap = new HashMap<Short, Short>();
@@ -390,15 +392,19 @@ public class PlumbingNode {
 		}
 	}
 
-	public PolicyUpdateTable doFlowModDelete(PlumbingFlowMod pmod, PolicyUpdateTable updateTable) {
-		if (updateTable.deleteFlowMods.size() == 0) {
+	public PolicyUpdateTable doFlowModDelete(PlumbingFlowMod pmod, PolicyUpdateTable nodeUpdateTable) {
+		
+		PolicyUpdateTable updateTable = new PolicyUpdateTable();
+		
+		if (nodeUpdateTable.deleteFlowMods.size() == 0) {
 			return updateTable;
 		}
 		
-		PlumbingFlowMod deletedFlowMod = (PlumbingFlowMod) updateTable.deleteFlowMods.get(0);
+		List<OFFlowMod> generatedParentFlowMods = this.flowTable.getGenerateParentFlowMods(nodeUpdateTable.deleteFlowMods.get(0));
+		List<OFFlowMod> deletedFlowMods = this.graph.flowTable.deleteFlowMods(generatedParentFlowMods);
+		updateTable.deleteFlowMods.addAll(deletedFlowMods);
 		
-		
-		throw new NotImplementedException("don't allow OFPFC_MODIFY and OFPFC_MODIFY_STRICT");
+		return updateTable;
 	}
 
 	private boolean isEdgePFlowMod(PlumbingFlowMod pmod) {
