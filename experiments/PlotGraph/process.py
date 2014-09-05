@@ -3,6 +3,34 @@ import sys
 import time
 import random
 
+def processGateway():
+	fout = open("res_gateway_all", 'w')
+	ipCount = [8, 16, 32, 64, 128, 256, 512, 1024];
+	for ip in ipCount:
+		fileName = "res_gateway_" + str(ip)
+		columns = list()
+		columnCount = 4
+		for i in range(columnCount):
+			columns.append(list())
+
+		fin = open(fileName, 'r')
+		oneline = fin.readline()
+		while oneline != "":
+			temp = oneline.strip().split()
+			for idx,data in enumerate(temp):
+				columns[idx].append(float(data))
+			oneline = fin.readline()
+		fin.close()
+
+		fout.write(str(ip))
+		for i in range(columnCount):
+			columns[i].sort()
+			fout.write("\t" + str(columns[i][4]))
+			fout.write("\t" + str(columns[i][49]))
+			fout.write("\t" + str(columns[i][94]))
+		fout.write("\n")
+
+
 def readSwitchTime(fileName = "switch_time.txt"):
     switchTime = list()
     fin = open(fileName, 'r')
@@ -40,7 +68,8 @@ def generateTime(inFile, outFile, switchTime, rounds = 100):
 
 
 if __name__ == '__main__':
-    switchTime = readSwitchTime()
-    generateTime("log", "res", switchTime)
+	processGateway()
+    #switchTime = readSwitchTime()
+    #generateTime("log", "res", switchTime)
 
 

@@ -1,5 +1,7 @@
 package edu.princeton.cs.expr;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -146,6 +148,7 @@ public class OFFlowModHelper {
 		return fm;
 	}
 	
+	// get random number in [min, max)
 	public static int getRandomNumber(int min, int max) {
 		return rand.nextInt(max - min) + min;
 	}

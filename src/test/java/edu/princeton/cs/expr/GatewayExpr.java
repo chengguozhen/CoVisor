@@ -1,5 +1,9 @@
 package edu.princeton.cs.expr;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -107,19 +111,41 @@ public class GatewayExpr extends TestCase {
     	exprHelperIP(1024, 3, 3, 2);*/
     	
     	/*exprHelperIP(8, 100, 500, 1, macs, ips);
-    	exprHelperIP(2, 100, 500, 1, macs, ips);
-    	exprHelperIP(4, 100, 500, 1, macs, ips);
     	exprHelperIP(8, 100, 500, 1, macs, ips);
-    	exprHelperIP(16, 100, 500, 1, macs, ips);
-    	exprHelperIP(64, 100, 500, 1, macs, ips);
-    	exprHelperIP(128, 100, 500, 1, macs, ips);
-    	exprHelperIP(256, 100, 500, 1, macs, ips);
-    	exprHelperIP(512, 100, 500, 1, macs, ips);
-    	exprHelperIP(1024, 100, 500, 1, macs, ips);*/
+    	exprHelperIP(8, 100, 500, 1, macs, ips);
+    	exprHelperIP(8, 100, 500, 1, macs, ips);
+    	exprHelperIP(16, 100, 500, 2, macs, ips);
+    	exprHelperIP(64, 100, 500, 6, macs, ips);
+    	exprHelperIP(128, 100, 500, 13, macs, ips);
+    	exprHelperIP(256, 100, 500, 26, macs, ips);
+    	exprHelperIP(512, 100, 500, 51, macs, ips);
+    	exprHelperIP(512, 100, 500, 51, macs, ips);
+    	exprHelperIP(512, 100, 500, 51, macs, ips);
+    	exprHelperIP(1024, 100, 500, 102, macs, ips);*/
     	
-    	exprHelperIP(100, 10, 500, 1, macs, ips);
+    	SwitchTime switchTime = new SwitchTime("experiments/switch_time.txt");
+    	int[] ipCount = {8, 16, 32, 64, 128, 256, 512, 1024};
+    	int round = 100;
+    	for (int i : ipCount) {
+    		String fileName = String.format("experiments/PlotGraph/res_gateway_%d", i);
+    		Writer writer = null;
+    		try {
+    		    writer = new FileWriter(fileName);
+    		    for (int j = 0; j < round; j++) {
+    		    	exprHelperIP(i, 100, 500, (int) Math.ceil(i * 0.1), macs, ips, writer, switchTime);
+    		    }
+    		} catch (IOException ex) {
+    		} finally {
+    		   try {writer.close();} catch (Exception ex) {}
+    		}
+    	}
+    	
+    	
+    	
+    	
+    	/*exprHelperIP(100, 10, 500, 1, macs, ips);
     	exprHelperIP(100, 100, 500, 1, macs, ips);
-    	exprHelperIP(100, 500, 500, 1, macs, ips);
+    	exprHelperIP(100, 500, 500, 1, macs, ips);*/
     	
     	/*exprHelperMAC(10, 100, 500, 1, macs, ips);
     	exprHelperMAC(100, 100, 500, 1, macs, ips);
@@ -134,7 +160,8 @@ public class GatewayExpr extends TestCase {
 
     }
     
-    public void exprHelperIP(int ipCount, int macExternal, int macInternal, int ipUpdate, List<String> macs, List<String> ips) {
+    public void exprHelperIP(int ipCount, int macExternal, int macInternal, int ipUpdate, List<String> macs, List<String> ips,
+    		Writer writer, SwitchTime switchTime) throws IOException {
     	
     	List<OFFlowMod> ipRouterRules = initIPRouterRules(ipCount);
     	List<OFFlowMod> gatewayRules = initGatewayRules(macExternal, ips, macs);
@@ -197,7 +224,13 @@ public class GatewayExpr extends TestCase {
     	}
     	//log.error(graph);
     	long elapseTime = System.nanoTime() - startTime;
-		System.out.println(elapseTime / 1e6 + "\t" + fmCount + "\t" + graph.flowTable.getFlowMods().size());
+		//System.out.println(elapseTime / 1e6 + "\t" + fmCount + "\t" + graph.flowTable.getFlowMods().size());
+    	double compileTime = elapseTime / 1e6;
+    	double updateTime = 0;
+    	for (int i = 0; i < fmCount; i++) {
+    		updateTime += switchTime.getTime();
+    	}
+    	writer.write(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
     }
     
     public void exprHelperMAC(int ipCount, int macExternal, int macInternal, int macUpdate, List<String> macs, List<String> ips) {
