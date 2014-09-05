@@ -23,6 +23,7 @@ def generateTime(inFile, outFile, switchTime, rounds = 100):
     fin.close()
 
     fout = open(outFile, 'w')
+    fout.write("10\tCoVisor\tCoVisor\tCoVisor\n")
     for rule in rules:
         updateTimes = list()
         for i in range(rounds):
@@ -31,7 +32,9 @@ def generateTime(inFile, outFile, switchTime, rounds = 100):
                 updateTime += switchTime[random.randint(0, len(switchTime)-1)]
             updateTimes.append(updateTime)
         updateTimes.sort()
-        fout.write(str(updateTimes[4]) + "\t" + str(updateTimes[49]) + "\t" + \
+        fout.write(str(rule) + "\t" + \
+            str(updateTimes[4]) + "\t" + \
+            str(updateTimes[49]) + "\t" + \
             str(updateTimes[94]) + "\n")
     fout.close()
 
