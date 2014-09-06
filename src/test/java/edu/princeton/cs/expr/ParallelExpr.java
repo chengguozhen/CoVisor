@@ -99,14 +99,15 @@ public class ParallelExpr extends TestCase {
 	public void testExpr() {
 		
 		SwitchTime switchTime = new SwitchTime("experiments/switch_time.txt");
-    	int[] ruleSizes = {1280, 2560, 5120, 10240, 20480, 40960};//{128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768};
+    	//int[] ruleSizes = {1280, 2560, 5120, 10240, 20480, 40960};//{128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768};
+    	int[] ruleSizes = {128, 256, 512, 1024, 2048};
     	int round = 10;
     	for (int ruleSize : ruleSizes) {
     		List<String> MACs = getMACs(ruleSize);
     		List<OFFlowMod> monitorRules = initMonitorRules(MACs, ruleSize + 10);
     		List<OFFlowMod> MACLearnerRules = initMACLearnerRules(MACs);
     		
-    		/*{
+    		{
     			String fileName = String.format("experiments/PlotGraph/res_parallel_strawman_%d", ruleSize);
     			Writer writer = null;
     			try {
@@ -118,7 +119,7 @@ public class ParallelExpr extends TestCase {
     			} finally {
     				try {writer.close();} catch (Exception ex) {}
     			}
-    		}*/
+    		}
     		
     		{
     			String fileName = String.format("experiments/PlotGraph/res_parallel_inc_%d", ruleSize);

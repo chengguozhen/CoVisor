@@ -3,33 +3,62 @@ import sys
 import time
 import random
 
+def processComposition(composition = "parallel"):
+    fout = open("res_" + composition +"_all", 'w')
+    ruleCounts = [128, 256, 512, 1024, 2048]
+    mechanisms = ["strawman", "inc", "incacl"]
+    for ruleCount in ruleCounts:
+        fout.write(str(ruleCount))
+        for mechanism in mechanisms:
+            fileName = "res_" + composition + "_" + mechanism + "_" + str(ruleCount)
+            columns = list()
+            columnCount = 4
+            for i in range(columnCount):
+                columns.append(list())
+
+            fin = open(fileName, 'r')
+            oneline = fin.readline()
+            while oneline != "":
+                temp = oneline.strip().split()
+                for idx,data in enumerate(temp):
+                    columns[idx].append(float(data))
+                oneline = fin.readline()
+            fin.close()
+
+            for i in range(columnCount):
+                columns[i].sort()
+                fout.write("\t" + str(columns[i][4]))
+                fout.write("\t" + str(columns[i][49]))
+                fout.write("\t" + str(columns[i][94]))
+        fout.write("\n")
+
+
 def processGateway():
-	fout = open("res_gateway_all", 'w')
-	ipCount = [8, 16, 32, 64, 128, 256, 512, 1024];
-	for ip in ipCount:
-		fileName = "res_gateway_" + str(ip)
-		columns = list()
-		columnCount = 4
-		for i in range(columnCount):
-			columns.append(list())
+    fout = open("res_gateway_all", 'w')
+    ipCount = [8, 16, 32, 64, 128, 256, 512, 1024];
+    for ip in ipCount:
+        fileName = "res_gateway_" + str(ip)
+        columns = list()
+        columnCount = 4
+        for i in range(columnCount):
+            columns.append(list())
 
-		fin = open(fileName, 'r')
-		oneline = fin.readline()
-		while oneline != "":
-			temp = oneline.strip().split()
-			for idx,data in enumerate(temp):
-				columns[idx].append(float(data))
-			oneline = fin.readline()
-		fin.close()
+        fin = open(fileName, 'r')
+        oneline = fin.readline()
+        while oneline != "":
+            temp = oneline.strip().split()
+            for idx,data in enumerate(temp):
+                columns[idx].append(float(data))
+            oneline = fin.readline()
+        fin.close()
 
-		fout.write(str(ip))
-		for i in range(columnCount):
-			columns[i].sort()
-			fout.write("\t" + str(columns[i][4]))
-			fout.write("\t" + str(columns[i][49]))
-			fout.write("\t" + str(columns[i][94]))
-		fout.write("\n")
-
+        fout.write(str(ip))
+        for i in range(columnCount):
+            columns[i].sort()
+            fout.write("\t" + str(columns[i][4]))
+            fout.write("\t" + str(columns[i][49]))
+            fout.write("\t" + str(columns[i][94]))
+        fout.write("\n")
 
 def readSwitchTime(fileName = "switch_time.txt"):
     switchTime = list()
@@ -68,7 +97,8 @@ def generateTime(inFile, outFile, switchTime, rounds = 100):
 
 
 if __name__ == '__main__':
-	processGateway()
+	processComposition("parallel")
+	#processGateway()
     #switchTime = readSwitchTime()
     #generateTime("log", "res", switchTime)
 
