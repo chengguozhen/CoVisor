@@ -161,8 +161,8 @@ public class PolicyTree {
 		// calculate difference between old and new table
 		List<OFFlowMod> oldFlowMods = this.flowTable.getFlowMods();
 		PolicyUpdateTable updateTable = new PolicyUpdateTable();
-		//updateTable.addFlowMods = PolicyCompositionUtil.diffFlowMods(newFlowMods, oldFlowMods);
-		//updateTable.deleteFlowMods = PolicyCompositionUtil.diffFlowMods(oldFlowMods, newFlowMods);
+		updateTable.addFlowMods = PolicyCompositionUtil.diffFlowMods(newFlowMods, oldFlowMods);
+		updateTable.deleteFlowMods = PolicyCompositionUtil.diffFlowMods(oldFlowMods, newFlowMods);
 		
 		// update flow table
 		this.flowTable.setTable(newFlowMods);
