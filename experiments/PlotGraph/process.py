@@ -29,9 +29,9 @@ def processComposition(composition = "parallel"):
 
             for i in range(columnCount):
                 columns[i].sort()
-                fout.write("\t" + str(columns[i][4]))
+                fout.write("\t" + str(columns[i][9]))
                 fout.write("\t" + str(columns[i][49]))
-                fout.write("\t" + str(columns[i][94]))
+                fout.write("\t" + str(columns[i][89]))
         fout.write("\n")
 
 
