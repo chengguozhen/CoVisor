@@ -6,7 +6,8 @@ import random
 def processComposition(composition = "parallel"):
     fout = open("res_" + composition +"_all", 'w')
     #ruleCounts = [128, 256, 512, 1024, 2048]
-    ruleCounts = [1280, 2560, 5120, 10240]
+    ruleCounts = [128, 256]
+    #ruleCounts = [1280, 2560, 5120, 10240]
     mechanisms = ["strawman", "inc", "incacl"]
     #mechanisms = ["inc", "incacl"]
     for ruleCount in ruleCounts:
@@ -99,9 +100,9 @@ def generateTime(inFile, outFile, switchTime, rounds = 100):
 
 
 if __name__ == '__main__':
-	processComposition("parallel")
+	#processComposition("parallel")
 	#processComposition("sequential")
-	#processGateway()
+	processGateway()
     #switchTime = readSwitchTime()
     #generateTime("log", "res", switchTime)
 
