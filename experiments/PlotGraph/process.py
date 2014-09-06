@@ -5,7 +5,8 @@ import random
 
 def processComposition(composition = "parallel"):
     fout = open("res_" + composition +"_all", 'w')
-    ruleCounts = [128, 256, 512, 1024, 2048]
+    #ruleCounts = [128, 256, 512, 1024, 2048]
+    ruleCounts = [1280, 2560, 5120, 10240]
     mechanisms = ["strawman", "inc", "incacl"]
     #mechanisms = ["inc", "incacl"]
     for ruleCount in ruleCounts:
