@@ -7,6 +7,7 @@ def processComposition(composition = "parallel"):
     fout = open("res_" + composition +"_all", 'w')
     ruleCounts = [128, 256, 512, 1024, 2048]
     mechanisms = ["strawman", "inc", "incacl"]
+    #mechanisms = ["inc", "incacl"]
     for ruleCount in ruleCounts:
         fout.write(str(ruleCount))
         for mechanism in mechanisms:
@@ -98,6 +99,7 @@ def generateTime(inFile, outFile, switchTime, rounds = 100):
 
 if __name__ == '__main__':
 	processComposition("parallel")
+	#processComposition("sequential")
 	#processGateway()
     #switchTime = readSwitchTime()
     #generateTime("log", "res", switchTime)
