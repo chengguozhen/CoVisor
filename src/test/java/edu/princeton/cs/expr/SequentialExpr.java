@@ -128,11 +128,11 @@ public class SequentialExpr extends TestCase {
 		List<OFFlowMod> routingRules = readRoutingRules("experiments/classbench/fw1_prefix");
 		SwitchTime switchTime = new SwitchTime("experiments/switch_time.txt");
 		
-    	int[] ruleSizes = {128, 256, 512, 1024, 2048, 4096, 8192};
+    	int[] ruleSizes = {128, 256, 512, 1024, 2048, 4096};//, 8192};
     	int round = 10;
     	for (int ruleSize : ruleSizes) {
     		
-    		{
+    		/*{
     			String fileName = String.format("experiments/PlotGraph/res_sequential_strawman_%d", ruleSize);
     			Writer writer = null;
     			try {
@@ -144,7 +144,7 @@ public class SequentialExpr extends TestCase {
     			} finally {
     				try {writer.close();} catch (Exception ex) {}
     			}
-    		}
+    		}*/
     		
     		{
     			String fileName = String.format("experiments/PlotGraph/res_sequential_inc_%d", ruleSize);
