@@ -39,8 +39,6 @@ public class ParallelExpr extends TestCase {
         return new TestSuite(ParallelExpr.class);
     }
     
-    
-    
     private void myTime(int count) {
     	int x = 0;
     	long startTime = System.nanoTime();
@@ -51,7 +49,7 @@ public class ParallelExpr extends TestCase {
 		System.out.println(count + "\t" + elapseTime / 1e6 + "\t" + x);
     }
     
-    public void textExpr() {
+    public void testExpr() {
     	ParallelComposition test = new ParallelComposition();
     	test.testExpr();
     }

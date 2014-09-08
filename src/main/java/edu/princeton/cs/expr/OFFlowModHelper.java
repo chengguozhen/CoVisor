@@ -18,7 +18,7 @@ import org.openflow.util.HexString;
 
 public class OFFlowModHelper {
 	
-	private static Random rand = new Random(1);
+	public static Random rand = new Random(1);
 	
 	/* Example
 	 * 

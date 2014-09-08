@@ -35,7 +35,7 @@ public class SequentialComposition {
 		SwitchTime switchTime = new SwitchTime("experiments/switch_time.txt");
 		
 		int fwSize = 1000;
-    	//int[] ruleSizes = {128, 256, 512, 1024, 2048, 4096};//, 8192};
+    	//int[] routingSizes = {128, 256, 512, 1024, 2048, 4096};//, 8192};
     	int[] routingSizes = {5000, 10000, 20000, 40000, 80000};//500, 1000, 2000, 4000, 8000};
     	int round = 10;
     	for (int routingSize : routingSizes) {
@@ -77,7 +77,7 @@ public class SequentialComposition {
     				try {writer.close();} catch (Exception ex) {}
     			}
     		}
-    		
+
     		{
     			rand = new Random(1);
     			List<OFFlowMod> fwRules = new ArrayList<OFFlowMod>(fwRulesOriginal);
@@ -195,7 +195,9 @@ public class SequentialComposition {
 			elapseTimes.add(elapseTime);
 			fmCounts.add(updateTable.addFlowMods.size() + updateTable.deleteFlowMods.size());
 		}
-		System.out.println(policyTree.flowTable.getFlowMods().size());
+		System.out.println(policyTree.flowTable.getFlowMods().size()
+				+ " " + policyTree.leftChild.flowTable.getFlowMods().size()
+				+ " " + policyTree.rightChild.flowTable.getFlowMods().size());
 		for (int i = 0; i < elapseTimes.size(); i++) {
 			double compileTime = elapseTimes.get(i) / 1e6;
 			int fmCount = fmCounts.get(i);
