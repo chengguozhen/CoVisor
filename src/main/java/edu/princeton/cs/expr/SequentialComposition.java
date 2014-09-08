@@ -37,7 +37,7 @@ public class SequentialComposition {
 		int fwSize = 1000;
     	//int[] ruleSizes = {128, 256, 512, 1024, 2048, 4096};//, 8192};
     	int[] routingSizes = {5000, 10000, 20000, 40000, 80000};//500, 1000, 2000, 4000, 8000};
-    	int round = 1;
+    	int round = 10;
     	for (int routingSize : routingSizes) {
             
 			System.out.println(routingSize);
