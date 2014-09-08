@@ -662,7 +662,6 @@ def do_createBabySwitch(gopts, opts, args):
     print "Virtual switch has been created (tenant_id %s, switch_id %s)" \
         % (args[2], switchId)
 
-
 def pa_createBabyPort(args, cmd):
     usage = "%s [options] <tenant_id> <baby_dpid>" % USAGE.format(cmd)
     (sdesc, ldesc) = DESCS[cmd]
@@ -702,6 +701,21 @@ def do_connectBabyLink(gopts, opts, args):
            "dstPort" : int(args[4]) }
     reply = connect(gopts, "tenant", "connectBabyLink", data=req, passwd=getPasswd(gopts))
     print "Virtual link has been created"
+
+def pa_startExpr(args, cmd):
+    usage = "%s <expr>" % USAGE.format(cmd)
+    (sdesc, ldesc) = DESCS[cmd]
+    parser = OptionParser(usage=usage, description=ldesc)
+    return parser.parse_args(args)
+
+def do_startExpr(gopts, opts, args):
+    if len(args) != 1:
+        print ("createExpr : Must specify an experiment") 
+        sys.exit()
+    req = { "expr" : args[0] }
+    result = connect(gopts, "tenant", "startExpr", data=req, passwd=getPasswd(gopts))
+    print "Expr '%s' has been started" % args[0] 
+
 
 def pa_help(args, cmd):
     usage = "%s <cmd>" % USAGE.format(cmd)
@@ -815,6 +829,8 @@ CMDS = {
     'createBabySwitch': (pa_createBabySwitch, do_createBabySwitch),
     'createBabyPort': (pa_createBabyPort, do_createBabyPort),
     'connectBabyLink': (pa_connectBabyLink, do_connectBabyLink),
+
+    'startExpr': (pa_startExpr, do_startExpr),
 
     'help' : (pa_help, do_help)
 }
@@ -956,6 +972,9 @@ DESCS = {
                       ("Connect two virtual ports through a virtual link. Must specify a tenant_id, a virtual src_switch_id, a virtual src_port_id, " 
                        "a virtual dst_switch_id and a virtual dst_port_id"
                         "\nExample: connectBabyLink 1 00:a4:23:05:00:00:00:01 1 00:a4:23:05:00:00:00:02 1")), 
+    'startExpr' : ("Start experiment",
+                                ("Start experiment. Must specify an experiment.",
+                                "\nExample: startExpr parallel/sequential/gateway")),
 }
 
 USAGE="%prog {}"

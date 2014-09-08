@@ -10,106 +10,25 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
 
 import edu.princeton.cs.policy.adv.PolicyTree;
-import edu.princeton.cs.policy.adv.PolicyTree.PolicyUpdateMechanism;
 import edu.princeton.cs.policy.adv.PolicyUpdateTable;
 import edu.princeton.cs.policy.adv.PolicyTree.PolicyOperator;
+import edu.princeton.cs.policy.adv.PolicyTree.PolicyUpdateMechanism;
 import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreKey;
 import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreType;
 
-public class SequentialExpr extends TestCase {
+public class SequentialComposition {
 	
-	private static Logger log = LogManager.getLogger(SequentialExpr.class.getName());
 	private static Random rand = new Random(1);
 	
-    public SequentialExpr(final String name) {
-        super(name);
-    }
-
-    public static TestSuite suite() {
-        return new TestSuite(SequentialExpr.class);
-    }
-    
-    public void atestTrie() {
-		// init policy tree
-		List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
-		storeTypes.add(PolicyFlowModStoreType.PREFIX);
-		storeTypes.add(PolicyFlowModStoreType.WILDCARD);
-		List<PolicyFlowModStoreKey> storeKeys = new ArrayList<PolicyFlowModStoreKey>();
-		storeKeys.add(PolicyFlowModStoreKey.NETWORK_DST);
-		storeKeys.add(PolicyFlowModStoreKey.ALL);
-
-		PolicyTree leftTree = new PolicyTree(storeTypes, storeKeys);
-		leftTree.tenantId = 1;
-
-		PolicyTree rightTree = new PolicyTree(storeTypes, storeKeys);
-		rightTree.tenantId = 2;
-
-		PolicyTree policyTree = new PolicyTree();
-		policyTree.operator = PolicyOperator.Sequential;
-		policyTree.leftChild = leftTree;
-		policyTree.rightChild = rightTree;
+	public SequentialComposition() {
 		
-		policyTree.update(OFFlowModHelper.genFlowMod("priority=8,ether-type=2048,dst-ip=0.0.0.0/8"), 1);
-		policyTree.update(OFFlowModHelper.genFlowMod("priority=8,ether-type=2048,dst-ip=1.0.0.0/8,actions=output:1"), 1);
-		policyTree.update(OFFlowModHelper.genFlowMod("priority=20,ether-type=2048,dst-ip=1.0.0.0/20"), 1);
-		policyTree.update(OFFlowModHelper.genFlowMod("priority=24,ether-type=2048,dst-ip=1.0.0.0/24,actions=output:1"), 1);
-		policyTree.update(OFFlowModHelper.genFlowMod("priority=32,ether-type=2048,dst-ip=1.0.0.0/32,actions=output:1"), 1);
-		policyTree.update(OFFlowModHelper.genFlowMod("priority=16,ether-type=2048,dst-ip=1.0.0.0/16,actions=output:2"), 2);
-		policyTree.update(OFFlowModHelper.genFlowMod("priority=16,ether-type=2048,dst-ip=1.1.0.0/16,actions=output:3"), 2);
-		policyTree.update(OFFlowModHelper.genFlowMod("priority=16,ether-type=2048,dst-ip=0.0.0.0/0,actions=output:4"), 2);
-		
-		
-		log.error(policyTree.leftChild.flowTable);
-		log.error(policyTree.rightChild.flowTable);
-		log.error(policyTree.flowTable);
-    	
-    }
-    
-    public void atestTriePerformance() {
-    	
-    	int initialRuleCount = 100000;
-    	int updateRuleCount = 10;
-    	List<OFFlowMod> fwRules = new ArrayList<OFFlowMod>();
-    	for (int i = 0; i < updateRuleCount; i++) {
-    		int priority = OFFlowModHelper.getRandomNumber(1, 33);
-    		int ip = (rand.nextInt() >> priority) << priority;
-    		fwRules.add(
-    				OFFlowModHelper.genFlowMod(
-    						String.format("priority=%d,src-ip=1.0.0.0/16,dst-ip=%d/%d,actions=output:2",
-    								priority, ip, priority)));
-    	}
-    	
-    	List<OFFlowMod> routingRules = new ArrayList<OFFlowMod>();
-    	for (int i = 0; i < initialRuleCount; i++) {
-    		int priority = OFFlowModHelper.getRandomNumber(1, 33);
-    		int ip = (rand.nextInt() >> priority) << priority;
-    		routingRules.add(
-    				OFFlowModHelper.genFlowMod(
-    						String.format("priority=%d,dst-ip=%d/%d,actions=output:2",
-    								priority, ip, priority)));
-    	}
-    	
-    	exprHelper(fwRules, routingRules, 2000, 10);
-    	/*exprHelper(fwRules, routingRules, 40000, 2);
-    	exprHelper(fwRules, routingRules, 80000, 2);
-    	exprHelper(fwRules, routingRules, 4000, 1);
-    	exprHelper(fwRules, routingRules, 5000, 1);
-    	exprHelper(fwRules, routingRules, 6000, 1);
-    	exprHelper(fwRules, routingRules, 7000, 1);
-    	exprHelper(fwRules, routingRules, 8000, 1);
-    	exprHelper(fwRules, routingRules, 9000, 1);*/
-    }
-
+	}
+	
 	public void testExpr() {
 		List<OFFlowMod> fwRules = readFwRules("experiments/classbench/fw1_100000");
 		//Collections.shuffle(fwRules, rand);
@@ -423,108 +342,6 @@ public class SequentialExpr extends TestCase {
 		}
 		
 	}
-	
-	private void exprHelper (List<OFFlowMod> fwRules, List<OFFlowMod> routingRules,
-			int initialRuleCount, int updateRuleCount) {
-		// init policy tree
-		List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
-		//storeTypes.add(PolicyFlowModStoreType.PREFIX);
-		storeTypes.add(PolicyFlowModStoreType.WILDCARD);
-		List<PolicyFlowModStoreKey> storeKeys = new ArrayList<PolicyFlowModStoreKey>();
-		//storeKeys.add(PolicyFlowModStoreKey.NETWORK_DST);
-		storeKeys.add(PolicyFlowModStoreKey.ALL);
-
-		PolicyTree leftTree = new PolicyTree(storeTypes, storeKeys);
-		leftTree.tenantId = 1;
-
-		PolicyTree rightTree = new PolicyTree(storeTypes, storeKeys);
-		rightTree.tenantId = 2;
-
-		PolicyTree policyTree = new PolicyTree();
-		policyTree.operator = PolicyOperator.Sequential;
-		policyTree.leftChild = leftTree;
-		policyTree.rightChild = rightTree;
-
-		// install initial rules
-		PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Incremental;
-		initialRuleCount = Math.min(initialRuleCount, fwRules.size() - updateRuleCount);
-		/*for (int i = 0; i < initialRuleCount; i++) {
-			policyTree.update(fwRules.get(i), 1);
-		}*/
-		//log.error("finish firewall");
-		for (int i = 0; i < initialRuleCount; i++) {
-			policyTree.update(routingRules.get(i), 2);
-			/*if (i % 500 == 0) {
-				log.error("{}: {} {} {}",
-						i,
-						policyTree.leftChild.flowTable.getFlowMods().size(),
-						policyTree.rightChild.flowTable.getFlowMods().size(),
-						policyTree.flowTable.getFlowMods().size());
-			}*/
-		}
-		//log.error("finish routing: {}", policyTree.rightChild.flowTable.getFlowMods().size());
-
-		// install update rules
-		for (int i = 0; i < updateRuleCount; i++) {
-			//log.error(fwRules.get(initialRuleCount + i));
-			OFFlowMod fm = fwRules.get(initialRuleCount + i);
-			//if (i % 2 == 0) {
-				List<OFAction> actions = new ArrayList<OFAction>();
-				fm.setActions(actions);
-				
-				OFActionOutput action = new OFActionOutput();
-				action.setPort((short) 1);
-				actions.add(action);
-				
-				fm.setLengthU(OFFlowMod.MINIMUM_LENGTH + action.getLengthU());
-			/*} else {
-				List<OFAction> actions = new ArrayList<OFAction>();
-				fm.setActions(actions);
-				fm.setLengthU(OFFlowMod.MINIMUM_LENGTH);
-			}*/
-		}
-		
-		/*PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Strawman;
-		for (int i = 0; i < updateRuleCount; i++) {
-			long startTime = System.nanoTime();
-			PolicyUpdateTable updateTable = policyTree.update(fwRules.get(initialRuleCount + i), 1);
-			long elapseTime = System.nanoTime() - startTime;
-			log.error("Time: {} ms\t{}\t{}\t{}\t{}\t{}",
-					elapseTime / 1e6,
-					updateTable.addFlowMods.size(),
-					updateTable.deleteFlowMods.size(),
-					policyTree.leftChild.flowTable.getFlowMods().size(),
-					policyTree.rightChild.flowTable.getFlowMods().size(),
-					policyTree.flowTable.getFlowMods().size());
-		}*/
-		
-		
-		PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Incremental;
-		List<Long> elapseTimes = new ArrayList<Long>();
-		List<Integer> fmCounts = new ArrayList<Integer>();
-		for (int i = 0; i < updateRuleCount; i++) {
-			//policyTree.update(fwRules.get(initialRuleCount + i), 1);
-			long startTime = System.nanoTime();
-			PolicyUpdateTable updateTable = policyTree.update(fwRules.get(i), 1);
-			long elapseTime = System.nanoTime() - startTime; // in ns
-			elapseTimes.add(elapseTime);
-			fmCounts.add(updateTable.addFlowMods.size() + updateTable.deleteFlowMods.size());
-		}
-		//log.error("Count: {}\tTime: {} ms", initialRuleCount, elapseTime / 1e6);
-		System.out.println("----------------------------------------");
-		for (int i = 0; i < elapseTimes.size(); i++) {
-			double compileTime = elapseTimes.get(i) / 1e6;
-			int fmCount = fmCounts.get(i);
-			double updateTime = 0;
-	    	/*for (int j = 0; j < fmCount; j++) {
-	    		updateTime += switchTime.getTime();
-	    	}*/
-			System.out.println(fwRules.get(i));
-			System.out.println(String.format("%f\t%d\t%f\t%f", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
-		}
-		
-	}
-	
 	private List<OFFlowMod> readFwRules(String fileName) {
 		List<OFFlowMod> flowMods = new ArrayList<OFFlowMod>();
 
@@ -600,15 +417,5 @@ public class SequentialExpr extends TestCase {
 		
 		return flowMods;
 	}
-	
-	@Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
 
 }

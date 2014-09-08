@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SwitchTime {
-	
 	private List<Float> switchTime;
 	
 	public SwitchTime(String fileName) {
@@ -26,5 +25,4 @@ public class SwitchTime {
 	public float getTime() {
 		return switchTime.get(OFFlowModHelper.getRandomNumber(0, switchTime.size()));
 	}
-
 }

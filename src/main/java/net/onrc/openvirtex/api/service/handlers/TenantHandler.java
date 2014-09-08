@@ -39,6 +39,7 @@ import net.onrc.openvirtex.api.service.handlers.tenant.SetComposeAlgo;
 import net.onrc.openvirtex.api.service.handlers.tenant.SetOVXBigSwitchRouting;
 import net.onrc.openvirtex.api.service.handlers.tenant.SetOVXLinkPath;
 import net.onrc.openvirtex.api.service.handlers.tenant.StartComposition;
+import net.onrc.openvirtex.api.service.handlers.tenant.StartExpr;
 import net.onrc.openvirtex.api.service.handlers.tenant.StartOVXNetwork;
 import net.onrc.openvirtex.api.service.handlers.tenant.StartOVXPort;
 import net.onrc.openvirtex.api.service.handlers.tenant.StartOVXSwitch;
@@ -200,6 +201,9 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
             this.put("createBabySwitch", new CreateOVXBabySwitch());
     	    this.put("createBabyPort", new CreateOVXBabyPort());
     	    this.put("connectBabyLink", new ConnectOVXBabyLink());
+    	    
+    	    // expr
+    	    this.put("startExpr", new StartExpr());
         }
     };
 
