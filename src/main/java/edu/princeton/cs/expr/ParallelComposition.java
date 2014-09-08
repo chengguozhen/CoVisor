@@ -75,12 +75,12 @@ public class ParallelComposition {
 		
 		SwitchTime switchTime = new SwitchTime("experiments/switch_time.txt");
 		
-		int macSize = 5000;
+		int monitorSize = 5000;
     	//int[] macSizes = {1280, 2560, 5120, 10240, 20480, 40960};
     	//int[] macSizes = {128, 256, 512, 1024, 2048};
-    	int[] monitorSizes = {5000, 10000, 20000, 40000, 80000};
+    	int[] macSizes = {5000, 10000, 20000, 40000, 80000};
     	int round = 10;
-    	for (int monitorSize : monitorSizes) {
+    	for (int macSize : macSizes) {
 			System.out.println(macSize);
 			
 			/*{
