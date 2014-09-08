@@ -39,52 +39,7 @@ public class ParallelExpr extends TestCase {
         return new TestSuite(ParallelExpr.class);
     }
     
-    public void atestCorrectness() {
-    	List<String> MACs = getMACs(50);
-		List<OFFlowMod> MACLearnerRules = initMACLearnerRules(MACs);
-		
-		int initialRuleCount = 5;
-		
-		// init policy tree
-		List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
-		storeTypes.add(PolicyFlowModStoreType.EXACT);
-		storeTypes.add(PolicyFlowModStoreType.WILDCARD);
-		List<PolicyFlowModStoreKey> storeKeys = new ArrayList<PolicyFlowModStoreKey>();
-		storeKeys.add(PolicyFlowModStoreKey.DATA_DST);
-		storeKeys.add(PolicyFlowModStoreKey.ALL);
-
-		PolicyTree leftTree = new PolicyTree(storeTypes, storeKeys);
-		leftTree.tenantId = 1;
-
-		PolicyTree rightTree = new PolicyTree(storeTypes, storeKeys);
-		rightTree.tenantId = 2;
-
-		PolicyTree policyTree = new PolicyTree();
-		policyTree.operator = PolicyOperator.Parallel;
-		policyTree.leftChild = leftTree;
-		policyTree.rightChild = rightTree;
-
-		// install initial rules
-		for (int i = 0; i < initialRuleCount; i++) {
-			policyTree.update(MACLearnerRules.get(i), 2);
-		}
-
-		//PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Strawman;
-		policyTree.update(OFFlowModHelper.genFlowMod(
-				String.format("priority=1,src-mac=0f:a3:70:21:95:7c,dst-mac=61:4e:a2:7c:3e:93")), 1);
-		log.error("----------------------------------------");
-		log.error(policyTree.leftChild.flowTable);
-		log.error(policyTree.rightChild.flowTable);
-		log.error(policyTree.flowTable);
-		
-		policyTree.update(OFFlowModHelper.genFlowMod(
-				String.format("priority=1,src-mac=2c:5b:b2:0d:f4:85,dst-mac=49:c5:d7:c9:67:f0")), 1);
-		log.error("----------------------------------------");
-		log.error(policyTree.leftChild.flowTable);
-		log.error(policyTree.rightChild.flowTable);
-		log.error(policyTree.flowTable);
-
-    }
+    
     
     private void myTime(int count) {
     	int x = 0;
@@ -94,6 +49,11 @@ public class ParallelExpr extends TestCase {
 		}
 		long elapseTime = System.nanoTime() - startTime;
 		System.out.println(count + "\t" + elapseTime / 1e6 + "\t" + x);
+    }
+    
+    public void textExpr() {
+    	ParallelComposition test = new ParallelComposition();
+    	test.testExpr();
     }
 	
 	@Override

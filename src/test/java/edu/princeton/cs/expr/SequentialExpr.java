@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
@@ -110,9 +111,12 @@ public class SequentialExpr extends TestCase {
     	exprHelper(fwRules, routingRules, 9000, 1);*/
     }
 
-	public void textExpr() {
+	public void testExpr() {
 		SequentialComposition expr = new SequentialComposition();
 		expr.testExpr();
+		
+		//Assert.assertEquals(true, true);
+		System.out.println("done");
 	}
 	
 	

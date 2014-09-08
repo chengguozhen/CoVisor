@@ -20,10 +20,58 @@ import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreKey;
 import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreType;
 
 public class ParallelComposition {
+	
 	private static Logger log = LogManager.getLogger(ParallelComposition.class.getName());
 	private static Random rand = new Random(1);
 	
-public void testExpr() {
+	public void atestCorrectness() {
+    	List<String> MACs = getMACs(50);
+		List<OFFlowMod> MACLearnerRules = initMACLearnerRules(MACs);
+		
+		int initialRuleCount = 5;
+		
+		// init policy tree
+		List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
+		storeTypes.add(PolicyFlowModStoreType.EXACT);
+		storeTypes.add(PolicyFlowModStoreType.WILDCARD);
+		List<PolicyFlowModStoreKey> storeKeys = new ArrayList<PolicyFlowModStoreKey>();
+		storeKeys.add(PolicyFlowModStoreKey.DATA_DST);
+		storeKeys.add(PolicyFlowModStoreKey.ALL);
+
+		PolicyTree leftTree = new PolicyTree(storeTypes, storeKeys);
+		leftTree.tenantId = 1;
+
+		PolicyTree rightTree = new PolicyTree(storeTypes, storeKeys);
+		rightTree.tenantId = 2;
+
+		PolicyTree policyTree = new PolicyTree();
+		policyTree.operator = PolicyOperator.Parallel;
+		policyTree.leftChild = leftTree;
+		policyTree.rightChild = rightTree;
+
+		// install initial rules
+		for (int i = 0; i < initialRuleCount; i++) {
+			policyTree.update(MACLearnerRules.get(i), 2);
+		}
+
+		//PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Strawman;
+		policyTree.update(OFFlowModHelper.genFlowMod(
+				String.format("priority=1,src-mac=0f:a3:70:21:95:7c,dst-mac=61:4e:a2:7c:3e:93")), 1);
+		log.error("----------------------------------------");
+		log.error(policyTree.leftChild.flowTable);
+		log.error(policyTree.rightChild.flowTable);
+		log.error(policyTree.flowTable);
+		
+		policyTree.update(OFFlowModHelper.genFlowMod(
+				String.format("priority=1,src-mac=2c:5b:b2:0d:f4:85,dst-mac=49:c5:d7:c9:67:f0")), 1);
+		log.error("----------------------------------------");
+		log.error(policyTree.leftChild.flowTable);
+		log.error(policyTree.rightChild.flowTable);
+		log.error(policyTree.flowTable);
+
+    }
+	
+	public void testExpr() {
 		
 		SwitchTime switchTime = new SwitchTime("experiments/switch_time.txt");
     	//int[] ruleSizes = {1280, 2560, 5120, 10240, 20480, 40960};//{128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768};
