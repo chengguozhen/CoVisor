@@ -36,7 +36,7 @@ public class SequentialComposition {
 		SwitchTime switchTime = new SwitchTime("experiments/switch_time.txt");
 		
     	//int[] ruleSizes = {128, 256, 512, 1024, 2048, 4096};//, 8192};
-    	int[] ruleSizes = {200, 400};//500, 1000, 2000, 4000, 8000};
+    	int[] ruleSizes = {50000};//500, 1000, 2000, 4000, 8000};
     	int round = 10;
     	for (int ruleSize : ruleSizes) {
             
@@ -380,7 +380,7 @@ public class SequentialComposition {
 				}
 				
 				// action
-				if (rand.nextInt() % 5 == 1) {
+				if (rand.nextInt() % 10 == 1) {
 					str = str + ",actions=output:1";
 				}
 				
