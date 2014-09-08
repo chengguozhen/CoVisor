@@ -24,6 +24,10 @@ public class ParallelComposition {
 	private static Logger log = LogManager.getLogger(ParallelComposition.class.getName());
 	private static Random rand = new Random(1);
 	
+	public ParallelComposition() {
+		
+	}
+	
 	public void atestCorrectness() {
     	List<String> MACs = getMACs(50);
 		List<OFFlowMod> MACLearnerRules = initMACLearnerRules(MACs);

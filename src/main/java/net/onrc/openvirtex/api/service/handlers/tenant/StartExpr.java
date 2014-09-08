@@ -12,6 +12,7 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
 import edu.princeton.cs.expr.ParallelComposition;
 import edu.princeton.cs.expr.SequentialComposition;
+import edu.princeton.cs.expr.VirtualTopology;
 
 public class StartExpr extends ApiHandler<Map<String, Object>> {
 
@@ -29,6 +30,9 @@ public class StartExpr extends ApiHandler<Map<String, Object>> {
 			expr.testExpr();
 		} else if (exprString.equals("sequential")) {
 			SequentialComposition expr = new SequentialComposition();
+			expr.testExpr();
+		} else if (exprString.equals("gateway")) {
+			VirtualTopology expr = new VirtualTopology();
 			expr.testExpr();
 		}
 		
