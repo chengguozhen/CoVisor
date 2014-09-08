@@ -179,9 +179,9 @@ public class ParallelComposition {
 			storeTypes.add(PolicyFlowModStoreType.WILDCARD);
 			storeKeys.add(PolicyFlowModStoreKey.ALL);
 		} else {
-			storeTypes.add(PolicyFlowModStoreType.PREFIX);
+			storeTypes.add(PolicyFlowModStoreType.EXACT);
 			storeTypes.add(PolicyFlowModStoreType.WILDCARD);
-			storeKeys.add(PolicyFlowModStoreKey.NETWORK_DST);
+			storeKeys.add(PolicyFlowModStoreKey.DATA_DST);
 			storeKeys.add(PolicyFlowModStoreKey.ALL);
 		}
 
