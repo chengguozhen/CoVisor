@@ -82,12 +82,13 @@ public class ParallelComposition {
 		int monitorSize = 1000;
     	//int[] macSizes = {1280, 2560, 5120, 10240, 20480, 40960};
     	//int[] macSizes = {128, 256, 512, 1024, 2048};
-    	int[] macSizes = {5000, 10000, 20000, 40000, 80000};
+    	//int[] macSizes = {5000, 10000, 20000, 40000, 80000};
+    	int[] macSizes = {4000, 8000, 16000, 32000, 64000, 128000};
     	int round = 10;
     	for (int macSize : macSizes) {
 			System.out.println(macSize);
 			
-			/*{
+			{
     			rand = new Random(1);
     			OFFlowModHelper.rand = new Random(1);
     			String fileName = String.format("experiments/PlotGraph/res_parallel_strawman_%d", macSize);
@@ -104,7 +105,7 @@ public class ParallelComposition {
     			} finally {
     				try {writer.close();} catch (Exception ex) {}
     			}
-    		}*/
+    		}
 			
 			{
     			rand = new Random(1);
@@ -312,6 +313,7 @@ public class ParallelComposition {
 	
 	private List<OFFlowMod> initMonitorRules(List<String> MACs, int ruleCount) {
 		List<OFFlowMod> flowMods = new ArrayList<OFFlowMod>();
+		flowMods.add(OFFlowModHelper.genFlowMod(String.format("priority=0")));
 		
 		List<Integer> macIndex = new ArrayList<Integer>();
 		for (int i = 0; i < MACs.size(); i++) {
