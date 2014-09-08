@@ -342,6 +342,108 @@ public class SequentialComposition {
 		}
 		
 	}
+	
+	private void exprHelper (List<OFFlowMod> fwRules, List<OFFlowMod> routingRules,
+			int initialRuleCount, int updateRuleCount) {
+		// init policy tree
+		List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
+		//storeTypes.add(PolicyFlowModStoreType.PREFIX);
+		storeTypes.add(PolicyFlowModStoreType.WILDCARD);
+		List<PolicyFlowModStoreKey> storeKeys = new ArrayList<PolicyFlowModStoreKey>();
+		//storeKeys.add(PolicyFlowModStoreKey.NETWORK_DST);
+		storeKeys.add(PolicyFlowModStoreKey.ALL);
+
+		PolicyTree leftTree = new PolicyTree(storeTypes, storeKeys);
+		leftTree.tenantId = 1;
+
+		PolicyTree rightTree = new PolicyTree(storeTypes, storeKeys);
+		rightTree.tenantId = 2;
+
+		PolicyTree policyTree = new PolicyTree();
+		policyTree.operator = PolicyOperator.Sequential;
+		policyTree.leftChild = leftTree;
+		policyTree.rightChild = rightTree;
+
+		// install initial rules
+		PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Incremental;
+		initialRuleCount = Math.min(initialRuleCount, fwRules.size() - updateRuleCount);
+		/*for (int i = 0; i < initialRuleCount; i++) {
+			policyTree.update(fwRules.get(i), 1);
+		}*/
+		//log.error("finish firewall");
+		for (int i = 0; i < initialRuleCount; i++) {
+			policyTree.update(routingRules.get(i), 2);
+			/*if (i % 500 == 0) {
+				log.error("{}: {} {} {}",
+						i,
+						policyTree.leftChild.flowTable.getFlowMods().size(),
+						policyTree.rightChild.flowTable.getFlowMods().size(),
+						policyTree.flowTable.getFlowMods().size());
+			}*/
+		}
+		//log.error("finish routing: {}", policyTree.rightChild.flowTable.getFlowMods().size());
+
+		// install update rules
+		for (int i = 0; i < updateRuleCount; i++) {
+			//log.error(fwRules.get(initialRuleCount + i));
+			OFFlowMod fm = fwRules.get(initialRuleCount + i);
+			//if (i % 2 == 0) {
+				List<OFAction> actions = new ArrayList<OFAction>();
+				fm.setActions(actions);
+				
+				OFActionOutput action = new OFActionOutput();
+				action.setPort((short) 1);
+				actions.add(action);
+				
+				fm.setLengthU(OFFlowMod.MINIMUM_LENGTH + action.getLengthU());
+			/*} else {
+				List<OFAction> actions = new ArrayList<OFAction>();
+				fm.setActions(actions);
+				fm.setLengthU(OFFlowMod.MINIMUM_LENGTH);
+			}*/
+		}
+		
+		/*PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Strawman;
+		for (int i = 0; i < updateRuleCount; i++) {
+			long startTime = System.nanoTime();
+			PolicyUpdateTable updateTable = policyTree.update(fwRules.get(initialRuleCount + i), 1);
+			long elapseTime = System.nanoTime() - startTime;
+			log.error("Time: {} ms\t{}\t{}\t{}\t{}\t{}",
+					elapseTime / 1e6,
+					updateTable.addFlowMods.size(),
+					updateTable.deleteFlowMods.size(),
+					policyTree.leftChild.flowTable.getFlowMods().size(),
+					policyTree.rightChild.flowTable.getFlowMods().size(),
+					policyTree.flowTable.getFlowMods().size());
+		}*/
+		
+		
+		PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Incremental;
+		List<Long> elapseTimes = new ArrayList<Long>();
+		List<Integer> fmCounts = new ArrayList<Integer>();
+		for (int i = 0; i < updateRuleCount; i++) {
+			//policyTree.update(fwRules.get(initialRuleCount + i), 1);
+			long startTime = System.nanoTime();
+			PolicyUpdateTable updateTable = policyTree.update(fwRules.get(i), 1);
+			long elapseTime = System.nanoTime() - startTime; // in ns
+			elapseTimes.add(elapseTime);
+			fmCounts.add(updateTable.addFlowMods.size() + updateTable.deleteFlowMods.size());
+		}
+		//log.error("Count: {}\tTime: {} ms", initialRuleCount, elapseTime / 1e6);
+		System.out.println("----------------------------------------");
+		for (int i = 0; i < elapseTimes.size(); i++) {
+			double compileTime = elapseTimes.get(i) / 1e6;
+			int fmCount = fmCounts.get(i);
+			double updateTime = 0;
+	    	/*for (int j = 0; j < fmCount; j++) {
+	    		updateTime += switchTime.getTime();
+	    	}*/
+			System.out.println(fwRules.get(i));
+			System.out.println(String.format("%f\t%d\t%f\t%f", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
+		}
+		
+	}
+	
 	private List<OFFlowMod> readFwRules(String fileName) {
 		List<OFFlowMod> flowMods = new ArrayList<OFFlowMod>();
 
