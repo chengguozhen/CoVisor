@@ -17,7 +17,7 @@ import edu.princeton.cs.policy.adv.PolicyUpdateTable;
 
 public class VirtualTopology {
 	
-	private static Logger log = LogManager.getLogger(GatewayExpr.class.getName());
+	private static Logger log = LogManager.getLogger(VirtualTopology.class.getName());
 	private static Random rand = new Random(1);
 	
 	public VirtualTopology() {
