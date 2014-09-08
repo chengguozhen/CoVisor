@@ -129,11 +129,14 @@ public class SequentialExpr extends TestCase {
 		SwitchTime switchTime = new SwitchTime("experiments/switch_time.txt");
 		
     	//int[] ruleSizes = {128, 256, 512, 1024, 2048, 4096};//, 8192};
-    	int[] ruleSizes = {500, 1000, 2000, 4000, 8000};
+    	int[] ruleSizes = {20000, 40000};//500, 1000, 2000, 4000, 8000};
     	int round = 10;
     	for (int ruleSize : ruleSizes) {
-    		
-    		/*{
+            
+			System.out.println(ruleSize);
+
+            /*rand = new Random(1);
+    		{
     			String fileName = String.format("experiments/PlotGraph/res_sequential_strawman_%d", ruleSize);
     			Writer writer = null;
     			try {
@@ -147,6 +150,7 @@ public class SequentialExpr extends TestCase {
     			}
     		}*/
     		
+            rand = new Random(1);
     		{
     			String fileName = String.format("experiments/PlotGraph/res_sequential_inc_%d", ruleSize);
     			Writer writer = null;
@@ -154,6 +158,7 @@ public class SequentialExpr extends TestCase {
     				writer = new FileWriter(fileName);
     				for (int i = 0; i < round; i++) {
     					exprHelperIncremental(fwRules, routingRules, ruleSize, 10, writer, switchTime);
+			            System.out.println("done");
     				}
     			} catch (IOException ex) {
     			} finally {
@@ -161,6 +166,7 @@ public class SequentialExpr extends TestCase {
     			}
     		}
     		
+            rand = new Random(1);
     		{
     			String fileName = String.format("experiments/PlotGraph/res_sequential_incacl_%d", ruleSize);
     			Writer writer = null;
@@ -569,7 +575,7 @@ public class SequentialExpr extends TestCase {
 				}
 				
 				// action
-				if (rand.nextInt() % 2 == 1) {
+				if (rand.nextInt() % 5 == 1) {
 					str = str + ",actions=output:1";
 				}
 				
