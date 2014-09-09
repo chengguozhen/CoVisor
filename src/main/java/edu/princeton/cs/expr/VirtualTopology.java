@@ -26,8 +26,8 @@ public class VirtualTopology {
 	
 	public void testExpr() {
     	
-    	List<String> macs = genMACs(5000);
-    	List<String> ips = genIPs(5000);
+    	List<String> macs = genMACs(50000);
+    	List<String> ips = genIPs(50000);
     	//exprHelperIP(3, 3, 3, 1, macs, ips);
     	//exprHelperMAC(4, 3, 3, 1, macs, ips);
     	
@@ -52,7 +52,7 @@ public class VirtualTopology {
     	exprHelperIP(512, 100, 500, 51, macs, ips);
     	exprHelperIP(1024, 100, 500, 102, macs, ips);*/
     	
-    	SwitchTime switchTime = new SwitchTime("experiments/switch_time.txt");
+    	/*SwitchTime switchTime = new SwitchTime("experiments/switch_time.txt");
     	int[] ipCount = {8, 16, 32, 64, 128, 256, 512, 1024};
     	int round = 100;
     	for (int i : ipCount) {
@@ -67,16 +67,21 @@ public class VirtualTopology {
     		} finally {
     		   try {writer.close();} catch (Exception ex) {}
     		}
-    	}
+    	}*/
     	
     	
     	/*exprHelperIP(100, 10, 500, 1, macs, ips);
     	exprHelperIP(100, 100, 500, 1, macs, ips);
     	exprHelperIP(100, 500, 500, 1, macs, ips);*/
     	
-    	/*exprHelperMAC(10, 100, 500, 1, macs, ips);
-    	exprHelperMAC(100, 100, 500, 1, macs, ips);
-    	exprHelperMAC(1000, 100, 500, 1, macs, ips);*/
+    	exprHelperMAC(10, 50, 500, 1, macs, ips);
+    	exprHelperMAC(100, 50, 500, 1, macs, ips);
+    	exprHelperMAC(1000, 50, 500, 1, macs, ips);
+    	exprHelperMAC(2000, 50, 500, 1, macs, ips);
+    	exprHelperMAC(4000, 50, 500, 1, macs, ips);
+    	exprHelperMAC(8000, 50, 500, 1, macs, ips);
+    	exprHelperMAC(16000, 50, 500, 1, macs, ips);
+    	exprHelperMAC(32000, 50, 500, 1, macs, ips);
     	
     	/*exprHelperMAC(100, 10, 500, 1, macs, ips);
     	exprHelperMAC(100, 100, 500, 1, macs, ips);
@@ -162,6 +167,7 @@ public class VirtualTopology {
     }
     
     public void exprHelperMAC(int ipCount, int macExternal, int macInternal, int macUpdate, List<String> macs, List<String> ips) {
+    		//Writer writer, SwitchTime switchTime) throws IOException {
     	
     	System.out.println("------------------------------");
     	
