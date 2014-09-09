@@ -88,7 +88,7 @@ public class ParallelComposition {
     	for (int macSize : macSizes) {
 			System.out.println(macSize);
 			
-			{
+			/*{
     			rand = new Random(1);
     			OFFlowModHelper.rand = new Random(1);
     			String fileName = String.format("experiments/PlotGraph/res_parallel_strawman_%d", macSize);
@@ -105,7 +105,7 @@ public class ParallelComposition {
     			} finally {
     				try {writer.close();} catch (Exception ex) {}
     			}
-    		}
+    		}*/
 			
 			{
     			rand = new Random(1);
