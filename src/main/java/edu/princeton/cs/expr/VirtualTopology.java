@@ -26,8 +26,8 @@ public class VirtualTopology {
 	
 	public void testExpr() {
     	
-    	List<String> macs = genMACs(50000);
-    	List<String> ips = genIPs(50000);
+    	List<String> macs = genMACs(100000);
+    	List<String> ips = genIPs(100000);
     	//exprHelperIP(3, 3, 3, 1, macs, ips);
     	//exprHelperMAC(4, 3, 3, 1, macs, ips);
     	
@@ -74,14 +74,15 @@ public class VirtualTopology {
     	exprHelperIP(100, 100, 500, 1, macs, ips);
     	exprHelperIP(100, 500, 500, 1, macs, ips);*/
     	
-    	exprHelperMAC(10, 50, 500, 1, macs, ips);
-    	exprHelperMAC(100, 50, 500, 1, macs, ips);
-    	exprHelperMAC(1000, 50, 500, 1, macs, ips);
-    	exprHelperMAC(2000, 50, 500, 1, macs, ips);
-    	exprHelperMAC(4000, 50, 500, 1, macs, ips);
-    	exprHelperMAC(8000, 50, 500, 1, macs, ips);
-    	exprHelperMAC(16000, 50, 500, 1, macs, ips);
-    	exprHelperMAC(32000, 50, 500, 1, macs, ips);
+    	exprHelperMAC(10, 100, 500, 1, macs, ips);
+    	exprHelperMAC(100, 100, 500, 1, macs, ips);
+    	exprHelperMAC(1000, 100, 500, 1, macs, ips);
+    	exprHelperMAC(2000, 100, 500, 1, macs, ips);
+    	exprHelperMAC(4000, 100, 500, 1, macs, ips);
+    	exprHelperMAC(8000, 100, 500, 1, macs, ips);
+    	exprHelperMAC(16000, 100, 500, 1, macs, ips);
+    	exprHelperMAC(32000, 100, 500, 1, macs, ips);
+    	exprHelperMAC(64000, 100, 500, 1, macs, ips);
     	
     	/*exprHelperMAC(100, 10, 500, 1, macs, ips);
     	exprHelperMAC(100, 100, 500, 1, macs, ips);
