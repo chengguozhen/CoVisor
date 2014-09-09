@@ -52,29 +52,31 @@ public class VirtualTopology {
     	exprHelperIP(512, 100, 500, 51, macs, ips);
     	exprHelperIP(1024, 100, 500, 102, macs, ips);*/
     	
-    	/*SwitchTime switchTime = new SwitchTime("experiments/switch_time.txt");
-    	int[] ipCount = {8, 16, 32, 64, 128, 256, 512, 1024};
+    	SwitchTime switchTime = new SwitchTime("experiments/switch_time.txt");
+    	int[] ipCount = {10, 100, 1000, 2000, 4000, 8000, 16000, 32000, 64000};
     	int round = 100;
     	for (int i : ipCount) {
+    		System.out.println(i);
     		String fileName = String.format("experiments/PlotGraph/res_gateway_%d", i);
     		Writer writer = null;
     		try {
     		    writer = new FileWriter(fileName);
     		    for (int j = 0; j < round; j++) {
-    		    	exprHelperIP(i, 100, 500, (int) Math.ceil(i * 0.1), macs, ips, writer, switchTime);
+    		    	//exprHelperIP(i, 100, 500, (int) Math.ceil(i * 0.1), macs, ips, writer, switchTime);
+    		    	exprHelperMAC(i, 100, 500, 1, macs, ips, writer, switchTime);
     		    }
     		} catch (IOException ex) {
     		} finally {
     		   try {writer.close();} catch (Exception ex) {}
     		}
-    	}*/
+    	}
     	
     	
     	/*exprHelperIP(100, 10, 500, 1, macs, ips);
     	exprHelperIP(100, 100, 500, 1, macs, ips);
     	exprHelperIP(100, 500, 500, 1, macs, ips);*/
     	
-    	exprHelperMAC(10, 100, 500, 1, macs, ips);
+    	/*exprHelperMAC(10, 100, 500, 1, macs, ips);
     	exprHelperMAC(100, 100, 500, 1, macs, ips);
     	exprHelperMAC(1000, 100, 500, 1, macs, ips);
     	exprHelperMAC(2000, 100, 500, 1, macs, ips);
@@ -84,7 +86,7 @@ public class VirtualTopology {
     	exprHelperMAC(32000, 100, 500, 1, macs, ips);
     	exprHelperMAC(64000, 100, 500, 1, macs, ips);
     	
-    	/*exprHelperMAC(100, 10, 500, 1, macs, ips);
+    	exprHelperMAC(100, 10, 500, 1, macs, ips);
     	exprHelperMAC(100, 100, 500, 1, macs, ips);
     	exprHelperMAC(100, 200, 500, 1, macs, ips);
     	exprHelperMAC(100, 300, 500, 1, macs, ips);
@@ -167,10 +169,8 @@ public class VirtualTopology {
     	System.out.println(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
     }
     
-    public void exprHelperMAC(int ipCount, int macExternal, int macInternal, int macUpdate, List<String> macs, List<String> ips) {
-    		//Writer writer, SwitchTime switchTime) throws IOException {
-    	
-    	System.out.println("------------------------------");
+    public void exprHelperMAC(int ipCount, int macExternal, int macInternal, int macUpdate, List<String> macs, List<String> ips,
+    		Writer writer, SwitchTime switchTime) throws IOException {
     	
     	List<OFFlowMod> ipRouterRules = initIPRouterRules(ipCount);
     	List<OFFlowMod> gatewayRules = initGatewayRules(macExternal, ips, macs);
@@ -215,36 +215,27 @@ public class VirtualTopology {
     	
     	List<OFFlowMod> gatewayUpdateRules = initGatewayRules(macUpdate, ips.subList(macExternal, ips.size()), macs.subList(macExternal, macs.size()));
     	List<OFFlowMod> macLearnerUpdateRules = initMACLearnerRules(macUpdate, 0, macs.subList(macExternal, macs.size()));
-    	// delete old, add new
     	int fmCount = 0;
     	long startTime = System.nanoTime();
     	for (int i = 0; i < macUpdate; i++) {
     		OFFlowMod fm = gatewayUpdateRules.get(i);
-    		//System.out.println(fm);
     		PolicyUpdateTable updateTable = graph.update(fm, graph.getNode((long) 2));
     		fmCount += updateTable.addFlowMods.size();
 			fmCount += updateTable.deleteFlowMods.size();
     	}
-    	//log.error(graph);
-    	long elapseTime = System.nanoTime() - startTime;
-		System.out.println(elapseTime / 1e6 + "\t" + fmCount + "\t" + graph.flowTable.getFlowMods().size());
-    	
-		//startTime = System.nanoTime();
     	for (OFFlowMod fm : macLearnerUpdateRules){
-    		//System.out.println(fm);
-    		startTime = System.nanoTime();
 			PolicyUpdateTable updateTable = graph.update(fm, graph.getNode((long) 3));
 			fmCount += updateTable.addFlowMods.size();
 			fmCount += updateTable.deleteFlowMods.size();
-			elapseTime = System.nanoTime() - startTime;
-			System.out.println(elapseTime / 1e6 + "\t" + fmCount + "\t" + graph.flowTable.getFlowMods().size());
-			//log.error(graph);
     	}
-    	
-    	//elapseTime = System.nanoTime() - startTime;
-		//System.out.println(elapseTime / 1e6 + "\t" + fmCount + "\t" + graph.flowTable.getFlowMods().size());
-		
-		//log.error(graph);
+    	long elapseTime = System.nanoTime() - startTime;
+    	double compileTime = elapseTime / 1e6;
+    	double updateTime = 0;
+    	for (int i = 0; i < fmCount; i++) {
+    		updateTime += switchTime.getTime();
+    	}
+    	writer.write(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
+    	//System.out.println(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
     }
     
     private List<OFFlowMod> initIPRouterRules(int count) {
