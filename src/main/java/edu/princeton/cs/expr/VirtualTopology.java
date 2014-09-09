@@ -70,8 +70,6 @@ public class VirtualTopology {
     	}
     	
     	
-    	
-    	
     	/*exprHelperIP(100, 10, 500, 1, macs, ips);
     	exprHelperIP(100, 100, 500, 1, macs, ips);
     	exprHelperIP(100, 500, 500, 1, macs, ips);*/
@@ -159,7 +157,8 @@ public class VirtualTopology {
     	for (int i = 0; i < fmCount; i++) {
     		updateTime += switchTime.getTime();
     	}
-    	writer.write(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
+    	//writer.write(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
+    	System.out.println(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
     }
     
     public void exprHelperMAC(int ipCount, int macExternal, int macInternal, int macUpdate, List<String> macs, List<String> ips) {
