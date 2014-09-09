@@ -36,7 +36,7 @@ public class SequentialComposition {
 		
 		int fwSize = 1000;
     	//int[] routingSizes = {128, 256, 512, 1024, 2048, 4096};//, 8192};
-    	int[] routingSizes = {5000, 10000, 20000, 40000, 80000};//500, 1000, 2000, 4000, 8000};
+    	int[] routingSizes = {1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000};//500, 1000, 2000, 4000, 8000};
     	int round = 10;
     	for (int routingSize : routingSizes) {
             
@@ -125,7 +125,7 @@ public class SequentialComposition {
 			List<OFFlowMod> routingRules, int routingSize, Writer writer, SwitchTime switchTime,
 			int mechanism)
 					throws IOException {
-		Collections.shuffle(fwRules, rand);
+		Collections.shuffle(fwRules.subList(1, fwRules.size()), rand);
 		Collections.shuffle(routingRules.subList(1, routingRules.size()), rand);
 		
 		// init policy tree
@@ -314,6 +314,7 @@ public class SequentialComposition {
 	
 	private List<OFFlowMod> readFwRules(String fileName) {
 		List<OFFlowMod> flowMods = new ArrayList<OFFlowMod>();
+		flowMods.add(OFFlowModHelper.genFlowMod(String.format("priority=0")));
 
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(fileName));
