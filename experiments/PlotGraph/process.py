@@ -39,7 +39,8 @@ def processComposition(composition = "parallel"):
 
 def processGateway():
     fout = open("res_gateway_all", 'w')
-    ipCount = [8, 16, 32, 64, 128, 256, 512, 1024];
+    #ipCount = [8, 16, 32, 64, 128, 256, 512, 1024];
+    ipCount = [10, 100, 1000, 2000, 4000, 8000, 16000, 32000]
     for ip in ipCount:
         fileName = "res_gateway_" + str(ip)
         columns = list()
@@ -59,9 +60,9 @@ def processGateway():
         fout.write(str(ip))
         for i in range(columnCount):
             columns[i].sort()
-            fout.write("\t" + str(columns[i][4]))
+            fout.write("\t" + str(columns[i][9]))
             fout.write("\t" + str(columns[i][49]))
-            fout.write("\t" + str(columns[i][94]))
+            fout.write("\t" + str(columns[i][89]))
         fout.write("\n")
 
 def readSwitchTime(fileName = "switch_time.txt"):
@@ -101,9 +102,9 @@ def generateTime(inFile, outFile, switchTime, rounds = 100):
 
 
 if __name__ == '__main__':
-	processComposition("parallel")
+	#processComposition("parallel")
 	#processComposition("sequential")
-	#processGateway()
+	processGateway()
     #switchTime = readSwitchTime()
     #generateTime("log", "res", switchTime)
 
