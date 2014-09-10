@@ -491,7 +491,7 @@ def exprParallelRule():
     global swNumber
     perSwRoutingRule = 100
     swNumber = 1
-    for perSwRoutingRule in [3000, 4000, 5000]:
+    for perSwRoutingRule in [1000, 2000, 3000, 4000, 5000]:
         #exprParallelHelper('strawman', '00', 'res_strawman_%d' %  perSwRoutingRule)
         exprParallelHelper('inc', '00', 'res_inc_%d' %  perSwRoutingRule)
         #exprParallelHelper('inc', '01', 'res_inc_acl_%d' %  perSwRoutingRule)
@@ -679,8 +679,8 @@ if __name__ == '__main__':
         #expr(sys.argv[2])
         #exprAll()
         #exprVirtMultiController()
-        #exprParallel()
-        exprSequential()
+        exprParallel()
+        #exprSequential()
     else:
         printHelp()
 
