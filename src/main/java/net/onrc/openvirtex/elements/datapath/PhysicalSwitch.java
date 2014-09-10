@@ -253,6 +253,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 					}
 				}
                 long elapseTime = System.nanoTime() - startTime;
+                log.info("MagicTimestamp\t1\t{}", System.nanoTime());
 				log.info("MagicTimestamp\t2\t{}\t{}\t{}\t{}\t{}",
                     elapseTime,
                     updateTable.addFlowMods.size(),
