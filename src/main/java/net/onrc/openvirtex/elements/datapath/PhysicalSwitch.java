@@ -243,6 +243,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 				// log.error(policyTree.leftChild.flowTable.toString());;
 				// log.error(policyTree.rightChild.flowTable.toString());
 
+				log.info("MagicTimestamp\t3\t{}", System.nanoTime());
 				if ((this.channel.isOpen()) && (this.isConnected)) {
 					for (OFFlowMod fm : updateTable.addFlowMods) {
 						this.channel.write(Collections.singletonList(fm));

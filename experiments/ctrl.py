@@ -478,7 +478,8 @@ def exprParallelHelper(algo, policy, outLog):
     startComposition()
     app2 = MACLearnerApp(topo, perSwRule = perSwRoutingRule)
     app2.installRules()
-    app1 = MonitorApp(topo, app2.macs, perSwRule = perSwRoutingRule, addRuleCount = 10)
+    #app1 = MonitorApp(topo, app2.macs, perSwRule = perSwRoutingRule, addRuleCount = 10)
+    app1 = MonitorApp(topo, app2.macs, perSwRule = 1000, addRuleCount = 10)
     app1.installRules()
     time.sleep(1)
     setComposeAlgo(algo)
@@ -491,7 +492,7 @@ def exprParallelRule():
     global swNumber
     perSwRoutingRule = 100
     swNumber = 1
-    for perSwRoutingRule in [1000, 2000, 3000, 4000, 5000]:
+    for perSwRoutingRule in [3000, 4000, 5000]:
         #exprParallelHelper('strawman', '00', 'res_strawman_%d' %  perSwRoutingRule)
         exprParallelHelper('inc', '00', 'res_inc_%d' %  perSwRoutingRule)
         #exprParallelHelper('inc', '01', 'res_inc_acl_%d' %  perSwRoutingRule)
