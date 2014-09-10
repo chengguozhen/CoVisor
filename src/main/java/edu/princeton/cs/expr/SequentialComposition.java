@@ -36,7 +36,7 @@ public class SequentialComposition {
 		
 		int fwSize = 1000;
     	//int[] routingSizes = {128, 256, 512, 1024, 2048, 4096};//, 8192};
-    	int[] routingSizes = {1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000};//500, 1000, 2000, 4000, 8000};
+    	int[] routingSizes = {1000, 2000, 4000, 8000, 16000, 32000};
     	int round = 10;
     	for (int routingSize : routingSizes) {
             

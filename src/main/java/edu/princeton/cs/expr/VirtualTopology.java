@@ -53,8 +53,8 @@ public class VirtualTopology {
     	exprHelperIP(1024, 100, 500, 102, macs, ips);*/
     	
     	SwitchTime switchTime = new SwitchTime("experiments/switch_time.txt");
-    	//int[] ipCount = {10, 100, 1000, 2000, 4000, 8000, 16000, 32000, 64000};
-    	int[] ipCount = {64000};
+    	int[] ipCount = {10, 100, 1000, 2000, 4000, 8000, 16000, 32000, 64000};
+    	//int[] ipCount = {64000};
     	int round = 100;
     	for (int i : ipCount) {
     		System.out.println(i);
@@ -64,7 +64,7 @@ public class VirtualTopology {
     		    writer = new FileWriter(fileName);
     		    for (int j = 0; j < round; j++) {
     		    	//exprHelperIP(i, 100, 500, (int) Math.ceil(i * 0.1), macs, ips, writer, switchTime);
-    		    	exprHelperMAC(i, 100, 500, 1, macs, ips, writer, switchTime);
+    		    	exprHelperMAC(i, 100, 900, 1, macs, ips, writer, switchTime);
     		    }
     		} catch (IOException ex) {
     		} finally {

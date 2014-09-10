@@ -4,11 +4,11 @@ import time
 import random
 
 def processComposition(composition = "parallel"):
-    fout = open("res_" + composition +"_all2", 'w')
+    fout = open("res_" + composition +"_all", 'w')
     #ruleCounts = [128, 256, 512, 1024, 2048, 4096]
     #ruleCounts = [1280, 2560, 5120, 10240]
     #ruleCounts = [12800, 25600, 51200, 102400]
-    ruleCounts = [1000, 2000, 4000, 8000, 16000, 32000, 64000]#, 128000]
+    ruleCounts = [1000, 2000, 4000, 8000]#, 16000, 32000, 64000]#, 128000]
     #mechanisms = ["strawman", "inc", "incacl"]
     mechanisms = ["inc", "incacl"]
     for ruleCount in ruleCounts:
@@ -101,8 +101,8 @@ def generateTime(inFile, outFile, switchTime, rounds = 100):
 
 
 if __name__ == '__main__':
-	#processComposition("parallel")
-	processComposition("sequential")
+	processComposition("parallel")
+	#processComposition("sequential")
 	#processGateway()
     #switchTime = readSwitchTime()
     #generateTime("log", "res", switchTime)
