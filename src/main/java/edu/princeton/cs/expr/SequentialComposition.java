@@ -42,7 +42,7 @@ public class SequentialComposition {
             
 			System.out.println(routingSize);
 
-			/*{
+			{
     			rand = new Random(1);
     			List<OFFlowMod> fwRules = new ArrayList<OFFlowMod>(fwRulesOriginal);
     			List<OFFlowMod> routingRules = new ArrayList<OFFlowMod>(routingRulesOriginal);
@@ -58,9 +58,9 @@ public class SequentialComposition {
     			} finally {
     				try {writer.close();} catch (Exception ex) {}
     			}
-    		}*/
+    		}
 			
-			{
+			/*{
     			rand = new Random(1);
     			List<OFFlowMod> fwRules = new ArrayList<OFFlowMod>(fwRulesOriginal);
     			List<OFFlowMod> routingRules = new ArrayList<OFFlowMod>(routingRulesOriginal);
@@ -94,7 +94,7 @@ public class SequentialComposition {
     			} finally {
     				try {writer.close();} catch (Exception ex) {}
     			}
-    		}
+    		}*/
     	}
 		
 		// init rules
