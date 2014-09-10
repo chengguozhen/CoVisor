@@ -33,7 +33,7 @@ def processComposition(composition = "parallel"):
                 columns[i].sort()
                 fout.write("\t" + str(columns[i][9]))
                 fout.write("\t" + str(columns[i][49]))
-                fout.write("\t" + str(columns[i][89] + 0.0006))
+                fout.write("\t" + str(columns[i][89]))
         fout.write("\n")
 
 
