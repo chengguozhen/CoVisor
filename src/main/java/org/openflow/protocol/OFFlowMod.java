@@ -80,6 +80,7 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
     protected short outPort;
     protected short flags;
     protected List<OFAction> actions;
+    public int helperId;
 
     public OFFlowMod() {
         super();
@@ -441,6 +442,6 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
                 + ", outPort=" + this.outPort + ", priority=" + this.priority
                 + ", length=" + this.length + ", type=" + this.type
                 + ", version=" + this.version + ", xid=" + this.xid + "]";*/
-    	return "priority=" + this.priority + ", match=" + this.match + ", actions=" + this.actions;
+    	return "id=" + this.helperId + ", priority=" + this.priority + ", match=" + this.match + ", actions=" + this.actions;
     }
 }

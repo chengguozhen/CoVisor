@@ -35,7 +35,6 @@ public class SequentialComposition {
 		SwitchTime switchTime = new SwitchTime("experiments/switch_time.txt");
 		
 		int fwSize = 1000;
-    	//int[] routingSizes = {128, 256, 512, 1024, 2048, 4096};//, 8192};
     	int[] routingSizes = {1000, 2000, 4000, 8000, 16000, 32000};
     	int round = 10;
     	for (int routingSize : routingSizes) {
@@ -206,6 +205,7 @@ public class SequentialComposition {
 	    		updateTime += switchTime.getTime();
 	    	}
 			writer.write(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
+	    	//System.out.println(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
 		}
 		
 	}

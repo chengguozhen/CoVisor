@@ -1,10 +1,13 @@
 package edu.princeton.cs.policy.adv;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.openflow.protocol.OFFlowMod;
+import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
 
@@ -70,6 +73,7 @@ public class PolicyTree {
 			throw new NotImplementedException();
 		case Invalid: // this is leaf, directly add to flow table
 			if (tenantId == this.tenantId) {
+				fm.helperId = this.flowTable.helperSize;
 				updateTable = this.flowTable.update(fm);
 			} else {
 				updateTable = new PolicyUpdateTable();
@@ -132,6 +136,7 @@ public class PolicyTree {
 					}
 					if (composedFm != null) {
 						newFlowMods.add(composedFm);
+						composedFm.helperId = (fm2.helperId << 10) + fm1.helperId;
 					}
 				}
 			}
@@ -161,8 +166,24 @@ public class PolicyTree {
 		// calculate difference between old and new table
 		List<OFFlowMod> oldFlowMods = this.flowTable.getFlowMods();
 		PolicyUpdateTable updateTable = new PolicyUpdateTable();
-		updateTable.addFlowMods = PolicyCompositionUtil.diffFlowMods(newFlowMods, oldFlowMods);
-		updateTable.deleteFlowMods = PolicyCompositionUtil.diffFlowMods(oldFlowMods, newFlowMods);
+		//updateTable.addFlowMods = PolicyCompositionUtil.diffFlowMods(newFlowMods, oldFlowMods);
+		//updateTable.deleteFlowMods = PolicyCompositionUtil.diffFlowMods(oldFlowMods, newFlowMods);
+		Map<Integer, OFFlowMod> oldFlowModsMap = new HashMap<Integer, OFFlowMod>();
+		for (OFFlowMod ofm : oldFlowMods) {
+			oldFlowModsMap.put(ofm.helperId, ofm);
+		}
+		for (OFFlowMod nfm : newFlowMods) {
+			OFFlowMod ofm = oldFlowModsMap.get(nfm.helperId);
+			if (ofm != null) {
+				if (nfm.getPriority() != ofm.getPriority()) {
+					updateTable.addFlowMods.add(nfm);
+					updateTable.deleteFlowMods.add(ofm);
+				}
+			} else {
+				updateTable.addFlowMods.add(nfm);
+			}
+		}
+		
 		
 		// update flow table
 		this.flowTable.setTable(newFlowMods);
@@ -212,14 +233,14 @@ public class PolicyTree {
 				}
 				
 				// check point 1
-				long startTime = System.nanoTime();
+				//long startTime = System.nanoTime();
 				List<OFFlowMod> potentialFlowMods = rightChild.flowTable.getPotentialFlowMods(fm1);
-				long elapseTime = System.nanoTime() - startTime;
+				//long elapseTime = System.nanoTime() - startTime;
 				//System.out.println("check point 1: " + elapseTime / 1e6 + " size: " + potentialFlowMods.size());
 				
 				// check point 2
-				startTime = System.nanoTime();
-				int count = 0;
+				//startTime = System.nanoTime();
+				//int count = 0;
 				for (OFFlowMod fm2: potentialFlowMods) {
 					
 					OFFlowMod composedFm = null;
@@ -228,7 +249,7 @@ public class PolicyTree {
 					} else {
 						composedFm = PolicyCompositionUtil.sequentialComposition(fm1, fm2);
 					}
-					count++;
+					//count++;
 					if (composedFm != null) {
 						this.flowTable.addFlowMod(composedFm);
 						leftChild.flowTable.addGeneratedParentFlowMod(fm1, composedFm);
@@ -236,7 +257,7 @@ public class PolicyTree {
 						updateTable.addFlowMods.add(composedFm);
 					}
 				}
-				elapseTime = System.nanoTime() - startTime;
+				//elapseTime = System.nanoTime() - startTime;
 				//System.out.println("check point 2: " + elapseTime / 1e6 + " count: " + count + " " + updateTable.addFlowMods.size());
 			}
 			

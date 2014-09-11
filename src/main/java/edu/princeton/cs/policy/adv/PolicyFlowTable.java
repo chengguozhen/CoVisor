@@ -19,6 +19,7 @@ public class PolicyFlowTable {
 	//private List<OFFlowMod> flowMods;
 	private ConcurrentHashMap<OFFlowMod, List<OFFlowMod>> generatedParentFlowModsDictionary;
 	private PolicyFlowModStore flowModStore;
+	public int helperSize;
 	
 	public PolicyFlowTable() {
 		this.generatedParentFlowModsDictionary = new ConcurrentHashMap<OFFlowMod, List<OFFlowMod>>();
@@ -28,12 +29,16 @@ public class PolicyFlowTable {
     	List<PolicyFlowModStoreKey> storeKeys = new ArrayList<PolicyFlowModStoreKey>();
     	storeKeys.add(PolicyFlowModStoreKey.ALL);
     	this.flowModStore = PolicyFlowModStore.createFlowModStore(storeTypes, storeKeys);
+    	
+    	this.helperSize = 0;
 	}
 
 	public PolicyFlowTable(List<PolicyFlowModStoreType> storeTypes,
 			List<PolicyFlowModStoreKey> storeKeys) {
 		this.generatedParentFlowModsDictionary = new ConcurrentHashMap<OFFlowMod, List<OFFlowMod>>();
 		this.flowModStore = PolicyFlowModStore.createFlowModStore(storeTypes, storeKeys);
+		
+		this.helperSize = 0;
 	}
 	
 	public void addFlowMod(OFFlowMod fm) {
@@ -52,6 +57,7 @@ public class PolicyFlowTable {
 	public PolicyUpdateTable update (OFFlowMod fm) {
 		switch (fm.getCommand()) {
         case OFFlowMod.OFPFC_ADD:
+        	this.helperSize += 1;
             return doFlowModAdd(fm);
         case OFFlowMod.OFPFC_MODIFY:
         case OFFlowMod.OFPFC_MODIFY_STRICT:

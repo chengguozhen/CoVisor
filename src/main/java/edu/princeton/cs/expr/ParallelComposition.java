@@ -79,11 +79,8 @@ public class ParallelComposition {
 		
 		SwitchTime switchTime = new SwitchTime("experiments/switch_time.txt");
 		
-		int monitorSize = 1000;
-    	//int[] macSizes = {1280, 2560, 5120, 10240, 20480, 40960};
-    	//int[] macSizes = {128, 256, 512, 1024, 2048};
-    	//int[] macSizes = {5000, 10000, 20000, 40000, 80000};
-    	int[] macSizes = {16000, 32000};//{1000, 2000, 4000, 8000, 16000, 32000};//, 64000, 128000};
+		int monitorSize = 1000;//1000;
+    	int[] macSizes = {1000, 2000, 4000, 8000, 16000, 32000};//, 64000, 128000};
     	int round = 10;
     	for (int macSize : macSizes) {
 			System.out.println(macSize);
@@ -235,6 +232,7 @@ public class ParallelComposition {
 	    		updateTime += switchTime.getTime();
 	    	}
 			writer.write(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
+			//System.out.print(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
 		}
 	}
 	
