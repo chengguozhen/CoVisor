@@ -104,7 +104,7 @@ public class ParallelComposition {
     			}
     		}
 			
-			/*{
+			{
     			rand = new Random(1);
     			OFFlowModHelper.rand = new Random(1);
     			String fileName = String.format("experiments/PlotGraph/res_parallel_inc_%d", macSize);
@@ -140,7 +140,7 @@ public class ParallelComposition {
     			} finally {
     				try {writer.close();} catch (Exception ex) {}
     			}
-    		}*/
+    		}
     	}
 		
 		
