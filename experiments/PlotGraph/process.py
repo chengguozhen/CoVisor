@@ -9,9 +9,9 @@ def processComposition(composition = "parallel"):
     for i in range(12):
         fout.write("\tStrawman")
     for i in range(12):
-        fout.write("\tIncremental")
+        fout.write("\tIncre")
     for i in range(12):
-        fout.write("\tIncreACL")
+        fout.write("\tIncreOpt")
     fout.write("\n")
     #ruleCounts = [128, 256, 512, 1024, 2048, 4096]
     #ruleCounts = [1280, 2560, 5120, 10240]
