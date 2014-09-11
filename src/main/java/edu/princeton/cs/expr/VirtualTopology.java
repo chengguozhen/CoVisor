@@ -4,7 +4,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import org.apache.logging.log4j.LogManager;
@@ -55,26 +59,59 @@ public class VirtualTopology {
     	exprHelperIP(1024, 100, 500, 102, macs, ips);*/
     	
     	SwitchTime switchTime = new SwitchTime("experiments/switch_time.txt");
-    	int[] ipCount = {10, 100, 1000, 2000, 4000, 800, 16000, 32000};//, 64000};
+    	int[] ipCount = {1000, 2000, 4000, 8000, 16000, 32000};//, 64000};
     	int round = 100;
     	for (int i : ipCount) {
     		System.out.println(i);
-    		String fileName = String.format("experiments/PlotGraph/res_gateway_strawman_%d", i);
-    		//String fileName = String.format("experiments/PlotGraph/res_gateway_inc_%d", i);
-    		//String fileName = String.format("experiments/PlotGraph/res_gateway_incacl_%d", i);
-    		Writer writer = null;
-    		try {
-    		    writer = new FileWriter(fileName);
-    		    for (int j = 0; j < round; j++) {
-    		    	//exprHelperIP(i, 100, 500, (int) Math.ceil(i * 0.1), macs, ips, writer, switchTime);
-    		    	exprHelperMACStrawman(i, 100, 900, 1, macs, ips, writer, switchTime);
-    		    	//exprHelperMAC(i, 100, 900, 1, macs, ips, writer, switchTime, false);
-    		    	//exprHelperMAC(i, 100, 900, 1, macs, ips, writer, switchTime, true);
-    		    }
-    		} catch (IOException ex) {
-    		} finally {
-    		   try {writer.close();} catch (Exception ex) {}
-    		}
+    		
+			{
+				String fileName = String.format("experiments/PlotGraph/res_gateway_strawman_%d", i);
+				Writer writer = null;
+				try {
+					writer = new FileWriter(fileName);
+					for (int j = 0; j < round; j++) {
+						// exprHelperIP(i, 100, 500, (int) Math.ceil(i * 0.1), macs, ips, writer, switchTime);
+
+						// exprHelperMACStrawman(i, 2, 1, 1, macs, ips, writer, switchTime);
+						// exprHelperMAC(i, 2, 1, 1, macs, ips, writer, switchTime, false);
+						// exprHelperMAC(i, 2, 1, 1, macs, ips, writer, switchTime, true);
+						exprHelperMACStrawman(i, 100, 900, 1, macs, ips, writer, switchTime);
+						// exprHelperMAC(i, 100, 900, 1, macs, ips, writer, switchTime, false);
+						// exprHelperMAC(i, 100, 900, 1, macs, ips, writer, switchTime, true);
+					}
+				} catch (IOException ex) {
+				} finally {
+					try {writer.close();} catch (Exception ex) {}
+				}
+			}
+			
+			{
+				String fileName = String.format("experiments/PlotGraph/res_gateway_inc_%d", i);
+				Writer writer = null;
+				try {
+					writer = new FileWriter(fileName);
+					for (int j = 0; j < round; j++) {
+						exprHelperMAC(i, 100, 900, 1, macs, ips, writer, switchTime, false);
+					}
+				} catch (IOException ex) {
+				} finally {
+					try {writer.close();} catch (Exception ex) {}
+				}
+			}
+			
+			{
+				String fileName = String.format("experiments/PlotGraph/res_gateway_incacl_%d", i);
+				Writer writer = null;
+				try {
+					writer = new FileWriter(fileName);
+					for (int j = 0; j < round; j++) {
+						exprHelperMAC(i, 100, 900, 1, macs, ips, writer, switchTime, true);
+					}
+				} catch (IOException ex) {
+				} finally {
+					try {writer.close();} catch (Exception ex) {}
+				}
+			}
     	}
     	
     	
@@ -317,7 +354,7 @@ public class VirtualTopology {
     		graph.update(fm, graph.getNode((long) 3));
     	}
     	
-    	//log.error(graph);
+    	List<OFFlowMod> oldFlowMods = new ArrayList<OFFlowMod>(graph.flowTable.getFlowMods());
     	
     	int fmCount = 0;
     	for (int i = 0; i < macUpdate; i++) {
@@ -332,13 +369,104 @@ public class VirtualTopology {
 			fmCount += updateTable.deleteFlowMods.size();
     	}
     	long elapseTime = System.nanoTime() - startTime;
+    	
+    	List<OFFlowMod> newFlowMods = graph.flowTable.getFlowMods();
+    	fmCount = this.calculateUpdateFlowModsStrawman(oldFlowMods, newFlowMods);
+    	
     	double compileTime = elapseTime / 1e6;
     	double updateTime = 0;
     	for (int i = 0; i < fmCount; i++) {
     		updateTime += switchTime.getTime();
     	}
+    	
     	//writer.write(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
     	System.out.println(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
+    	
+    }
+    
+    private int calculateUpdateFlowModsStrawman(List<OFFlowMod> oldFlowModsOriginal, List<OFFlowMod> newFlowMods) {
+    	
+    	int fmCount = 0;
+    	
+    	// assign id to flowmod
+    	int count = 0;
+    	for (OFFlowMod fm : newFlowMods) {
+    		fm.helperId = count;
+    		count++;
+    	}
+    	
+    	// deep copy of old flowmods
+    	List<OFFlowMod> oldFlowMods = new ArrayList<OFFlowMod>();
+    	for (OFFlowMod fm : oldFlowModsOriginal) {
+    		try {
+				oldFlowMods.add(fm.clone());
+			} catch (CloneNotSupportedException e) {
+				e.printStackTrace();
+			}
+    	}
+    	
+    	// store old flowmod to a hash table
+    	Map<Integer, OFFlowMod> oldFlowModsMap = new HashMap<Integer, OFFlowMod>();
+    	for (OFFlowMod fm : oldFlowMods) {
+    		oldFlowModsMap.put(fm.helperId, fm);
+    	}
+    	
+    	// assign priority to old flowmod
+    	Map<Short, List<OFFlowMod>> flowModStoreMap = new HashMap<Short, List<OFFlowMod>>();
+    	for (OFFlowMod fm : oldFlowMods) {
+    		List<OFFlowMod> fms = flowModStoreMap.get(fm.getMatch().getInputPort());
+    		if (fms == null) {
+    			fms = new ArrayList<OFFlowMod>();
+    			flowModStoreMap.put(fm.getMatch().getInputPort(), fms);
+    		}
+    		fms.add(fm);
+    	}
+    	for (Map.Entry<Short, List<OFFlowMod>> entry : flowModStoreMap.entrySet()) {
+    		List<OFFlowMod> fms = entry.getValue();
+    		Collections.sort(fms, new Comparator<OFFlowMod>() {
+    			public int compare(OFFlowMod fm1, OFFlowMod fm2) {
+    				return fm2.getPriority() - fm1.getPriority();
+    			}
+    		});
+    		count = fms.size() - 1;
+    		for (OFFlowMod fm : fms) {
+    			fm.setPriority((short) count);
+    			count -= 1;
+    		}
+    	}
+    	
+    	// assign priority to new flowmod
+    	flowModStoreMap.clear();
+    	for (OFFlowMod fm : newFlowMods) {
+    		List<OFFlowMod> fms = flowModStoreMap.get(fm.getMatch().getInputPort());
+    		if (fms == null) {
+    			fms = new ArrayList<OFFlowMod>();
+    			flowModStoreMap.put(fm.getMatch().getInputPort(), fms);
+    		}
+    		fms.add(fm);
+    	}
+    	for (Map.Entry<Short, List<OFFlowMod>> entry : flowModStoreMap.entrySet()) {
+    		List<OFFlowMod> fms = entry.getValue();
+    		Collections.sort(fms, new Comparator<OFFlowMod>() {
+    			public int compare(OFFlowMod fm1, OFFlowMod fm2) {
+    				return fm2.getPriority() - fm1.getPriority();
+    			}
+    		});
+    		count = fms.size() - 1;
+    		for (OFFlowMod fm : fms) {
+    			//System.out.println(fm);
+    			OFFlowMod ofm = oldFlowModsMap.get(fm.helperId);
+    			if(ofm == null) {
+    				fmCount += 1;
+    			} else if(count != ofm.getPriority()) {
+    				fmCount += 2;
+    			}
+    			fm.setPriority((short) count);
+    			count -= 1;
+    		}
+    	}
+    	
+    	return fmCount;
     }
     
     private List<OFFlowMod> initIPRouterRules(int count) {
