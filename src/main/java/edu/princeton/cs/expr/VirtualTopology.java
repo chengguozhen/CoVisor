@@ -306,8 +306,8 @@ public class VirtualTopology {
     	for (int i = 0; i < fmCount; i++) {
     		updateTime += switchTime.getTime();
     	}
-    	//writer.write(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
-    	System.out.println(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
+    	writer.write(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
+    	//System.out.println(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
     }
     
     public void exprHelperMACStrawman(int ipCount, int macExternal, int macInternal, int macUpdate, List<String> macs, List<String> ips,
@@ -379,8 +379,8 @@ public class VirtualTopology {
     		updateTime += switchTime.getTime();
     	}
     	
-    	//writer.write(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
-    	System.out.println(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
+    	writer.write(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
+    	//System.out.println(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
     	
     }
     
