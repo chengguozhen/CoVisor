@@ -1,6 +1,7 @@
 package edu.princeton.cs.hsa;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
@@ -9,6 +10,8 @@ import org.openflow.protocol.OFFlowMod;
 
 import edu.princeton.cs.policy.adv.PolicyFlowTable;
 import edu.princeton.cs.policy.adv.PolicyUpdateTable;
+import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreKey;
+import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreType;
 
 public class PlumbingGraph {
 	
@@ -26,6 +29,13 @@ public class PlumbingGraph {
 	
 	public void addNode(long dpid) {
 		PlumbingNode node = new PlumbingNode(dpid, this);
+		this.nodes.put(dpid, node);
+	}
+	
+	public void addNode(long dpid,
+			List<PolicyFlowModStoreType> storeTypes,
+			List<PolicyFlowModStoreKey> storeKeys) {
+		PlumbingNode node = new PlumbingNode(dpid, this, storeTypes, storeKeys);
 		this.nodes.put(dpid, node);
 	}
 	

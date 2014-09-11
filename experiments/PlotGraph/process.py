@@ -5,14 +5,22 @@ import random
 
 def processComposition(composition = "parallel"):
     fout = open("res_" + composition +"_all", 'w')
+    fout.write("count")
+    for i in range(12):
+        fout.write("\tStrawman")
+    for i in range(12):
+        fout.write("\tIncremental")
+    for i in range(12):
+        fout.write("\tIncreACL")
+    fout.write("\n")
     #ruleCounts = [128, 256, 512, 1024, 2048, 4096]
     #ruleCounts = [1280, 2560, 5120, 10240]
     #ruleCounts = [12800, 25600, 51200, 102400]
     ruleCounts = [1000, 2000, 4000, 8000]#, 16000, 32000, 64000]#, 128000]
-    #mechanisms = ["strawman", "inc", "incacl"]
-    mechanisms = ["inc", "incacl"]
+    mechanisms = ["strawman", "inc", "incacl"]
+    #mechanisms = ["inc", "incacl"]
     for ruleCount in ruleCounts:
-        fout.write(str(ruleCount))
+        fout.write(str(ruleCount/1000)+"k")
         for mechanism in mechanisms:
             fileName = "res_" + composition + "_" + mechanism + "_" + str(ruleCount)
             columns = list()
@@ -39,8 +47,12 @@ def processComposition(composition = "parallel"):
 
 def processGateway():
     fout = open("res_gateway_all", 'w')
+    fout.write("count")
+    for i in range(12):
+        fout.write("\tCoVisor")
+    fout.write("\n")
     #ipCount = [8, 16, 32, 64, 128, 256, 512, 1024];
-    ipCount = [10, 100, 1000, 2000, 4000, 8000, 16000, 32000]
+    ipCount = [1000, 2000, 4000, 8000, 16000, 32000]
     for ip in ipCount:
         fileName = "res_gateway_" + str(ip)
         columns = list()
@@ -57,7 +69,7 @@ def processGateway():
             oneline = fin.readline()
         fin.close()
 
-        fout.write(str(ip))
+        fout.write(str(ip/1000)+"k")
         for i in range(columnCount):
             columns[i].sort()
             fout.write("\t" + str(columns[i][9]))
@@ -102,9 +114,9 @@ def generateTime(inFile, outFile, switchTime, rounds = 100):
 
 
 if __name__ == '__main__':
-	#processComposition("parallel")
+	processComposition("parallel")
 	#processComposition("sequential")
-	processGateway()
+	#processGateway()
     #switchTime = readSwitchTime()
     #generateTime("log", "res", switchTime)
 

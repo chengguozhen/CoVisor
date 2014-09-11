@@ -20,6 +20,8 @@ import org.openflow.protocol.action.OFActionOutput;
 import edu.princeton.cs.policy.adv.PolicyCompositionUtil;
 import edu.princeton.cs.policy.adv.PolicyFlowTable;
 import edu.princeton.cs.policy.adv.PolicyUpdateTable;
+import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreKey;
+import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreType;
 
 public class PlumbingNode {
 	
@@ -39,6 +41,19 @@ public class PlumbingNode {
 		this.dpid = dpid;
 		this.graph = graph;
 		this.flowTable = new PolicyFlowTable();
+		//this.isEdgePortMap = new HashMap<Short, Boolean>();
+		this.portMap = new HashMap<Short, Short>();
+		this.prevHopMap = new HashMap<Short, PlumbingNode>();
+		this.nextHopMap = new HashMap<Short, PlumbingNode>();
+		this.nextHopPortMap = new HashMap<Short, Short>();
+	}
+	
+	public PlumbingNode(long dpid, PlumbingGraph graph,
+			List<PolicyFlowModStoreType> storeTypes,
+			List<PolicyFlowModStoreKey> storeKeys) {
+		this.dpid = dpid;
+		this.graph = graph;
+		this.flowTable = new PolicyFlowTable(storeTypes, storeKeys);
 		//this.isEdgePortMap = new HashMap<Short, Boolean>();
 		this.portMap = new HashMap<Short, Short>();
 		this.prevHopMap = new HashMap<Short, PlumbingNode>();

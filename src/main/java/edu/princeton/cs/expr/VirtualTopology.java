@@ -14,6 +14,8 @@ import org.openflow.protocol.action.OFActionOutput;
 
 import edu.princeton.cs.hsa.PlumbingGraph;
 import edu.princeton.cs.policy.adv.PolicyUpdateTable;
+import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreKey;
+import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreType;
 
 public class VirtualTopology {
 	
@@ -53,18 +55,21 @@ public class VirtualTopology {
     	exprHelperIP(1024, 100, 500, 102, macs, ips);*/
     	
     	SwitchTime switchTime = new SwitchTime("experiments/switch_time.txt");
-    	int[] ipCount = {10, 100, 1000, 2000, 4000, 8000, 16000, 32000, 64000};
-    	//int[] ipCount = {64000};
+    	int[] ipCount = {10, 100, 1000, 2000, 4000, 800, 16000, 32000};//, 64000};
     	int round = 100;
     	for (int i : ipCount) {
     		System.out.println(i);
-    		String fileName = String.format("experiments/PlotGraph/res_gateway_%d", i);
+    		String fileName = String.format("experiments/PlotGraph/res_gateway_strawman_%d", i);
+    		//String fileName = String.format("experiments/PlotGraph/res_gateway_inc_%d", i);
+    		//String fileName = String.format("experiments/PlotGraph/res_gateway_incacl_%d", i);
     		Writer writer = null;
     		try {
     		    writer = new FileWriter(fileName);
     		    for (int j = 0; j < round; j++) {
     		    	//exprHelperIP(i, 100, 500, (int) Math.ceil(i * 0.1), macs, ips, writer, switchTime);
-    		    	exprHelperMAC(i, 100, 900, 1, macs, ips, writer, switchTime);
+    		    	exprHelperMACStrawman(i, 100, 900, 1, macs, ips, writer, switchTime);
+    		    	//exprHelperMAC(i, 100, 900, 1, macs, ips, writer, switchTime, false);
+    		    	//exprHelperMAC(i, 100, 900, 1, macs, ips, writer, switchTime, true);
     		    }
     		} catch (IOException ex) {
     		} finally {
@@ -171,7 +176,7 @@ public class VirtualTopology {
     }
     
     public void exprHelperMAC(int ipCount, int macExternal, int macInternal, int macUpdate, List<String> macs, List<String> ips,
-    		Writer writer, SwitchTime switchTime) throws IOException {
+    		Writer writer, SwitchTime switchTime, boolean aclOpt) throws IOException {
     	
     	List<OFFlowMod> ipRouterRules = initIPRouterRules(ipCount);
     	List<OFFlowMod> gatewayRules = initGatewayRules(macExternal, ips, macs);
@@ -179,9 +184,39 @@ public class VirtualTopology {
     	
     	// build topology
     	PlumbingGraph graph = new PlumbingGraph();
-    	graph.addNode((long) 1);
-    	graph.addNode((long) 2);
-    	graph.addNode((long) 3);
+    	if (aclOpt) {
+    		{
+    			List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
+    			List<PolicyFlowModStoreKey> storeKeys = new ArrayList<PolicyFlowModStoreKey>();
+    			storeTypes.add(PolicyFlowModStoreType.PREFIX);
+    			storeTypes.add(PolicyFlowModStoreType.WILDCARD);
+    			storeKeys.add(PolicyFlowModStoreKey.NETWORK_DST);
+    			storeKeys.add(PolicyFlowModStoreKey.ALL);
+    			graph.addNode((long) 1, storeTypes, storeKeys);
+    		}
+    		{
+    			List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
+    			List<PolicyFlowModStoreKey> storeKeys = new ArrayList<PolicyFlowModStoreKey>();
+    			storeTypes.add(PolicyFlowModStoreType.PREFIX);
+    			storeTypes.add(PolicyFlowModStoreType.WILDCARD);
+    			storeKeys.add(PolicyFlowModStoreKey.NETWORK_DST);
+    			storeKeys.add(PolicyFlowModStoreKey.ALL);
+    			graph.addNode((long) 2, storeTypes, storeKeys);
+    		}
+    		{
+    			List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
+    			List<PolicyFlowModStoreKey> storeKeys = new ArrayList<PolicyFlowModStoreKey>();
+    			storeTypes.add(PolicyFlowModStoreType.EXACT);
+    			storeTypes.add(PolicyFlowModStoreType.WILDCARD);
+    			storeKeys.add(PolicyFlowModStoreKey.DATA_DST);
+    			storeKeys.add(PolicyFlowModStoreKey.ALL);
+    			graph.addNode((long) 3, storeTypes, storeKeys);
+    		}
+    	} else {
+    		graph.addNode((long) 1);
+    		graph.addNode((long) 2);
+    		graph.addNode((long) 3);
+    	}
     	graph.addPort((long) 1, (short) 5, (short) 1);
     	graph.addPort((long) 1, (short) 6, (short) 2);
     	graph.addPort((long) 1, (short) 7, null);
@@ -213,7 +248,6 @@ public class VirtualTopology {
     	
     	//log.error(graph);
     	
-    	
     	List<OFFlowMod> gatewayUpdateRules = initGatewayRules(macUpdate, ips.subList(macExternal, ips.size()), macs.subList(macExternal, macs.size()));
     	List<OFFlowMod> macLearnerUpdateRules = initMACLearnerRules(macUpdate, 0, macs.subList(macExternal, macs.size()));
     	int fmCount = 0;
@@ -235,8 +269,76 @@ public class VirtualTopology {
     	for (int i = 0; i < fmCount; i++) {
     		updateTime += switchTime.getTime();
     	}
-    	writer.write(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
-    	//System.out.println(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
+    	//writer.write(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
+    	System.out.println(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
+    }
+    
+    public void exprHelperMACStrawman(int ipCount, int macExternal, int macInternal, int macUpdate, List<String> macs, List<String> ips,
+    		Writer writer, SwitchTime switchTime) throws IOException {
+    	
+    	List<OFFlowMod> ipRouterRules = initIPRouterRules(ipCount);
+    	List<OFFlowMod> gatewayRules = initGatewayRules(macExternal, ips, macs);
+    	List<OFFlowMod> macLearnerRules = initMACLearnerRules(macExternal, macInternal, macs);
+    	List<OFFlowMod> gatewayUpdateRules = initGatewayRules(macUpdate, ips.subList(macExternal, ips.size()), macs.subList(macExternal, macs.size()));
+    	List<OFFlowMod> macLearnerUpdateRules = initMACLearnerRules(macUpdate, 0, macs.subList(macExternal, macs.size()));
+    	
+    	// build topology
+    	PlumbingGraph graph = new PlumbingGraph();
+    	graph.addNode((long) 1);
+    	graph.addNode((long) 2);
+    	graph.addNode((long) 3);
+    	graph.addPort((long) 1, (short) 5, (short) 1);
+    	graph.addPort((long) 1, (short) 6, (short) 2);
+    	graph.addPort((long) 1, (short) 7, null);
+    	graph.addPort((long) 2, (short) 8, null);
+    	graph.addPort((long) 2, (short) 9, null);
+    	graph.addPort((long) 3, (short) 10, null);
+    	graph.addPort((long) 3, (short) 11, (short) 3);
+    	graph.addPort((long) 3, (short) 12, (short) 4);
+    	graph.addEdge((long) 1, (short) 7, (long) 2, (short) 8);
+    	graph.addEdge((long) 2, (short) 9, (long) 3, (short) 10);
+    	
+    	long startTime = System.nanoTime();
+    	// ip router
+    	for (OFFlowMod fm : ipRouterRules) {
+    		//System.out.println(fm);
+    		graph.update(fm, graph.getNode((long) 1));
+    	}
+    	
+    	// gateway switch
+    	for (OFFlowMod fm : gatewayRules){
+    		//System.out.println(fm);
+    		graph.update(fm, graph.getNode((long) 2));
+    	}
+    	
+    	// mac learner
+    	for (OFFlowMod fm : macLearnerRules){
+    		//System.out.println(fm);
+    		graph.update(fm, graph.getNode((long) 3));
+    	}
+    	
+    	//log.error(graph);
+    	
+    	int fmCount = 0;
+    	for (int i = 0; i < macUpdate; i++) {
+    		OFFlowMod fm = gatewayUpdateRules.get(i);
+    		PolicyUpdateTable updateTable = graph.update(fm, graph.getNode((long) 2));
+    		fmCount += updateTable.addFlowMods.size();
+			fmCount += updateTable.deleteFlowMods.size();
+    	}
+    	for (OFFlowMod fm : macLearnerUpdateRules){
+			PolicyUpdateTable updateTable = graph.update(fm, graph.getNode((long) 3));
+			fmCount += updateTable.addFlowMods.size();
+			fmCount += updateTable.deleteFlowMods.size();
+    	}
+    	long elapseTime = System.nanoTime() - startTime;
+    	double compileTime = elapseTime / 1e6;
+    	double updateTime = 0;
+    	for (int i = 0; i < fmCount; i++) {
+    		updateTime += switchTime.getTime();
+    	}
+    	//writer.write(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
+    	System.out.println(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
     }
     
     private List<OFFlowMod> initIPRouterRules(int count) {

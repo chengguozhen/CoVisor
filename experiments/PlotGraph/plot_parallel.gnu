@@ -6,9 +6,9 @@ set datafile separator '\t'
 
 set xlabel '# of Existing Rules'
 set logscale x
-set xrange [640:20480]
+#set xrange [640:20480]
 #set xtics (128,256,512,1024,2048)
-set xtics (1280,2560,5120,10240)
+#set xtics (1280,2560,5120,10240)
 set xtics nomirror
 
 # plot compile time
