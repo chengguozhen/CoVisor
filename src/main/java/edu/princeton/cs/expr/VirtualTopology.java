@@ -59,12 +59,12 @@ public class VirtualTopology {
     	exprHelperIP(1024, 100, 500, 102, macs, ips);*/
     	
     	SwitchTime switchTime = new SwitchTime("experiments/switch_time.txt");
-    	int[] ipCount = {1000, 2000, 4000, 8000, 16000, 32000};//, 64000};
+    	int[] ipCount = {8000, 8000};//{1000, 2000, 4000, 8000, 16000, 32000};//, 64000};
     	int round = 100;
     	for (int i : ipCount) {
     		System.out.println(i);
     		
-			{
+			/*{
 				String fileName = String.format("experiments/PlotGraph/res_gateway_strawman_%d", i);
 				Writer writer = null;
 				try {
@@ -83,7 +83,7 @@ public class VirtualTopology {
 				} finally {
 					try {writer.close();} catch (Exception ex) {}
 				}
-			}
+			}*/
 			
 			{
 				String fileName = String.format("experiments/PlotGraph/res_gateway_inc_%d", i);
@@ -99,7 +99,7 @@ public class VirtualTopology {
 				}
 			}
 			
-			{
+			/*{
 				String fileName = String.format("experiments/PlotGraph/res_gateway_incacl_%d", i);
 				Writer writer = null;
 				try {
@@ -111,7 +111,7 @@ public class VirtualTopology {
 				} finally {
 					try {writer.close();} catch (Exception ex) {}
 				}
-			}
+			}*/
     	}
     	
     	
