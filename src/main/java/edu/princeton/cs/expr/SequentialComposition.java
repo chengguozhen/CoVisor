@@ -35,7 +35,7 @@ public class SequentialComposition {
 		SwitchTime switchTime = new SwitchTime("experiments/switch_time.txt");
 		
 		int fwSize = 1000;
-    	int[] routingSizes = {4000, 4000, 4000};//, 16000, 32000};
+    	int[] routingSizes = {100};//1000, 2000, 4000, 8000, 16000, 32000};
     	int round = 10;
     	for (int routingSize : routingSizes) {
             
