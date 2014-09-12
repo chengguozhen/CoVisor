@@ -59,7 +59,7 @@ public class VirtualTopology {
     	exprHelperIP(1024, 100, 500, 102, macs, ips);*/
     	
     	SwitchTime switchTime = new SwitchTime("experiments/switch_time.txt");
-    	int[] ipCount = {8000, 8000};//{1000, 2000, 4000, 8000, 16000, 32000};//, 64000};
+    	int[] ipCount = {100};//{1000, 2000, 4000, 8000, 16000, 32000};//, 64000};
     	int round = 100;
     	for (int i : ipCount) {
     		System.out.println(i);
