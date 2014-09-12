@@ -116,8 +116,8 @@ def generateTime(inFile, outFile, switchTime, rounds = 100):
 
 if __name__ == '__main__':
 	#processComposition("parallel")
-	processComposition("sequential")
-	#processComposition("gateway")
+	#processComposition("sequential")
+	processComposition("gateway")
 	#processGateway()
     #switchTime = readSwitchTime()
     #generateTime("log", "res", switchTime)
