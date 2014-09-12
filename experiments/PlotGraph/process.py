@@ -40,13 +40,9 @@ def processComposition(composition = "parallel"):
             for i in range(columnCount):
                 columns[i].sort()
                 totalDataPoints = len(columns[i])
-                pct1 = int(totalDataPoints * 0.1) - 1 #9
-                pct2 = int(totalDataPoints * 0.5) - 1 #49
-                pct3 = int(totalDataPoints * 0.9) - 1 #89
-                #print pct1, pct2, pct3
-                fout.write("\t" + str(columns[i][pct1]))
-                fout.write("\t" + str(columns[i][pct2]))
-                fout.write("\t" + str(columns[i][pct3]))
+                fout.write("\t" + str(columns[i][9]))
+                fout.write("\t" + str(columns[i][49]))
+                fout.write("\t" + str(columns[i][89]))
         fout.write("\n")
 
 
@@ -119,8 +115,8 @@ def generateTime(inFile, outFile, switchTime, rounds = 100):
 
 
 if __name__ == '__main__':
-	processComposition("parallel")
-	#processComposition("sequential")
+	#processComposition("parallel")
+	processComposition("sequential")
 	#processComposition("gateway")
 	#processGateway()
     #switchTime = readSwitchTime()
