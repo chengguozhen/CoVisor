@@ -5,18 +5,18 @@ import random
 
 def processComposition(composition = "parallel"):
     fout = open("res_" + composition +"_all", 'w')
-    fout.write("count")
-    for i in range(12):
-        fout.write("\tStrawman")
-    for i in range(12):
-        fout.write("\tIncre")
-    for i in range(12):
-        fout.write("\tIncreOpt")
-    fout.write("\n")
+#    fout.write("count")
+#    for i in range(12):
+#        fout.write("\tBase")
+#    for i in range(12):
+#        fout.write("\tInc")
+#    for i in range(12):
+#        fout.write("\tIncOpt")
+#    fout.write("\n")
     #ruleCounts = [128, 256, 512, 1024, 2048, 4096]
     #ruleCounts = [1280, 2560, 5120, 10240]
     #ruleCounts = [12800, 25600, 51200, 102400]
-    ruleCounts = [1000, 2000, 4000, 8000, 16000]# 32000]#, 64000]#, 128000]
+    ruleCounts = [1000, 2000, 4000, 8000, 16000, 32000]#, 64000]#, 128000]
     mechanisms = ["strawman", "inc", "incacl"]
     #mechanisms = ["inc", "incacl"]
     for ruleCount in ruleCounts:
@@ -39,9 +39,14 @@ def processComposition(composition = "parallel"):
 
             for i in range(columnCount):
                 columns[i].sort()
-                fout.write("\t" + str(columns[i][9]))
-                fout.write("\t" + str(columns[i][49]))
-                fout.write("\t" + str(columns[i][89]))
+                totalDataPoints = len(columns[i])
+                pct1 = int(totalDataPoints * 0.1) - 1 #9
+                pct2 = int(totalDataPoints * 0.5) - 1 #49
+                pct3 = int(totalDataPoints * 0.9) - 1 #89
+                #print pct1, pct2, pct3
+                fout.write("\t" + str(columns[i][pct1]))
+                fout.write("\t" + str(columns[i][pct2]))
+                fout.write("\t" + str(columns[i][pct3]))
         fout.write("\n")
 
 
@@ -114,9 +119,9 @@ def generateTime(inFile, outFile, switchTime, rounds = 100):
 
 
 if __name__ == '__main__':
-	#processComposition("parallel")
+	processComposition("parallel")
 	#processComposition("sequential")
-	processComposition("gateway")
+	#processComposition("gateway")
 	#processGateway()
     #switchTime = readSwitchTime()
     #generateTime("log", "res", switchTime)
