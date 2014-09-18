@@ -44,6 +44,42 @@ public class ParallelExprFl {
 			}
 		
 		}
+		
+		{
+			Random rand = new Random(1);
+			String fileName = String.format("experiments/PlotGraph/rres_parallel_inc_%d", MACLearnerRules.size());
+			Writer writer = null;
+			try {
+				writer = new FileWriter(fileName);
+				for (int i = 0; i < round; i++) {
+					Collections.shuffle(monitorRules.subList(1, monitorRules.size()), rand);
+					Collections.shuffle(MACLearnerRules, rand);
+					exprHelper(monitorRules, monitorRules.size() - 10, 10, MACLearnerRules, MACLearnerRules.size(), writer, switchTime, 1);
+				}
+			} catch (IOException ex) {
+			} finally {
+				try {writer.close();} catch (Exception ex) {}
+			}
+		
+		}
+		
+		{
+			Random rand = new Random(1);
+			String fileName = String.format("experiments/PlotGraph/rres_parallel_incacl_%d", MACLearnerRules.size());
+			Writer writer = null;
+			try {
+				writer = new FileWriter(fileName);
+				for (int i = 0; i < round; i++) {
+					Collections.shuffle(monitorRules.subList(1, monitorRules.size()), rand);
+					Collections.shuffle(MACLearnerRules, rand);
+					exprHelper(monitorRules, monitorRules.size() - 10, 10, MACLearnerRules, MACLearnerRules.size(), writer, switchTime, 2);
+				}
+			} catch (IOException ex) {
+			} finally {
+				try {writer.close();} catch (Exception ex) {}
+			}
+		
+		}
 	}
 	
 	private void exprHelper (List<OFFlowMod> monitorRules, int monitorSize, int monitorUpdateSize,
