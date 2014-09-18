@@ -32,13 +32,13 @@ public class SequentialExprFl {
 		
 		{
 			Random rand = new Random(1);
-			String fileName = String.format("experiments/PlotGraph/rres_sequential_strawman_%d", routingRules.size());
+			String fileName = String.format("experiments/PlotGraph/rres_sequential_strawman_%d", routingRules.size() - 1);
 			Writer writer = null;
 			try {
 				writer = new FileWriter(fileName);
 				for (int i = 0; i < round; i++) {
 					Collections.shuffle(fwRules.subList(1, fwRules.size()), rand);
-					Collections.shuffle(routingRules.subList(1, fwRules.size()), rand);
+					Collections.shuffle(routingRules.subList(1, routingRules.size()), rand);
 					exprHelper(fwRules, fwRules.size() - 10, 10, routingRules, routingRules.size(), writer, switchTime, 0);
 				}
 			} catch (IOException ex) {
