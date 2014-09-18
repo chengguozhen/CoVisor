@@ -44,7 +44,9 @@ import org.openflow.protocol.OFVendor;
 import org.openflow.protocol.statistics.OFStatistics;
 
 import edu.cs.princeton.cs.exprfl.ParallelExprFl;
+import edu.cs.princeton.cs.exprfl.SequentialExprFl;
 import edu.princeton.cs.expr.ParallelComposition;
+import edu.princeton.cs.expr.SequentialExpr;
 import edu.princeton.cs.policy.adv.PolicyTree;
 import edu.princeton.cs.policy.adv.PolicyUpdateTable;
 
@@ -237,7 +239,10 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     }
     
     public void runExpr() {
-    	ParallelExprFl expr = new ParallelExprFl();
+    	//ParallelExprFl expr = new ParallelExprFl();
+    	//expr.startExpr(fmFlowMods1, fmFlowMods2);
+    	
+    	SequentialExprFl expr = new SequentialExprFl();
     	expr.startExpr(fmFlowMods1, fmFlowMods2);
     }
     
