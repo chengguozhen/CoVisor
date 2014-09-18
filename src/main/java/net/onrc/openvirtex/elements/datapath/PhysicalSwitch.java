@@ -238,6 +238,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 				//log.info("MagicTimestamp\t1\t{}", System.nanoTime());
 				PolicyUpdateTable updateTable = policyTree.update(
 						(OFFlowMod) msg, ((OVXSwitch) from).getTenantId());
+                long elapseTime = System.nanoTime() - startTime;
 
 				// log.error(policyTree.flowTable.toString());
 				// log.error(policyTree.leftChild.flowTable.toString());;
@@ -253,7 +254,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 						this.channel.write(Collections.singletonList(fm));
 					}
 				}
-                long elapseTime = System.nanoTime() - startTime;
+                //long elapseTime = System.nanoTime() - startTime;
                 log.info("MagicTimestamp\t1\t{}", System.nanoTime());
 				log.info("MagicTimestamp\t2\t{}\t{}\t{}\t{}\t{}",
                     elapseTime,

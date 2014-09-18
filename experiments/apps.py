@@ -96,12 +96,12 @@ class MACLearnerApp():
             vdpid = self.graph.node[switch]['vdpid']
             
             # default rule
-            name = "MACAppS%dD0" % ridx
-            rule = '{"switch":"%s", ' % vdpid + \
-                '"name":"%s", ' % name + \
-                '"priority":"0", ' + \
-                '"active":"true", "actions":""}'
-            self.rules[name] = rule
+#            name = "MACAppS%dD0" % ridx
+#            rule = '{"switch":"%s", ' % vdpid + \
+#                '"name":"%s", ' % name + \
+#                '"priority":"0", ' + \
+#                '"active":"true", "actions":""}'
+#            self.rules[name] = rule
             # mac routing rules
             for index, mac in enumerate(self.macs):
                 name = "MACAppS%dR%d" % (ridx, index)
