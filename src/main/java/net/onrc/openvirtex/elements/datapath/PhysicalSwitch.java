@@ -45,8 +45,6 @@ import org.openflow.protocol.statistics.OFStatistics;
 
 import edu.cs.princeton.cs.exprfl.ParallelExprFl;
 import edu.cs.princeton.cs.exprfl.SequentialExprFl;
-import edu.princeton.cs.expr.ParallelComposition;
-import edu.princeton.cs.expr.SequentialExpr;
 import edu.princeton.cs.policy.adv.PolicyTree;
 import edu.princeton.cs.policy.adv.PolicyUpdateTable;
 
