@@ -47,6 +47,42 @@ public class SequentialExprFl {
 			}
 		
 		}
+		
+		{
+			Random rand = new Random(1);
+			String fileName = String.format("experiments/PlotGraph/rres_sequential_inc_%d", routingRules.size() - 1);
+			Writer writer = null;
+			try {
+				writer = new FileWriter(fileName);
+				for (int i = 0; i < round; i++) {
+					Collections.shuffle(fwRules.subList(1, fwRules.size()), rand);
+					Collections.shuffle(routingRules.subList(1, routingRules.size()), rand);
+					exprHelper(fwRules, fwRules.size() - 10, 10, routingRules, routingRules.size(), writer, switchTime, 1);
+				}
+			} catch (IOException ex) {
+			} finally {
+				try {writer.close();} catch (Exception ex) {}
+			}
+		
+		}
+		
+		{
+			Random rand = new Random(1);
+			String fileName = String.format("experiments/PlotGraph/rres_sequential_incacl_%d", routingRules.size() - 1);
+			Writer writer = null;
+			try {
+				writer = new FileWriter(fileName);
+				for (int i = 0; i < round; i++) {
+					Collections.shuffle(fwRules.subList(1, fwRules.size()), rand);
+					Collections.shuffle(routingRules.subList(1, routingRules.size()), rand);
+					exprHelper(fwRules, fwRules.size() - 10, 10, routingRules, routingRules.size(), writer, switchTime, 2);
+				}
+			} catch (IOException ex) {
+			} finally {
+				try {writer.close();} catch (Exception ex) {}
+			}
+		
+		}
 	}
 	
 	private void exprHelper (List<OFFlowMod> fwRules, int fwSize, int fwUpdateSize,
