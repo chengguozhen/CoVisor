@@ -492,10 +492,10 @@ def exprParallelRule():
     global swNumber
     perSwRoutingRule = 100
     swNumber = 1
-    for perSwRoutingRule in [3000, 4000, 5000]:
+    for perSwRoutingRule in [1000, 4000, 8000]:
         #exprParallelHelper('strawman', '00', 'res_strawman_%d' %  perSwRoutingRule)
-        exprParallelHelper('inc', '00', 'res_inc_%d' %  perSwRoutingRule)
-        #exprParallelHelper('inc', '01', 'res_inc_acl_%d' %  perSwRoutingRule)
+        #exprParallelHelper('inc', '00', 'res_inc_%d' %  perSwRoutingRule)
+        exprParallelHelper('inc', '01', 'res_inc_acl_%d' %  perSwRoutingRule)
 
 def exprParallelSw():
     global perSwRoutingRule
