@@ -42,6 +42,7 @@ import org.openflow.protocol.OFType;
 import org.openflow.protocol.OFVendor;
 import org.openflow.protocol.statistics.OFStatistics;
 
+import edu.princeton.cs.expr.ParallelComposition;
 import edu.princeton.cs.policy.adv.PolicyTree;
 import edu.princeton.cs.policy.adv.PolicyUpdateTable;
 
@@ -58,6 +59,8 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     private AtomicReference<Map<Short, OVXPortStatisticsReply>> portStats;
     private AtomicReference<Map<Integer, List<OVXFlowStatisticsReply>>> flowStats;
     private PolicyTree policyTree;
+    
+    public static boolean tempFlag = true;
 
     /**
      * Unregisters OVXSwitches and associated virtual elements mapped to this
@@ -231,6 +234,12 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
 		if (PhysicalSwitch.IsCompositionOn) {
 			if (msg.getType() == OFType.FLOW_MOD) {
+				if (PhysicalSwitch.tempFlag) {
+					PhysicalSwitch.tempFlag = false;
+					ParallelComposition expr = new ParallelComposition();
+					expr.testExpr();
+				}
+				
 				 //log.error("---------- New FlowMod ----------");
 				 //log.error(msg.toString());
 

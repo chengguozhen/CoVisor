@@ -80,7 +80,7 @@ public class ParallelComposition {
 		SwitchTime switchTime = new SwitchTime("experiments/switch_time.txt");
 		
 		int monitorSize = 1000;
-    	int[] macSizes = {100};// 1000, 2000, 4000, 8000, 16000, 32000};//, 64000, 128000};
+    	int[] macSizes = {1000, 2000, 4000, 8000, 16000, 32000};//, 64000, 128000};
     	int round = 10;
     	for (int macSize : macSizes) {
 			System.out.println(macSize);
@@ -126,7 +126,7 @@ public class ParallelComposition {
     		{
     			rand = new Random(1);
     			OFFlowModHelper.rand = new Random(1);
-    			String fileName = String.format("experiments/PlotGraph/res_parallel_incacl_%d", macSize);
+    			String fileName = String.format("experiments/PlotGraph/rres_parallel_incacl_%d", macSize);
     			Writer writer = null;
     			try {
     				writer = new FileWriter(fileName);
