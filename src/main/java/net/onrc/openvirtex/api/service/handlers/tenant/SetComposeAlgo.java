@@ -1,7 +1,11 @@
 package net.onrc.openvirtex.api.service.handlers.tenant;
 
 import java.util.Map;
+
 import net.onrc.openvirtex.api.service.handlers.ApiHandler;
+import net.onrc.openvirtex.elements.OVXMap;
+import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,8 +21,15 @@ public class SetComposeAlgo extends ApiHandler<Map<String, Object>> {
 	
 	@Override
 	public JSONRPC2Response process(final Map<String, Object> params) {
+		
+		final OVXMap map = OVXMap.getInstance();
+		for (PhysicalSwitch sw : map.getPhysicalSwitchMap().keySet()) {
+			this.log.info("enter expr");
+			sw.runExpr();
+		}
+		
 
-		final String algo = (String) params.get("algo");
+		/*final String algo = (String) params.get("algo");
 		if (algo.equals("strawman")) {
 			PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Strawman;
 		} else {
@@ -26,7 +37,7 @@ public class SetComposeAlgo extends ApiHandler<Map<String, Object>> {
 		}
 		
 		this.log.info("set compose algorithm to {}", PolicyTree.UPDATEMECHANISM);
-		this.log.info("MagicTimestamp\t4\t{}", System.nanoTime());
+		this.log.info("MagicTimestamp\t4\t{}", System.nanoTime());*/
 		return new JSONRPC2Response(0);
 	}
 

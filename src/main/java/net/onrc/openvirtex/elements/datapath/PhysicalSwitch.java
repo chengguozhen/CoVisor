@@ -15,6 +15,7 @@
  ******************************************************************************/
 package net.onrc.openvirtex.elements.datapath;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,7 @@ import org.openflow.protocol.OFType;
 import org.openflow.protocol.OFVendor;
 import org.openflow.protocol.statistics.OFStatistics;
 
+import edu.cs.princeton.cs.exprfl.ParallelExprFl;
 import edu.princeton.cs.expr.ParallelComposition;
 import edu.princeton.cs.policy.adv.PolicyTree;
 import edu.princeton.cs.policy.adv.PolicyUpdateTable;
@@ -60,7 +62,8 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     private AtomicReference<Map<Integer, List<OVXFlowStatisticsReply>>> flowStats;
     private PolicyTree policyTree;
     
-    public static boolean tempFlag = true;
+    private List<OFFlowMod> fmFlowMods1;
+    private List<OFFlowMod> fmFlowMods2;
 
     /**
      * Unregisters OVXSwitches and associated virtual elements mapped to this
@@ -111,6 +114,9 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
         this.flowStats = new AtomicReference<Map<Integer, List<OVXFlowStatisticsReply>>>();
         this.statsMan = new StatisticsManager(this);
         this.policyTree = null;
+        
+        this.fmFlowMods1 = new ArrayList<OFFlowMod>();
+        this.fmFlowMods2 = new ArrayList<OFFlowMod>();
     }
     
     public void ConfigurePolicy(PolicyTree policyTree) {
@@ -229,16 +235,37 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
         this.portMap.clear();
         this.tearDown();
     }
-
+    
+    public void runExpr() {
+    	ParallelExprFl expr = new ParallelExprFl();
+    	expr.startExpr(fmFlowMods1, fmFlowMods2);
+    }
+    
     @Override
     public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
 		if (PhysicalSwitch.IsCompositionOn) {
 			if (msg.getType() == OFType.FLOW_MOD) {
-				if (PhysicalSwitch.tempFlag) {
-					PhysicalSwitch.tempFlag = false;
-					ParallelComposition expr = new ParallelComposition();
-					expr.testExpr();
+				
+				if (((OVXSwitch) from).getTenantId() == 1) {
+					fmFlowMods1.add((OFFlowMod) msg);
+				} else {
+					fmFlowMods2.add((OFFlowMod) msg);
 				}
+
+
+			} else if ((this.channel.isOpen()) && (this.isConnected)) {
+				this.channel.write(Collections.singletonList(msg));
+			}
+		} else {
+			if ((this.channel.isOpen()) && (this.isConnected)) {
+				this.channel.write(Collections.singletonList(msg));
+			}
+		}
+    }
+
+    public void sendMsgBak(final OFMessage msg, final OVXSendMsg from) {
+		if (PhysicalSwitch.IsCompositionOn) {
+			if (msg.getType() == OFType.FLOW_MOD) {
 				
 				 //log.error("---------- New FlowMod ----------");
 				 //log.error(msg.toString());
