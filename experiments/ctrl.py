@@ -243,8 +243,6 @@ def addVirtMultiController(topo):
     cmd = "%s -n startNetwork 3" % ovxctlPy
     subprocess.call(cmd, shell=True)
 
-
-
 def addRfTopoController1(topo):
     print "*****************************"
     print "******** Controller 1 *******"
@@ -466,6 +464,24 @@ def processLog(fout):
 #********************************************************************
 # expr: parallel
 #********************************************************************
+def exprParallelOne(algo, policy, outLog):
+    cleanAll()
+    startFloodlight(2)
+    startOVX()
+    (topo, net) = startMininetWithoutCLI()
+    time.sleep(5)
+    addController1(topo)
+    addController2(topo)
+    addPolicy(policy)
+    startComposition()
+    app2 = MACLearnerApp(topo, perSwRule = perSwRoutingRule)
+    app2.installRules()
+    app1 = MonitorApp(topo, app2.macs, perSwRule = 1000, addRuleCount = 10)
+    app1.installRules()
+    app1.updateRules()
+    time.sleep(1)
+    setComposeAlgo(algo)
+
 def exprParallelHelper(algo, policy, outLog):
     cleanAll()
     startFloodlight(2)
@@ -490,12 +506,13 @@ def exprParallelHelper(algo, policy, outLog):
 def exprParallelRule():
     global perSwRoutingRule
     global swNumber
-    perSwRoutingRule = 100
+    perSwRoutingRule = 1000
     swNumber = 1
-    for perSwRoutingRule in [1000, 4000, 8000]:
+    for perSwRoutingRule in [1000]:
         #exprParallelHelper('strawman', '00', 'res_strawman_%d' %  perSwRoutingRule)
         #exprParallelHelper('inc', '00', 'res_inc_%d' %  perSwRoutingRule)
-        exprParallelHelper('inc', '01', 'res_inc_acl_%d' %  perSwRoutingRule)
+        #exprParallelHelper('inc', '01', 'res_inc_acl_%d' %  perSwRoutingRule)
+        exprParallelOne('inc', '01', 'res_inc_acl_%d' %  perSwRoutingRule)
 
 def exprParallelSw():
     global perSwRoutingRule
@@ -514,6 +531,26 @@ def exprParallel():
 #********************************************************************
 # expr: sequential
 #********************************************************************
+def exprSequentialOne(algo, policy, outLog):
+    cleanAll()
+    startFloodlight(2)
+    startOVX()
+    (topo, net) = startMininetWithoutCLI()
+    time.sleep(5)
+    addController1(topo)
+    addController2(topo)
+    addPolicy(policy)
+    startComposition()
+    app1 = FirewallApp(topo, fwFile, 1000, 10)
+    app1.genRules()
+    app1.installRules()
+    app1.updateRules()
+    app2 = RoutingApp(topo, prefixFile, perSwRule = perSwRoutingRule)
+    app2.genRules()
+    app2.installRules()
+    time.sleep(1)
+    setComposeAlgo(algo)
+
 def exprSequentialHelper(algo, policy, outLog):
     cleanAll()
     startFloodlight(2)
@@ -542,15 +579,42 @@ def exprSequentialRule():
     global perSwRoutingRule
 
     perSwRoutingRule = 100
-    for perSwRoutingRule in [1000]:#[100, 200, 300, 400, 500]:
-        fwFile = 'classbench/fw1_%d' % perSwRoutingRule
+    for perSwRoutingRule in [8000]:#[100, 200, 300, 400, 500]:
+        #fwFile = 'classbench/fw1_%d' % perSwRoutingRule
         #exprSequentialHelper('strawman', '10', 'res_strawman_%d' % perSwRoutingRule)
-        exprSequentialHelper('inc', '10', 'res_inc_%d' % perSwRoutingRule)
-        exprSequentialHelper('inc', '12', 'res_inc_acl_%d' % perSwRoutingRule)
+        #exprSequentialHelper('inc', '10', 'res_inc_%d' % perSwRoutingRule)
+        #exprSequentialHelper('inc', '12', 'res_inc_acl_%d' % perSwRoutingRule)
+        fwFile = 'experiments/classbench/fw1_5000'
+        exprSequentialOne('inc', '10', 'res_inc_%d' % perSwRoutingRule)
 
 def exprSequential():
     exprSequentialRule()
 
+#********************************************************************
+# expr: gateway
+#********************************************************************
+def exprGatewayHelper(ipCount):
+    cleanAll()
+    startFloodlight(3)
+    startOVX()
+    (topo, net) = startMininetWithoutCLI()
+    time.sleep(5)
+    addVirtMultiController(topo)
+    app1 = GWIPRouterApp(ipCount)
+    app3 = GWMACLearnerApp(5, 1)
+    app2 = GWGatewayApp(app3.mac, app3.ips)
+    app.installRules()
+    CLI(net)
+
+def exprGateway():
+    #exprGatewayHelper(2)
+    app1 = GWIPRouterApp(3)
+    app1.installRules()
+    app3 = GWMACLearnerApp(5, 2)
+    app3.installRules()
+    app2 = GWGatewayApp(app3.macs, app3.ips, 2)
+    app2.installRules()
+ 
 #********************************************************************
 # expr: SDX
 #********************************************************************
@@ -680,8 +744,9 @@ if __name__ == '__main__':
         #expr(sys.argv[2])
         #exprAll()
         #exprVirtMultiController()
-        exprParallel()
+        #exprParallel()
         #exprSequential()
+        exprGateway()
     else:
         printHelp()
 
