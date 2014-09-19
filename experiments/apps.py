@@ -341,7 +341,7 @@ class GWIPRouterApp():
         self.rules = []
 
         ridx = 4
-        vdpid = "00:a4:23:05:00:00:00:04"
+        vdpid = "00:a4:23:05:00:00:00:02"
  
         i = 0
         while i < 254 and i < perSwRule:
@@ -349,8 +349,8 @@ class GWIPRouterApp():
             rule = '{"switch":"%s", ' % vdpid + \
                 '"name":"%s", ' % name + \
                 '"priority":"16", ' + \
-                '""ether-type":"2048", ' + \
-                '""dst-ip":"%d.0.0.0/16", ' % (i+2) + \
+                '"ether-type":"2048", ' + \
+                '"dst-ip":"%d.0.0.0/16", ' % (i+2) + \
                 '"active":"true", "actions":"output=5"}'
             self.rules.append(rule)
             i += 1
@@ -360,8 +360,8 @@ class GWIPRouterApp():
             rule = '{"switch":"%s", ' % vdpid + \
                 '"name":"%s", ' % name + \
                 '"priority":"16", ' + \
-                '""ether-type":"2048", ' + \
-                '""dst-ip":"%d.%d.0.0/16", ' % (i%254+2, i/254) + \
+                '"ether-type":"2048", ' + \
+                '"dst-ip":"%d.%d.0.0/16", ' % (i%254+2, i/254) + \
                 '"active":"true", "actions":"output=5"}'
             self.rules.append(rule)
             i += 1
@@ -370,8 +370,8 @@ class GWIPRouterApp():
         rule = '{"switch":"%s", ' % vdpid + \
             '"name":"%s", ' % name + \
             '"priority":"16", ' + \
-            '""ether-type":"2048", ' + \
-            '""dst-ip":"1.0.0.0/16", ' + \
+            '"ether-type":"2048", ' + \
+            '"dst-ip":"1.0.0.0/16", ' + \
             '"active":"true", "actions":"output=7"}'
         self.rules.append(rule)
         i += 1
@@ -379,8 +379,8 @@ class GWIPRouterApp():
     def installRules(self):
         for rule in self.rules:
             print rule
-            #cmd = "curl -d '%s' http://localhost:20001/wm/staticflowentrypusher/json" % rule
-            #subprocess.call(cmd, shell=True)
+            cmd = "curl -d '%s' http://localhost:10001/wm/staticflowentrypusher/json" % rule
+            subprocess.call(cmd, shell=True)
             print ""
 
 class GWGatewayApp():
@@ -389,15 +389,15 @@ class GWGatewayApp():
         self.rules = []
 
         ridx = 4
-        vdpid = "00:a4:23:05:00:00:00:04"
+        vdpid = "00:a4:23:05:00:00:00:03"
         for i in range(external):
             name = "GatewayAppS%dR%d" % (ridx, i)
             rule = '{"switch":"%s", ' % vdpid + \
                 '"name":"%s", ' % name + \
                 '"priority":"1", ' + \
-                '""ether-type":"2048", ' + \
-                '""ingress-port":"8", ' + \
-                '""dst-ip":"%s", ' % ips[i] + \
+                '"ether-type":"2048", ' + \
+                '"ingress-port":"8", ' + \
+                '"dst-ip":"%s", ' % ips[i] + \
                 '"active":"true", "actions":"output=12"}'
             self.rules.append(rule)
 
@@ -405,16 +405,16 @@ class GWGatewayApp():
         rule = '{"switch":"%s", ' % vdpid + \
             '"name":"%s", ' % name + \
             '"priority":"1", ' + \
-            '""ether-type":"2048", ' + \
-            '""ingress-port":"9", ' + \
+            '"ether-type":"2048", ' + \
+            '"ingress-port":"9", ' + \
             '"active":"true", "actions":"output=8"}'
         self.rules.append(rule)
 
     def installRules(self):
         for rule in self.rules:
             print rule
-            #cmd = "curl -d '%s' http://localhost:20002/wm/staticflowentrypusher/json" % rule
-            #subprocess.call(cmd, shell=True)
+            cmd = "curl -d '%s' http://localhost:20001/wm/staticflowentrypusher/json" % rule
+            subprocess.call(cmd, shell=True)
             print ""
 
 class GWMACLearnerApp():
@@ -442,7 +442,7 @@ class GWMACLearnerApp():
             rule = '{"switch":"%s", ' % vdpid + \
                 '"name":"%s", ' % name + \
                 '"priority":"1", ' + \
-                '""ingress-port":"10", ' + \
+                '"ingress-port":"10", ' + \
                 '"src-mac":"11:11:11:11:11:11", ' + \
                 '"dst-mac":"%s", ' % self.macs[i] + \
                 '"active":"true", "actions":"output=12"}'
@@ -452,7 +452,7 @@ class GWMACLearnerApp():
             rule = '{"switch":"%s", ' % vdpid + \
                 '"name":"%s", ' % name + \
                 '"priority":"1", ' + \
-                '""ingress-port":"12", ' + \
+                '"ingress-port":"12", ' + \
                 '"src-mac":"%s", ' % self.macs[i] + \
                 '"dst-mac":"11:11:11:11:11:11", ' + \
                 '"active":"true", "actions":"output=10"}'
@@ -463,7 +463,7 @@ class GWMACLearnerApp():
             rule = '{"switch":"%s", ' % vdpid + \
                 '"name":"%s", ' % name + \
                 '"priority":"1", ' + \
-                '""ingress-port":"11", ' + \
+                '"ingress-port":"11", ' + \
                 '"dst-mac":"00:00:00:00:11:11", ' + \
                 '"src-mac":"%s", ' % self.macs[i] + \
                 '"active":"true", "actions":"output=12"}'
@@ -472,8 +472,8 @@ class GWMACLearnerApp():
     def installRules(self):
         for rule in self.rules:
             print rule
-            #cmd = "curl -d '%s' http://localhost:20003/wm/staticflowentrypusher/json" % rule
-            #subprocess.call(cmd, shell=True)
+            cmd = "curl -d '%s' http://localhost:30001/wm/staticflowentrypusher/json" % rule
+            subprocess.call(cmd, shell=True)
             print ""
 
 
