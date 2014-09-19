@@ -113,14 +113,14 @@ public class OVXFlowMod extends OFFlowMod implements Devirtualizable {
 					ovxInPort = iport;
 					break;
 				}
-			} else {
+			} /*else {
 				this.log.error(
 						"Unknown virtual port id {}; dropping flowmod {}",
 						inport, this);
 				sw.sendMsg(OVXMessageUtil.makeErrorMsg(
 						OFFlowModFailedCode.OFPFMFC_EPERM, this), sw);
 				return;
-			}
+			}*/
 
 		}
         prepAndSendSouth(ovxInPort, pflag);

@@ -340,7 +340,7 @@ class GWIPRouterApp():
         self.perSwRule = perSwRule
         self.rules = []
 
-        ridx = 4
+        ridx = 2
         vdpid = "00:a4:23:05:00:00:00:02"
  
         i = 0
@@ -388,7 +388,7 @@ class GWGatewayApp():
     def __init__(self, macs, ips, external):
         self.rules = []
 
-        ridx = 4
+        ridx = 3
         vdpid = "00:a4:23:05:00:00:00:03"
         for i in range(external):
             name = "GatewayAppS%dR%d" % (ridx, i)
@@ -398,7 +398,8 @@ class GWGatewayApp():
                 '"ether-type":"2048", ' + \
                 '"ingress-port":"8", ' + \
                 '"dst-ip":"%s", ' % ips[i] + \
-                '"active":"true", "actions":"output=12"}'
+                '"active":"true", ' + \
+                '"actions":"set-src-mac=11:11:11:11:11:11,set-dst-mac=%s,output=12"}' % macs[i]
             self.rules.append(rule)
 
         name = "GatewayAppSK"
