@@ -32,12 +32,12 @@ class MonitorApp():
             vdpid = self.graph.node[switch]['vdpid']
             
             # default rule
-            name = "MonitorAppS%dD0" % ridx
-            rule = '{"switch":"%s", ' % vdpid + \
-                '"name":"%s", ' % name + \
-                '"priority":"0", ' + \
-                '"active":"true", "actions":""}'
-            self.rules[name] = rule
+#            name = "MonitorAppS%dD0" % ridx
+#            rule = '{"switch":"%s", ' % vdpid + \
+#                '"name":"%s", ' % name + \
+#                '"priority":"0", ' + \
+#                '"active":"true", "actions":""}'
+#            self.rules[name] = rule
             # mac routing rules
             for index in range(perSwRule):
                 macpair = self.macpairs[index]
@@ -217,12 +217,12 @@ class RoutingApp():
             vdpid = self.graph.node[switch]['vdpid']
             
             # default rule
-            name = "RouteAppS%dD0" % ridx
-            rule = '{"switch":"%s", ' % vdpid + \
-                '"name":"%s", ' % name + \
-                '"priority":"0", ' + \
-                '"active":"true", "actions":""}'
-            self.rules[name] = rule
+#            name = "RouteAppS%dD0" % ridx
+#            rule = '{"switch":"%s", ' % vdpid + \
+#                '"name":"%s", ' % name + \
+#                '"priority":"0", ' + \
+#                '"active":"true", "actions":""}'
+#            self.rules[name] = rule
             # routing rules
             for index, subnet in enumerate(self.subnets[0:self.perSwRule]):
                 name = "RouteAppS%dR%d" % (ridx, index)
@@ -236,7 +236,7 @@ class RoutingApp():
 
     def installRules(self):
         for rule in self.rules.values():
-            print rule
+            #print rule
             cmd = "curl -d '%s' http://localhost:20001/wm/staticflowentrypusher/json" % rule
             subprocess.call(cmd, shell=True)
             print ""
@@ -246,10 +246,11 @@ class RoutingApp():
 #********************************************************************
 class FirewallApp():
 
-    def __init__(self, topo, classbenchFile, addRuleCount):
+    def __init__(self, topo, classbenchFile, perSwRule = 100, addRuleCount = 5):
         self.graph = topo.graph
         self.rules = {}
         self.ruleCount = 0
+        self.perSwRule = perSwRule
 
         self.addRules = {}
         self.addRuleCount = addRuleCount
@@ -277,15 +278,16 @@ class FirewallApp():
             if protocol[1] == '0xFF':
                 rule = rule + '"protocol":"%s", ' % int(protocol[0], 0)
             
-            if random.randint(0, 1) == 0:
-                rule = rule + '"active":"true", "actions":""}' 
-            else:
+            if random.randint(0, 9) == 0:
                 rule = rule + '"active":"true", "actions":"output=1"}' 
+            else:
+                rule = rule + '"active":"true", "actions":""}' 
 
             self.metaRules.append(rule)
             self.ruleCount += 1
             oneline = f.readline()
         f.close()
+        random.shuffle(self.metaRules)
 
         self.genRules()
 
@@ -295,22 +297,22 @@ class FirewallApp():
             vdpid = self.graph.node[switch]['vdpid']
 
             # default rule
-            name = "RouteAppS%dD0" % ridx
-            rule = '{"switch":"%s", ' % vdpid + \
-                '"name":"%s", ' % name + \
-                '"priority":"0", ' + \
-                '"active":"true", "actions":""}'
-            self.rules[name] = rule
+#            name = "RouteAppS%dD0" % ridx
+#            rule = '{"switch":"%s", ' % vdpid + \
+#                '"name":"%s", ' % name + \
+#                '"priority":"0", ' + \
+#                '"active":"true", "actions":""}'
+#            self.rules[name] = rule
 
             # firewall rule
-            for index, metaRule in enumerate(self.metaRules[:-self.addRuleCount]):
+            for index, metaRule in enumerate(self.metaRules[0:self.perSwRule]):
                 name = "FWAppS%dR%d" % (ridx, index)
                 rule = '{"switch":"%s", ' % vdpid + \
                             '"name":"%s", ' % name + \
                             metaRule
                 self.rules[name] = rule
-            for index, metaRule in enumerate(self.metaRules[-self.addRuleCount:]):
-                name = "FWAppS%dR%d" % (ridx, index + len(self.metaRules) - self.addRuleCount)
+            for index, metaRule in enumerate(self.metaRules[self.perSwRule:self.perSwRule+self.addRuleCount:]):
+                name = "FWAppS%dR%d" % (ridx, index + self.perSwRule)
                 rule = '{"switch":"%s", ' % vdpid + \
                             '"name":"%s", ' % name + \
                             metaRule
@@ -328,6 +330,150 @@ class FirewallApp():
             #print rule
             cmd = "curl -d '%s' http://localhost:10001/wm/staticflowentrypusher/json" % rule
             subprocess.call(cmd, shell=True)
+            print ""
+
+#********************************************************************
+# Gateway App
+#********************************************************************
+class GWIPRouterApp():
+    def __init__(self, perSwRule = 1000):
+        self.perSwRule = perSwRule
+        self.rules = []
+
+        ridx = 4
+        vdpid = "00:a4:23:05:00:00:00:04"
+ 
+        i = 0
+        while i < 254 and i < perSwRule:
+            name = "RouterAppS%dR%d" % (ridx, i)
+            rule = '{"switch":"%s", ' % vdpid + \
+                '"name":"%s", ' % name + \
+                '"priority":"16", ' + \
+                '""ether-type":"2048", ' + \
+                '""dst-ip":"%d.0.0.0/16", ' % (i+2) + \
+                '"active":"true", "actions":"output=5"}'
+            self.rules.append(rule)
+            i += 1
+ 
+        while i < 254*256 and i < perSwRule:
+            name = "RouterAppS%dR%d" % (ridx, i)
+            rule = '{"switch":"%s", ' % vdpid + \
+                '"name":"%s", ' % name + \
+                '"priority":"16", ' + \
+                '""ether-type":"2048", ' + \
+                '""dst-ip":"%d.%d.0.0/16", ' % (i%254+2, i/254) + \
+                '"active":"true", "actions":"output=5"}'
+            self.rules.append(rule)
+            i += 1
+
+        name = "RouterAppS%dE" % ridx
+        rule = '{"switch":"%s", ' % vdpid + \
+            '"name":"%s", ' % name + \
+            '"priority":"16", ' + \
+            '""ether-type":"2048", ' + \
+            '""dst-ip":"1.0.0.0/16", ' + \
+            '"active":"true", "actions":"output=7"}'
+        self.rules.append(rule)
+        i += 1
+
+    def installRules(self):
+        for rule in self.rules:
+            print rule
+            #cmd = "curl -d '%s' http://localhost:20001/wm/staticflowentrypusher/json" % rule
+            #subprocess.call(cmd, shell=True)
+            print ""
+
+class GWGatewayApp():
+
+    def __init__(self, macs, ips, external):
+        self.rules = []
+
+        ridx = 4
+        vdpid = "00:a4:23:05:00:00:00:04"
+        for i in range(external):
+            name = "GatewayAppS%dR%d" % (ridx, i)
+            rule = '{"switch":"%s", ' % vdpid + \
+                '"name":"%s", ' % name + \
+                '"priority":"1", ' + \
+                '""ether-type":"2048", ' + \
+                '""ingress-port":"8", ' + \
+                '""dst-ip":"%s", ' % ips[i] + \
+                '"active":"true", "actions":"output=12"}'
+            self.rules.append(rule)
+
+        name = "GatewayAppSK"
+        rule = '{"switch":"%s", ' % vdpid + \
+            '"name":"%s", ' % name + \
+            '"priority":"1", ' + \
+            '""ether-type":"2048", ' + \
+            '""ingress-port":"9", ' + \
+            '"active":"true", "actions":"output=8"}'
+        self.rules.append(rule)
+
+    def installRules(self):
+        for rule in self.rules:
+            print rule
+            #cmd = "curl -d '%s' http://localhost:20002/wm/staticflowentrypusher/json" % rule
+            #subprocess.call(cmd, shell=True)
+            print ""
+
+class GWMACLearnerApp():
+
+    def __init__(self, macSize = 100, externalSize = 100):
+        self.macSize = macSize
+        self.externalSize = externalSize
+        self.rules = []
+        self.macs = []
+        self.ips = []
+
+        for i in range(macSize):
+            if i < 256:
+                self.macs.append('00:00:00:00:00:{:02x}'.format(i))
+                self.ips.append("1.0.0." + str(i))
+            else:
+                self.macs.append('00:00:00:00:{:02x}:{:02x}'.format(i/256, i%256))
+                self.ips.append("1.0." + str(i/256) + "." + str(i%256))
+
+        ridx = 4
+        vdpid = "00:a4:23:05:00:00:00:04"
+        
+        for i in range(externalSize):
+            name = "MACAppS%dE1%d" % (ridx, i*2)
+            rule = '{"switch":"%s", ' % vdpid + \
+                '"name":"%s", ' % name + \
+                '"priority":"1", ' + \
+                '""ingress-port":"10", ' + \
+                '"src-mac":"11:11:11:11:11:11", ' + \
+                '"dst-mac":"%s", ' % self.macs[i] + \
+                '"active":"true", "actions":"output=12"}'
+            self.rules.append(rule)
+
+            name = "MACAppS%dE2%d" % (ridx, i*2+1)
+            rule = '{"switch":"%s", ' % vdpid + \
+                '"name":"%s", ' % name + \
+                '"priority":"1", ' + \
+                '""ingress-port":"12", ' + \
+                '"src-mac":"%s", ' % self.macs[i] + \
+                '"dst-mac":"11:11:11:11:11:11", ' + \
+                '"active":"true", "actions":"output=10"}'
+            self.rules.append(rule)
+
+        for i in range(macSize):
+            name = "MACAppS%dI%d" % (ridx, i)
+            rule = '{"switch":"%s", ' % vdpid + \
+                '"name":"%s", ' % name + \
+                '"priority":"1", ' + \
+                '""ingress-port":"11", ' + \
+                '"dst-mac":"00:00:00:00:11:11", ' + \
+                '"src-mac":"%s", ' % self.macs[i] + \
+                '"active":"true", "actions":"output=12"}'
+            self.rules.append(rule)
+
+    def installRules(self):
+        for rule in self.rules:
+            print rule
+            #cmd = "curl -d '%s' http://localhost:20003/wm/staticflowentrypusher/json" % rule
+            #subprocess.call(cmd, shell=True)
             print ""
 
 
