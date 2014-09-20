@@ -52,8 +52,8 @@ public class VirtualTopoExprFl {
 					macLearnerUpdateRules.add(macLearnerRules.get(updateIndex * 2));
 					macLearnerUpdateRules.add(macLearnerRules.get(updateIndex * 2 + 1));
 					gatewayRules.remove(updateIndex);
-					macLearnerUpdateRules.remove(updateIndex);
-					macLearnerUpdateRules.remove(updateIndex);
+					macLearnerRules.remove(updateIndex);
+					macLearnerRules.remove(updateIndex);
 					
 					Collections.shuffle(ipRouterRules, rand);
 					Collections.shuffle(gatewayRules, rand);
