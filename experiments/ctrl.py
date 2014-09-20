@@ -601,15 +601,15 @@ def exprGatewayHelper(ipCount):
     time.sleep(5)
     addVirtMultiController(topo)
     app1 = GWIPRouterApp(ipCount)
-    app3 = GWMACLearnerApp(80, 10)
-    app2 = GWGatewayApp(app3.macs, app3.ips, 10)
+    app3 = GWMACLearnerApp(800, 100)
+    app2 = GWGatewayApp(app3.macs, app3.ips, 100)
     app1.installRules()
     app2.installRules()
     app3.installRules()
     setComposeAlgo('inc')
 
 def exprGateway():
-    exprGatewayHelper(10)
+    exprGatewayHelper(1000)
 
 #********************************************************************
 # expr: SDX

@@ -34,7 +34,7 @@ public class VirtualTopoExprFl {
 		int round = 10;
 
 		{
-			int macSize = (macLearnerRulesOriginal.size() - 80) / 2;
+			int macSize = (macLearnerRulesOriginal.size() - 800) / 2;
 			Random rand = new Random(1);
 			String fileName = String.format("experiments/PlotGraph/rres_gateway_inc_%d", ipRouterRulesOriginal.size() - 1);
 			Writer writer = null;
@@ -48,10 +48,10 @@ public class VirtualTopoExprFl {
 					List<OFFlowMod> gatewayUpdateRules = new ArrayList<OFFlowMod>();
 					List<OFFlowMod> macLearnerUpdateRules = new ArrayList<OFFlowMod>();
 					
-					System.out.println(macSize);
-					System.out.println(ipRouterRulesOriginal.size());
-					System.out.println(gatewayRulesOriginal.size());
-					System.out.println(macLearnerRulesOriginal.size());
+					//System.out.println(macSize);
+					//System.out.println(ipRouterRulesOriginal.size());
+					//System.out.println(gatewayRulesOriginal.size());
+					//System.out.println(macLearnerRulesOriginal.size());
 					
 					int updateIndex = rand.nextInt(macSize);
 					gatewayUpdateRules.add(gatewayRules.get(updateIndex));
@@ -61,16 +61,16 @@ public class VirtualTopoExprFl {
 					macLearnerRules.remove(updateIndex);
 					macLearnerRules.remove(updateIndex);
 					
-					System.out.println("ip router rules");
-					myPrint(ipRouterRules);
-					System.out.println("gateway rules");
-					myPrint(gatewayRules);
-					System.out.println("mac learner rules");
-					myPrint(macLearnerRules);
-					System.out.println("gateway update rules");
-					myPrint(gatewayUpdateRules);
-					System.out.println("mac learner update rules");
-					myPrint(macLearnerUpdateRules);
+					//System.out.println("ip router rules");
+					//myPrint(ipRouterRules);
+					//System.out.println("gateway rules");
+					//myPrint(gatewayRules);
+					//System.out.println("mac learner rules");
+					//myPrint(macLearnerRules);
+					//System.out.println("gateway update rules");
+					//myPrint(gatewayUpdateRules);
+					//System.out.println("mac learner update rules");
+					//myPrint(macLearnerUpdateRules);
 					
 					//Collections.shuffle(ipRouterRules, rand);
 					//Collections.shuffle(gatewayRules, rand);

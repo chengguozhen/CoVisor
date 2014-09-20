@@ -399,7 +399,7 @@ class GWGatewayApp():
                 '"ingress-port":"8", ' + \
                 '"dst-ip":"%s", ' % ips[i] + \
                 '"active":"true", ' + \
-                '"actions":"set-src-mac=11:11:11:11:11:11,set-dst-mac=%s,output=12"}' % macs[i]
+                '"actions":"set-src-mac=11:11:11:11:11:11,set-dst-mac=%s,output=9"}' % macs[i]
             self.rules.append(rule)
 
         name = "GatewayAppSK"
