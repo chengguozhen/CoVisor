@@ -32,6 +32,41 @@ public class VirtualTopoExprFl {
 
 		SwitchTime switchTime = new SwitchTime("experiments/switch_time.txt");
 		int round = 10;
+		
+		{
+			int macSize = (macLearnerRulesOriginal.size() - 800) / 2;
+			Random rand = new Random(1);
+			String fileName = String.format("experiments/PlotGraph/rres_gateway_strawman_%d", ipRouterRulesOriginal.size() - 1);
+			Writer writer = null;
+			try {
+				writer = new FileWriter(fileName);
+				for (int i = 0; i < round; i++) {
+					
+					List<OFFlowMod> ipRouterRules = new ArrayList<OFFlowMod>(ipRouterRulesOriginal);
+					List<OFFlowMod> gatewayRules = new ArrayList<OFFlowMod>(gatewayRulesOriginal);
+					List<OFFlowMod> macLearnerRules = new ArrayList<OFFlowMod>(macLearnerRulesOriginal);
+					List<OFFlowMod> gatewayUpdateRules = new ArrayList<OFFlowMod>();
+					List<OFFlowMod> macLearnerUpdateRules = new ArrayList<OFFlowMod>();
+					
+					int updateIndex = rand.nextInt(macSize);
+					gatewayUpdateRules.add(gatewayRules.get(updateIndex));
+					macLearnerUpdateRules.add(macLearnerRules.get(updateIndex * 2));
+					macLearnerUpdateRules.add(macLearnerRules.get(updateIndex * 2 + 1));
+					gatewayRules.remove(updateIndex);
+					macLearnerRules.remove(updateIndex);
+					macLearnerRules.remove(updateIndex);
+					
+					exprHelperMACStrawman(ipRouterRules, gatewayRules, macLearnerRules, gatewayUpdateRules, macLearnerUpdateRules,
+							writer, switchTime);
+				}
+			} catch (IOException ex) {
+			} finally {
+				try {
+					writer.close();
+				} catch (Exception ex) {
+				}
+			}
+		}
 
 		{
 			int macSize = (macLearnerRulesOriginal.size() - 800) / 2;
@@ -77,6 +112,41 @@ public class VirtualTopoExprFl {
 					//Collections.shuffle(macLearnerRules, rand);
 					exprHelperMAC(ipRouterRules, gatewayRules, macLearnerRules, gatewayUpdateRules, macLearnerUpdateRules,
 							writer, switchTime, false);
+				}
+			} catch (IOException ex) {
+			} finally {
+				try {
+					writer.close();
+				} catch (Exception ex) {
+				}
+			}
+		}
+		
+		{
+			int macSize = (macLearnerRulesOriginal.size() - 800) / 2;
+			Random rand = new Random(1);
+			String fileName = String.format("experiments/PlotGraph/rres_gateway_incacl_%d", ipRouterRulesOriginal.size() - 1);
+			Writer writer = null;
+			try {
+				writer = new FileWriter(fileName);
+				for (int i = 0; i < round; i++) {
+					
+					List<OFFlowMod> ipRouterRules = new ArrayList<OFFlowMod>(ipRouterRulesOriginal);
+					List<OFFlowMod> gatewayRules = new ArrayList<OFFlowMod>(gatewayRulesOriginal);
+					List<OFFlowMod> macLearnerRules = new ArrayList<OFFlowMod>(macLearnerRulesOriginal);
+					List<OFFlowMod> gatewayUpdateRules = new ArrayList<OFFlowMod>();
+					List<OFFlowMod> macLearnerUpdateRules = new ArrayList<OFFlowMod>();
+					
+					int updateIndex = rand.nextInt(macSize);
+					gatewayUpdateRules.add(gatewayRules.get(updateIndex));
+					macLearnerUpdateRules.add(macLearnerRules.get(updateIndex * 2));
+					macLearnerUpdateRules.add(macLearnerRules.get(updateIndex * 2 + 1));
+					gatewayRules.remove(updateIndex);
+					macLearnerRules.remove(updateIndex);
+					macLearnerRules.remove(updateIndex);
+
+					exprHelperMAC(ipRouterRules, gatewayRules, macLearnerRules, gatewayUpdateRules, macLearnerUpdateRules,
+							writer, switchTime, true);
 				}
 			} catch (IOException ex) {
 			} finally {
