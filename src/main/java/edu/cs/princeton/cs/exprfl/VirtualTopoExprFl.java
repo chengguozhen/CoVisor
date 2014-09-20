@@ -33,7 +33,7 @@ public class VirtualTopoExprFl {
 		SwitchTime switchTime = new SwitchTime("experiments/switch_time.txt");
 		int round = 10;
 		
-		{
+		/*{
 			int macSize = (macLearnerRulesOriginal.size() - 800) / 2;
 			Random rand = new Random(1);
 			String fileName = String.format("experiments/PlotGraph/rres_gateway_strawman_%d", ipRouterRulesOriginal.size() - 1);
@@ -66,7 +66,7 @@ public class VirtualTopoExprFl {
 				} catch (Exception ex) {
 				}
 			}
-		}
+		}*/
 
 		{
 			int macSize = (macLearnerRulesOriginal.size() - 800) / 2;
@@ -122,7 +122,7 @@ public class VirtualTopoExprFl {
 			}
 		}
 		
-		{
+		/*{
 			int macSize = (macLearnerRulesOriginal.size() - 800) / 2;
 			Random rand = new Random(1);
 			String fileName = String.format("experiments/PlotGraph/rres_gateway_incacl_%d", ipRouterRulesOriginal.size() - 1);
@@ -156,7 +156,7 @@ public class VirtualTopoExprFl {
 				}
 			}
 
-		}
+		}*/
 	}
 	
 	public void exprHelperMACStrawman(List<OFFlowMod> ipRouterRules, List<OFFlowMod> gatewayRules, List<OFFlowMod> macLearnerRules,
@@ -303,11 +303,13 @@ public class VirtualTopoExprFl {
     		PolicyUpdateTable updateTable = graph.update(fm, graph.getNode((long) 2));
     		fmCount += updateTable.addFlowMods.size();
 			fmCount += updateTable.deleteFlowMods.size();
+			System.out.println(fmCount);
     	}
     	for (OFFlowMod fm : macLearnerUpdateRules){
 			PolicyUpdateTable updateTable = graph.update(fm, graph.getNode((long) 3));
 			fmCount += updateTable.addFlowMods.size();
 			fmCount += updateTable.deleteFlowMods.size();
+			System.out.println(fmCount);
     	}
     	long elapseTime = System.nanoTime() - startTime;
     	double compileTime = elapseTime / 1e6;
@@ -316,7 +318,7 @@ public class VirtualTopoExprFl {
     		updateTime += switchTime.getTime();
     	}
     	writer.write(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
-    	//System.out.println(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
+    	System.out.println(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
     }
 	
 	private int calculateUpdateFlowModsStrawman(List<OFFlowMod> oldFlowModsOriginal, List<OFFlowMod> newFlowMods) {
