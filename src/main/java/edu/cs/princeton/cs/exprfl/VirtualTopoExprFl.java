@@ -30,7 +30,7 @@ public class VirtualTopoExprFl {
 		{
 			int macSize = (macLearnerRulesOriginal.size() - 800) / 2;
 			Random rand = new Random(1);
-			String fileName = String.format("experiments/PlotGraph/rres_gateway_inc_%d", macSize);
+			String fileName = String.format("experiments/PlotGraph/rres_gateway_inc_%d", ipRouterRulesOriginal.size() - 1);
 			Writer writer = null;
 			try {
 				writer = new FileWriter(fileName);
@@ -55,9 +55,9 @@ public class VirtualTopoExprFl {
 					macLearnerRules.remove(updateIndex);
 					macLearnerRules.remove(updateIndex);
 					
-					Collections.shuffle(ipRouterRules, rand);
-					Collections.shuffle(gatewayRules, rand);
-					Collections.shuffle(macLearnerRules, rand);
+					//Collections.shuffle(ipRouterRules, rand);
+					//Collections.shuffle(gatewayRules, rand);
+					//Collections.shuffle(macLearnerRules, rand);
 					exprHelperMAC(ipRouterRules, gatewayRules, macLearnerRules, gatewayUpdateRules, macLearnerUpdateRules,
 							writer, switchTime, false);
 				}
