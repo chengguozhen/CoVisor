@@ -21,6 +21,12 @@ import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreType;
 
 public class VirtualTopoExprFl {
 	
+	public void myPrint(List<OFFlowMod> fms) {
+		for (OFFlowMod fm : fms) {
+			System.out.println(fm);
+		}
+	}
+	
 	public void startExpr(List<OFFlowMod> ipRouterRulesOriginal, List<OFFlowMod> gatewayRulesOriginal,
 			List<OFFlowMod> macLearnerRulesOriginal) {
 
@@ -54,6 +60,17 @@ public class VirtualTopoExprFl {
 					gatewayRules.remove(updateIndex);
 					macLearnerRules.remove(updateIndex);
 					macLearnerRules.remove(updateIndex);
+					
+					System.out.println("ip router rules");
+					myPrint(ipRouterRules);
+					System.out.println("gateway rules");
+					myPrint(gatewayRules);
+					System.out.println("mac learner rules");
+					myPrint(macLearnerRules);
+					System.out.println("gateway update rules");
+					myPrint(gatewayUpdateRules);
+					System.out.println("mac learner update rules");
+					myPrint(macLearnerUpdateRules);
 					
 					//Collections.shuffle(ipRouterRules, rand);
 					//Collections.shuffle(gatewayRules, rand);
