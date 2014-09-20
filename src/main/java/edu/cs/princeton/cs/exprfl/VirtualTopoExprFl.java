@@ -30,7 +30,7 @@ public class VirtualTopoExprFl {
 		{
 			int macSize = (macLearnerRulesOriginal.size() - 800) / 2;
 			Random rand = new Random(1);
-			String fileName = String.format("experiments/PlotGraph/res_gateway_inc_%d", macSize);
+			String fileName = String.format("experiments/PlotGraph/rres_gateway_inc_%d", macSize);
 			Writer writer = null;
 			try {
 				writer = new FileWriter(fileName);

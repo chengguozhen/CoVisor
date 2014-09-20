@@ -66,8 +66,8 @@ public class OVXMultiSwitch extends OVXSingleSwitch {
 	
 	public void runExpr() {
 		VirtualTopoExprFl expr = new VirtualTopoExprFl();
-		//expr.startExpr(fmFlowMods1, fmFlowMods2, fmFlowMods3);
-		logger.info("switch 1");
+		expr.startExpr(fmFlowMods1, fmFlowMods2, fmFlowMods3);
+		/*logger.info("switch 1");
 		for (OFFlowMod fm : fmFlowMods1) {
 			logger.info(fm);
 		}
@@ -80,7 +80,7 @@ public class OVXMultiSwitch extends OVXSingleSwitch {
 		logger.info("switch 3");
 		for (OFFlowMod fm : fmFlowMods3) {
 			logger.info(fm);
-		}
+		}*/
 	}
 
 	public void sendSouth(final OFMessage msg, final OVXBabySwitch babySwitch) {
