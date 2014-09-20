@@ -229,7 +229,7 @@ public class VirtualTopoExprFl {
     	
     	int fmCount = 0;
     	long startTime = System.nanoTime();
-    	for (OFFlowMod fm : macLearnerUpdateRules) {
+    	for (OFFlowMod fm : gatewayUpdateRules) {
     		PolicyUpdateTable updateTable = graph.update(fm, graph.getNode((long) 2));
     		fmCount += updateTable.addFlowMods.size();
 			fmCount += updateTable.deleteFlowMods.size();
