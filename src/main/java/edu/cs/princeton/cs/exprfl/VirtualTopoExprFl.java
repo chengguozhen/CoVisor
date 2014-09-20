@@ -42,6 +42,11 @@ public class VirtualTopoExprFl {
 					List<OFFlowMod> gatewayUpdateRules = new ArrayList<OFFlowMod>();
 					List<OFFlowMod> macLearnerUpdateRules = new ArrayList<OFFlowMod>();
 					
+					System.out.println(macSize);
+					System.out.println(ipRouterRulesOriginal.size());
+					System.out.println(gatewayRulesOriginal.size());
+					System.out.println(macLearnerRulesOriginal.size());
+					
 					int updateIndex = rand.nextInt(macSize);
 					gatewayUpdateRules.add(gatewayRules.get(updateIndex));
 					macLearnerUpdateRules.add(macLearnerRules.get(updateIndex * 2));
