@@ -10,7 +10,8 @@ public abstract class PolicyFlowModStore {
 	public enum PolicyFlowModStoreType {
 		EXACT,
 		PREFIX,
-		WILDCARD
+		WILDCARD,
+		DISALLOW
 	}
 	
 	public enum PolicyFlowModStoreKey {
@@ -22,6 +23,22 @@ public abstract class PolicyFlowModStore {
 		TRANSPORT_SRC,
 		TRANSPORT_DST,
 		ALL
+	}
+	
+	public enum PolicyFlowModAction {
+		DataLayerDestination,
+		DataLayerSource,
+		Enqueue,
+		NetworkLayerDestination,
+		NetworkLayerSource,
+		NetworkTypeOfService,
+		Output,
+		StripVirtualLan,
+		TransportLayerDestination,
+		TransportLayerSource,
+		Vendor,
+		VirtuaLanIdentifier,
+		VirtalLanPriorityCodePoint
 	}
 	
 	protected PolicyFlowModStoreType storeType;
