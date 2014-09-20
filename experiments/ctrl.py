@@ -609,7 +609,7 @@ def exprGatewayHelper(ipCount):
     setComposeAlgo('inc')
 
 def exprGateway():
-    exprGatewayHelper(1000)
+    exprGatewayHelper(8000)
 
 #********************************************************************
 # expr: SDX

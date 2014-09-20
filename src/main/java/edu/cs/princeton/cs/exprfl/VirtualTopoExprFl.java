@@ -33,7 +33,7 @@ public class VirtualTopoExprFl {
 		SwitchTime switchTime = new SwitchTime("experiments/switch_time.txt");
 		int round = 10;
 		
-		/*{
+		{
 			int macSize = (macLearnerRulesOriginal.size() - 800) / 2;
 			Random rand = new Random(1);
 			String fileName = String.format("experiments/PlotGraph/rres_gateway_strawman_%d", ipRouterRulesOriginal.size() - 1);
@@ -53,8 +53,8 @@ public class VirtualTopoExprFl {
 					macLearnerUpdateRules.add(macLearnerRules.get(updateIndex * 2));
 					macLearnerUpdateRules.add(macLearnerRules.get(updateIndex * 2 + 1));
 					gatewayRules.remove(updateIndex);
-					macLearnerRules.remove(updateIndex);
-					macLearnerRules.remove(updateIndex);
+					macLearnerRules.remove(updateIndex * 2);
+					macLearnerRules.remove(updateIndex * 2);
 					
 					exprHelperMACStrawman(ipRouterRules, gatewayRules, macLearnerRules, gatewayUpdateRules, macLearnerUpdateRules,
 							writer, switchTime);
@@ -66,7 +66,7 @@ public class VirtualTopoExprFl {
 				} catch (Exception ex) {
 				}
 			}
-		}*/
+		}
 
 		{
 			int macSize = (macLearnerRulesOriginal.size() - 800) / 2;
@@ -93,8 +93,8 @@ public class VirtualTopoExprFl {
 					macLearnerUpdateRules.add(macLearnerRules.get(updateIndex * 2));
 					macLearnerUpdateRules.add(macLearnerRules.get(updateIndex * 2 + 1));
 					gatewayRules.remove(updateIndex);
-					macLearnerRules.remove(updateIndex);
-					macLearnerRules.remove(updateIndex);
+					macLearnerRules.remove(updateIndex * 2);
+					macLearnerRules.remove(updateIndex * 2);
 					
 					//System.out.println("ip router rules");
 					//myPrint(ipRouterRules);
@@ -122,7 +122,7 @@ public class VirtualTopoExprFl {
 			}
 		}
 		
-		/*{
+		{
 			int macSize = (macLearnerRulesOriginal.size() - 800) / 2;
 			Random rand = new Random(1);
 			String fileName = String.format("experiments/PlotGraph/rres_gateway_incacl_%d", ipRouterRulesOriginal.size() - 1);
@@ -142,8 +142,8 @@ public class VirtualTopoExprFl {
 					macLearnerUpdateRules.add(macLearnerRules.get(updateIndex * 2));
 					macLearnerUpdateRules.add(macLearnerRules.get(updateIndex * 2 + 1));
 					gatewayRules.remove(updateIndex);
-					macLearnerRules.remove(updateIndex);
-					macLearnerRules.remove(updateIndex);
+					macLearnerRules.remove(updateIndex * 2);
+					macLearnerRules.remove(updateIndex * 2);
 
 					exprHelperMAC(ipRouterRules, gatewayRules, macLearnerRules, gatewayUpdateRules, macLearnerUpdateRules,
 							writer, switchTime, true);
@@ -156,7 +156,7 @@ public class VirtualTopoExprFl {
 				}
 			}
 
-		}*/
+		}
 	}
 	
 	public void exprHelperMACStrawman(List<OFFlowMod> ipRouterRules, List<OFFlowMod> gatewayRules, List<OFFlowMod> macLearnerRules,
