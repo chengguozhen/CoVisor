@@ -378,7 +378,7 @@ class GWIPRouterApp():
 
     def installRules(self):
         for rule in self.rules:
-            print rule
+            #print rule
             cmd = "curl -d '%s' http://localhost:10001/wm/staticflowentrypusher/json" % rule
             subprocess.call(cmd, shell=True)
             print ""
@@ -413,7 +413,7 @@ class GWGatewayApp():
 
     def installRules(self):
         for rule in self.rules:
-            print rule
+            #print rule
             cmd = "curl -d '%s' http://localhost:20001/wm/staticflowentrypusher/json" % rule
             subprocess.call(cmd, shell=True)
             print ""
@@ -472,7 +472,7 @@ class GWMACLearnerApp():
 
     def installRules(self):
         for rule in self.rules:
-            print rule
+            #print rule
             cmd = "curl -d '%s' http://localhost:30001/wm/staticflowentrypusher/json" % rule
             subprocess.call(cmd, shell=True)
             print ""

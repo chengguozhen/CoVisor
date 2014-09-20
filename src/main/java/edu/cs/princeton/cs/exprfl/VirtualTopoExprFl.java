@@ -28,7 +28,7 @@ public class VirtualTopoExprFl {
 		int round = 10;
 
 		{
-			int macSize = (macLearnerRulesOriginal.size() - 800) / 2;
+			int macSize = (macLearnerRulesOriginal.size() - 80) / 2;
 			Random rand = new Random(1);
 			String fileName = String.format("experiments/PlotGraph/rres_gateway_inc_%d", ipRouterRulesOriginal.size() - 1);
 			Writer writer = null;
