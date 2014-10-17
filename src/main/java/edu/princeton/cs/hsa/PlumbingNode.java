@@ -27,8 +27,7 @@ public class PlumbingNode {
 	
 	private Logger logger = LogManager.getLogger(PlumbingNode.class.getName());
 	
-	//private OVXBabySwitch babySwitch;
-	public final long dpid;
+	public final int id;
 	public PlumbingGraph graph;
 	private PolicyFlowTable flowTable;
 	//private Map<Short, Boolean> isEdgePortMap;
@@ -36,9 +35,10 @@ public class PlumbingNode {
 	private Map<Short, PlumbingNode> prevHopMap;
 	private Map<Short, PlumbingNode> nextHopMap;
 	private Map<Short, Short> nextHopPortMap;
+	private int portNumber;
 	
-	public PlumbingNode(long dpid, PlumbingGraph graph) {
-		this.dpid = dpid;
+	public PlumbingNode(int id, PlumbingGraph graph) {
+		this.id = id;
 		this.graph = graph;
 		this.flowTable = new PolicyFlowTable();
 		//this.isEdgePortMap = new HashMap<Short, Boolean>();
@@ -46,12 +46,13 @@ public class PlumbingNode {
 		this.prevHopMap = new HashMap<Short, PlumbingNode>();
 		this.nextHopMap = new HashMap<Short, PlumbingNode>();
 		this.nextHopPortMap = new HashMap<Short, Short>();
+		this.portNumber = 0;
 	}
 	
-	public PlumbingNode(long dpid, PlumbingGraph graph,
+	public PlumbingNode(int id, PlumbingGraph graph,
 			List<PolicyFlowModStoreType> storeTypes,
 			List<PolicyFlowModStoreKey> storeKeys) {
-		this.dpid = dpid;
+		this.id = id;
 		this.graph = graph;
 		this.flowTable = new PolicyFlowTable(storeTypes, storeKeys);
 		//this.isEdgePortMap = new HashMap<Short, Boolean>();
@@ -61,8 +62,13 @@ public class PlumbingNode {
 		this.nextHopPortMap = new HashMap<Short, Short>();
 	}
 	
-	public void addPort(Short port, Short physicalPort) {
-		this.portMap.put(port, physicalPort);
+	public short getNextPortNumber() {
+		this.portNumber++;
+		return (short) this.portNumber;
+	}
+	
+	public void addPort(Short physicalPort) {
+		this.portMap.put(this.getNextPortNumber(), physicalPort);
 	}
 	
 	public void addNextHop(short port, PlumbingNode nextHop, short nextHopPort) {
@@ -463,12 +469,12 @@ public class PlumbingNode {
 	
 	@Override
 	public String toString() {
-		String str = "" + this.dpid + "\n";
+		String str = "" + this.id + "\n";
 		for (short port : this.portMap.keySet()) {
 			if (this.portMap.get(port) != null) {
 				str = str + "\t" + port + " -> physical:" + this.portMap.get(port) + "\n";
 			} else if (this.nextHopMap.get(port) != null) {
-				str = str + "\t" + port + " -> " + this.nextHopMap.get(port).dpid + ":" + this.nextHopPortMap.get(port) + "\n";
+				str = str + "\t" + port + " -> " + this.nextHopMap.get(port).id + ":" + this.nextHopPortMap.get(port) + "\n";
 			} else {
 				str = str + "\t" + port + " -> internal\n";
 			}

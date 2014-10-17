@@ -640,67 +640,59 @@ def do_createMultiSwitch(gopts, opts, args):
         print "Virtual switch has been created (tenant_id %s, switch_id %s) with internal baby switches %s" \
             % (args[0], switch_name, babyDpids)
 
-def pa_createBabySwitch(args, cmd):
-    usage = "%s [options] <tenant_id> <multi_switch_dpid> <baby_switch_tenant_id>" % \
+def pa_createPlumbingSwitch(args, cmd):
+    usage = "%s [options] <physical_switch_dpid> <number_of_plumbing_switches>" % \
         USAGE.format(cmd)
     (sdesc, ldesc) = DESCS[cmd]
     parser = OptionParser(usage=usage, description=ldesc)
     return parser.parse_args(args)
 
-def do_createBabySwitch(gopts, opts, args):
+def do_createPlumbingSwitch(gopts, opts, args):
     if len(args) != 3:
-        print ("createBabySwitch : must specify: " +
-            "virtual tenant_id, multi_switch_dpid (e.g. 00:a4:23:05:00:00:00:01)," +
-            "baby_switch_tenant_id")
+        print ("createPlumbingSwitch : must specify: " +
+            "physical_switch_dpid (e.g. 00:00:00:00:00:00:00:01)," +
+            "number_of_plumbing_switches")
         sys.exit()
-    req = { "tenantId" : int(args[0]), "multiDpid" : int(args[1].replace(":", ""), 16),
-            "babyTenantId" : int(args[2]) };
+    req = { "physicalDpid" : int(args[0].replace(":", ""), 16),
+            "numberOfPlumbingSwitches" : int(args[1]) };
     print "req:  " + str(req)
-    reply = connect(gopts, "tenant", "createBabySwitch", data=req, passwd=getPasswd(gopts))
-    tenantId = reply.get('tenantId')
-    switchId = reply.get("babyDpid")
-    print "Virtual switch has been created (tenant_id %s, switch_id %s)" \
-        % (args[2], switchId)
+    reply = connect(gopts, "tenant", "createPlumbingSwitch", data=req, passwd=getPasswd(gopts))
+    print "Plumbing switches have been created"
 
-def pa_createBabyPort(args, cmd):
-    usage = "%s [options] <tenant_id> <baby_dpid>" % USAGE.format(cmd)
+def pa_createPlumbingPort(args, cmd):
+    usage = "%s [options] <physical_dpid> <plumbing_id> <physical_port>" % USAGE.format(cmd)
     (sdesc, ldesc) = DESCS[cmd]
     parser = OptionParser(usage=usage, description=ldesc)
     return parser.parse_args(args)
 
-def do_createBabyPort(gopts, opts, args):
+def do_createPlumbingPort(gopts, opts, args):
     if len(args) != 3:
-        print ("createBabyPort : must specify: " +
-            "virtual tenant_id, baby dpid " +
-            "(e.g. 00:00:00:00:00:00:00:01) and (optionally) physical port")
+        print ("createPlumbingPort : must specify: " +
+            "physical_dpid, plumbing_id and physical_port")
         sys.exit()
-    req = { "tenantId" : int(args[0]), "babyDpid" : int(args[1].replace(":", ""), 16),
-        "pport" : int(args[2]) }
+    req = {"physicalDpid" : int(args[0].replace(":", ""), 16),
+        "plumbingSwitchId" : int(args[1]),
+        "physicalPort" : int(args[2]) }
     print "req:  " + str(req)
-    reply = connect(gopts, "tenant", "createBabyPort", data=req, passwd=getPasswd(gopts))
+    reply = connect(gopts, "tenant", "createPlumbingPort", data=req, passwd=getPasswd(gopts))
+    print "Plumbing port has been created"
 
-    switchId = reply.get('vdpid')
-    portId = reply.get('vport')
-    if switchId and portId:
-        switch_name = '00:' + ':'.join([("%x" %int(switchId))[i:i+2] for i in range(0, len(("%x" %int(switchId))), 2)])
-    print "Virtual port has been created (tenant_id %s, switch_id %s, port_id %s)" % (args[0], switch_name, portId)
-
-def pa_connectBabyLink(args, cmd):
-    usage = "%s <tenant_id> <src_virtual_dpid> <src_virtual_port> <dst_virtual_dpid> <dst_virtual_port>" % USAGE.format(cmd)
+def pa_createPlumbingLink(args, cmd):
+    usage = "%s <physical_dpid> <src_id> <src_port> <dst_id> <dst_port>" % USAGE.format(cmd)
     (sdesc, ldesc) = DESCS[cmd]
     parser = OptionParser(usage=usage, description=ldesc)
 
     return parser.parse_args(args)
 
-def do_connectBabyLink(gopts, opts, args):
+def do_createPlumbingLink(gopts, opts, args):
     if len(args) != 5:
-        print ("connectLink : Must specify tenant_id, src_virtual_dpid, src_virtual_port, dst_virtual_dpid, dst_virtual_port")
+        print ("connectLink : Must specify physical_dpid, src_id, src_port, dst_id, dst_port")
         sys.exit()
-    req = { "tenantId" : int(args[0]), "srcDpid" : int(args[1].replace(":", ""), 16), 
-           "srcPort" : int(args[2]), "dstDpid" : int(args[3].replace(":", ""), 16), 
-           "dstPort" : int(args[4]) }
-    reply = connect(gopts, "tenant", "connectBabyLink", data=req, passwd=getPasswd(gopts))
-    print "Virtual link has been created"
+    req = { "physicalDpid" : int(args[0].replace(":", ""), 16), 
+           "srcPlumbingSwitchId" : int(args[1]), "srcPort" : int(args[2]),
+           "dstPlumbingSwitchId" : int(args[3]), "dstPort" : int(args[4]) }
+    reply = connect(gopts, "tenant", "createPlumbingLink", data=req, passwd=getPasswd(gopts))
+    print "Plumbing link has been created"
 
 def pa_startExpr(args, cmd):
     usage = "%s <expr>" % USAGE.format(cmd)
@@ -826,9 +818,9 @@ CMDS = {
     'setComposeAlgo': (pa_setComposeAlgo, do_setComposeAlgo),
    
     'createMultiSwitch': (pa_createMultiSwitch, do_createMultiSwitch),
-    'createBabySwitch': (pa_createBabySwitch, do_createBabySwitch),
-    'createBabyPort': (pa_createBabyPort, do_createBabyPort),
-    'connectBabyLink': (pa_connectBabyLink, do_connectBabyLink),
+    'createPlumbingSwitch': (pa_createPlumbingSwitch, do_createPlumbingSwitch),
+    'createPlumbingPort': (pa_createPlumbingPort, do_createPlumbingPort),
+    'createPlumbingLink': (pa_createPlumbingLink, do_createPlumbingLink),
 
     'startExpr': (pa_startExpr, do_startExpr),
 
@@ -958,22 +950,23 @@ DESCS = {
                                 "physical switch corresponding to this multi switch, and the number of " +
                                 "baby switches internal to this multi switch." +
                                 "\nExample: createMultiSwitch 1 00:00:00:00:00:00:00:01 4")),
-    'createBabySwitch' : ("Create virtual baby switch",
-                                ("Create a virtual baby switch. Must specify a tenant_id, the dpid of the " +
-                                "multi switch, and the tenant_id of the baby switch" +
-                                "\nExample: createBabySwitch 1 00:a4:23:05:00:00:00:01 2")),
-    'createBabyPort' : ("Create virtual port on baby switch",
-                            ("Create a virtual port on a baby switch. Must specify a tenant_id, " +
-                            "the dpid of the parent baby switch, and optionally the number of the " +
-                            "corresponding physical port." +
-                            "\nExample: createBabyPort 1 00:00:00:00:00:00:00:01 0\n" +
-                            "         createBabyPort 1 00:00:00:00:00:00:00:01 3")),
-    'connectBabyLink' : ("Connect two virtual baby ports through a baby virtual link", 
-                      ("Connect two virtual ports through a virtual link. Must specify a tenant_id, a virtual src_switch_id, a virtual src_port_id, " 
-                       "a virtual dst_switch_id and a virtual dst_port_id"
-                        "\nExample: connectBabyLink 1 00:a4:23:05:00:00:00:01 1 00:a4:23:05:00:00:00:02 1")), 
+    'createPlumbingSwitch' : ("Create plumbing switch",
+        ("Create virtual plumbing switch. Must specify the dpid of the "
+        "physical switch, and the number of plumbing switches"
+        "\nExample: createPlumbingSwitch 00:00:00:00:00:00:00:01 2")),
+    'createPlumbingPort' : ("Create plumbing port on plumbing switch",
+        ("Create a plumbing port on a plumbing switch. Must specify "
+        "the dpid of the physical switch, the id of the plumbing switch, and the number of the "
+        "corresponding physical port (0 means not mapped to physical port."
+        "\nExample: createPlumbingPort 00:00:00:00:00:00:00:01 1 0\n"
+        "         createPlumbingPort 00:00:00:00:00:00:00:01 2 3")),
+    'createPlumbingLink' : ("Connect two plumbing ports through a plumbing link", 
+        ("Connect two plumbing ports through a plumbing link. Must specify a "
+        "physical_dpid, a plumbing src_switch_id, a plumbing src_port_id, " 
+        "a plumbing dst_switch_id and a plumbing dst_port_id"
+        "\nExample: connectPlumbingLink 00:00:00:00:00:00:00:01 0 1 1 2")), 
     'startExpr' : ("Start experiment",
-                                ("Start experiment. Must specify an experiment.",
+                                ("Start experiment. Must specify an experiment."
                                 "\nExample: startExpr parallel/sequential/gateway")),
 }
 

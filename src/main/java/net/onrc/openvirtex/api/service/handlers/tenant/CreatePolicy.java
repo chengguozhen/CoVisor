@@ -81,7 +81,7 @@ public class CreatePolicy extends ApiHandler<Map<String, Object>> {
 					policyTree.rightChild = subPolicyTree;
 				}
 			}
-			sw.ConfigurePolicy(policyTree);
+			//sw.ConfigurePolicy(policyTree);
 
 		}
 		

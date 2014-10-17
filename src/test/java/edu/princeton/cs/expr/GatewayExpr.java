@@ -35,11 +35,11 @@ public class GatewayExpr extends TestCase {
     
     public void atestCorrectness() {
     	PlumbingGraph graph = new PlumbingGraph();
-    	graph.addNode((long) 1);
-    	graph.addNode((long) 2);
-    	graph.addNode((long) 3);
-    	graph.addPort((long) 1, (short) 5, (short) 1);
-    	graph.addPort((long) 1, (short) 6, (short) 2);
+    	graph.addNode(1);
+    	graph.addNode(2);
+    	graph.addNode(3);
+    	/*graph.addPort(1, (short) 5, (short) 1);
+    	graph.addPort(1, (short) 6, (short) 2);
     	graph.addPort((long) 1, (short) 7, null);
     	graph.addPort((long) 2, (short) 8, null);
     	graph.addPort((long) 2, (short) 9, null);
@@ -47,7 +47,7 @@ public class GatewayExpr extends TestCase {
     	graph.addPort((long) 3, (short) 11, (short) 3);
     	graph.addPort((long) 3, (short) 12, (short) 4);
     	graph.addEdge((long) 1, (short) 7, (long) 2, (short) 8);
-    	graph.addEdge((long) 2, (short) 9, (long) 3, (short) 10);
+    	graph.addEdge((long) 2, (short) 9, (long) 3, (short) 10);*/
     	
     	
     	// ip router

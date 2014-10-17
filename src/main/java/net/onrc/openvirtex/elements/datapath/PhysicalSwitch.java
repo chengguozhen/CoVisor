@@ -45,6 +45,7 @@ import org.openflow.protocol.statistics.OFStatistics;
 
 import edu.cs.princeton.cs.exprfl.ParallelExprFl;
 import edu.cs.princeton.cs.exprfl.SequentialExprFl;
+import edu.princeton.cs.hsa.PlumbingGraph;
 import edu.princeton.cs.policy.adv.PolicyTree;
 import edu.princeton.cs.policy.adv.PolicyUpdateTable;
 
@@ -60,10 +61,8 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     private StatisticsManager statsMan = null;
     private AtomicReference<Map<Short, OVXPortStatisticsReply>> portStats;
     private AtomicReference<Map<Integer, List<OVXFlowStatisticsReply>>> flowStats;
-    private PolicyTree policyTree;
-    
-    private List<OFFlowMod> fmFlowMods1;
-    private List<OFFlowMod> fmFlowMods2;
+    private PlumbingGraph plumbingGraph;
+
 
     /**
      * Unregisters OVXSwitches and associated virtual elements mapped to this
@@ -113,14 +112,11 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
         this.portStats = new AtomicReference<Map<Short, OVXPortStatisticsReply>>();
         this.flowStats = new AtomicReference<Map<Integer, List<OVXFlowStatisticsReply>>>();
         this.statsMan = new StatisticsManager(this);
-        this.policyTree = null;
-        
-        this.fmFlowMods1 = new ArrayList<OFFlowMod>();
-        this.fmFlowMods2 = new ArrayList<OFFlowMod>();
+        this.plumbingGraph = new PlumbingGraph();
     }
     
-    public void ConfigurePolicy(PolicyTree policyTree) {
-    	this.policyTree = policyTree;
+    public PlumbingGraph getPlumbingGraph() {
+    	return this.plumbingGraph;
     }
 
     /**
@@ -240,33 +236,32 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     	//ParallelExprFl expr = new ParallelExprFl();
     	//expr.startExpr(fmFlowMods1, fmFlowMods2);
     	
-    	SequentialExprFl expr = new SequentialExprFl();
-    	expr.startExpr(fmFlowMods1, fmFlowMods2);
+    	//SequentialExprFl expr = new SequentialExprFl();
+    	//expr.startExpr(fmFlowMods1, fmFlowMods2);
     }
     
     @Override
     public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
-		if (PhysicalSwitch.IsCompositionOn) {
-			if (msg.getType() == OFType.FLOW_MOD) {
-				
-				if (((OVXSwitch) from).getTenantId() == 1) {
-					fmFlowMods1.add((OFFlowMod) msg);
-				} else {
-					fmFlowMods2.add((OFFlowMod) msg);
+    	if (msg.getType() == OFType.FLOW_MOD) {
+    		
+    		/*PolicyUpdateTable updateTable = this.plumbingGraph.update((OFFlowMod) msg, (O) from);
+    		if ((this.channel.isOpen()) && (this.isConnected)) {
+				for (OFFlowMod fm : updateTable.addFlowMods) {
+					this.channel.write(Collections.singletonList(fm));
 				}
-
-
-			} else if ((this.channel.isOpen()) && (this.isConnected)) {
-				this.channel.write(Collections.singletonList(msg));
-			}
-		} else {
+				for (OFFlowMod fm : updateTable.deleteFlowMods) {
+					this.channel.write(Collections.singletonList(fm));
+				}
+    		}*/
+    		
+    	} else {
 			if ((this.channel.isOpen()) && (this.isConnected)) {
 				this.channel.write(Collections.singletonList(msg));
 			}
 		}
     }
 
-    public void sendMsgBak(final OFMessage msg, final OVXSendMsg from) {
+    /*public void sendMsgBak(final OFMessage msg, final OVXSendMsg from) {
 		if (PhysicalSwitch.IsCompositionOn) {
 			if (msg.getType() == OFType.FLOW_MOD) {
 				
@@ -309,7 +304,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 				this.channel.write(Collections.singletonList(msg));
 			}
 		}
-    }
+    }*/
 
     /*
      * (non-Javadoc)

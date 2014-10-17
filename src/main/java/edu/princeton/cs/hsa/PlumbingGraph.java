@@ -19,38 +19,33 @@ public class PlumbingGraph {
 	
 	private Logger logger = LogManager.getLogger(PlumbingGraph.class.getName());
 	
-	private Map<Long, PlumbingNode> nodes;
+	private Map<Integer, PlumbingNode> nodes;
 	public PolicyFlowTable flowTable;
 	
 	public PlumbingGraph() {
-		this.nodes = new HashMap<Long, PlumbingNode>();
+		this.nodes = new HashMap<Integer, PlumbingNode>();
 		this.flowTable = new PolicyFlowTable();
 	}
 	
-	public void addNode(long dpid) {
-		PlumbingNode node = new PlumbingNode(dpid, this);
-		this.nodes.put(dpid, node);
+	public void createNodes (int count) {
+		for (int i = 0; i < count; i++) {
+			PlumbingNode node = new PlumbingNode(i, this);
+			this.nodes.put(i, node);
+		}
 	}
 	
-	public void addNode(long dpid,
-			List<PolicyFlowModStoreType> storeTypes,
-			List<PolicyFlowModStoreKey> storeKeys) {
-		PlumbingNode node = new PlumbingNode(dpid, this, storeTypes, storeKeys);
-		this.nodes.put(dpid, node);
+	public void addNode (int id) {
+		PlumbingNode node = new PlumbingNode(id, this);
+		this.nodes.put(id, node);
 	}
 	
-	public void addNode(PlumbingNode node) {
-		this.nodes.put(node.dpid, node);
-		node.graph = this;
+	public void addPort(int id, Short physicalPort) {
+		this.nodes.get(id).addPort(physicalPort);
 	}
 	
-	public void addPort(long dpid, Short port, Short physicalPort) {
-		this.nodes.get(dpid).addPort(port, physicalPort);
-	}
-	
-	public void addEdge(long dpid1, short port1, long dpid2, short port2) {
-		PlumbingNode node1 = this.nodes.get(dpid1);
-		PlumbingNode node2 = this.nodes.get(dpid2);
+	public void addEdge(int id1, short port1, int id2, short port2) {
+		PlumbingNode node1 = this.nodes.get(id1);
+		PlumbingNode node2 = this.nodes.get(id2);
 		
 		node1.addNextHop(port1, node2, port2);
 		node2.addNextHop(port2, node1, port1);

@@ -32,25 +32,20 @@ import net.onrc.openvirtex.db.DBManager;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.elements.Persistable;
 import net.onrc.openvirtex.elements.address.IPAddress;
-import net.onrc.openvirtex.elements.datapath.OVXBabySwitch;
 import net.onrc.openvirtex.elements.datapath.OVXBigSwitch;
-import net.onrc.openvirtex.elements.datapath.OVXMultiSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSingleSwitch;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.elements.datapath.Switch;
 import net.onrc.openvirtex.elements.host.Host;
-import net.onrc.openvirtex.elements.link.OVXBabyLink;
 import net.onrc.openvirtex.elements.link.OVXLink;
 import net.onrc.openvirtex.elements.link.PhysicalLink;
-import net.onrc.openvirtex.elements.port.OVXBabyPort;
 import net.onrc.openvirtex.elements.port.OVXPort;
 import net.onrc.openvirtex.elements.port.PhysicalPort;
 import net.onrc.openvirtex.exceptions.DuplicateIndexException;
 import net.onrc.openvirtex.exceptions.IndexOutOfBoundException;
 import net.onrc.openvirtex.exceptions.PortMappingException;
 import net.onrc.openvirtex.exceptions.RoutingAlgorithmException;
-import net.onrc.openvirtex.exceptions.SwitchMappingException;
 import net.onrc.openvirtex.messages.OVXPacketIn;
 import net.onrc.openvirtex.messages.OVXPacketOut;
 import net.onrc.openvirtex.routing.RoutingAlgorithms;
@@ -304,61 +299,14 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
                 | this.dpidCounter.getNewIndex();
         return this.createSwitch(dpids, switchId);
     }
-    
-    /**
-     * Create OVX multi switches
-     */
-	public OVXMultiSwitch createMultiSwitch(final long physicalDpid,
-			int numberOfBabySwitches, final long switchId)
-			throws IndexOutOfBoundException {
-		OVXSwitch virtualSwitch = new OVXMultiSwitch(switchId, this.tenantId);
-		this.addSwitch(virtualSwitch);
-		
-		final List<PhysicalSwitch> switches = new ArrayList<PhysicalSwitch>();
-		switches.add(PhysicalNetwork.getInstance().getSwitch(physicalDpid));
-		virtualSwitch.register(switches);
 
-		// Add babySwitches to multiSwitch.
-		for (int i = 0; i < numberOfBabySwitches; i++) {
-			final long babyId = (long) 0xa42305 << 32
-					| this.dpidCounter.getNewIndex();
-			OVXSwitch babySwitch = new OVXBabySwitch(babyId, this.tenantId, (OVXMultiSwitch) virtualSwitch);
-			((OVXMultiSwitch) virtualSwitch).addSwitch((OVXBabySwitch) babySwitch);
-			/*
-			 * Store babySwitches in network dpidMap and neighborMap (in
-			 * addition to maps in multiSwitch).
-			 */
-			addSwitch(babySwitch);
-		}
-
-		if (this.isBooted) {
-			virtualSwitch.boot();
-		}
-
-		return (OVXMultiSwitch) virtualSwitch;
-	}
-    
-	public OVXMultiSwitch createMultiSwitch(final long physicalDpid, int numberOfBabySwitches)
-			throws IndexOutOfBoundException {
-		final long switchId = (long) 0xa42305 << 32
-				| this.dpidCounter.getNewIndex();
-		return this.createMultiSwitch(physicalDpid, numberOfBabySwitches,
-				switchId);
-	}
-	
 	public long getNewDpid()
 			throws IndexOutOfBoundException {
 		return (long) 0xa42305 << 32
 				| this.dpidCounter.getNewIndex();
 	}
 	
-	public OVXBabySwitch createBabySwitch(long switchId, OVXMultiSwitch multiSwitch)
-			throws IndexOutOfBoundException {
-		OVXBabySwitch babySwitch = new OVXBabySwitch(switchId, this.tenantId, (OVXMultiSwitch) multiSwitch);
-		multiSwitch.addSwitch(babySwitch);
-		addSwitch(babySwitch);
-		return babySwitch;
-	}
+
 
     /**
      * Creates a virtual port that is mapped to the given physical
@@ -387,29 +335,6 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
         ovxPort.register();
         return ovxPort;
     }
-    
-    // create BabyPort, internal, no physical port mapped
-	public OVXBabyPort createBabyPort(final long babyDpid)
-			throws IndexOutOfBoundException {
-		final OVXBabySwitch babySwitch = (OVXBabySwitch) getSwitch(babyDpid);
-		OVXBabyPort babyPort = new OVXBabyPort(this.tenantId, babySwitch);
-		//babyPort.register();
-		return babyPort;
-	}
-	
-	// create BabyPort, external, with physical port mapped
-	public OVXBabyPort createBabyPort(final long babyDpid, final short physicalPortNumber)
-			throws IndexOutOfBoundException, SwitchMappingException {
-		final OVXBabySwitch babySwitch = (OVXBabySwitch) getSwitch(babyDpid);
-		final OVXMultiSwitch multiSwitch = babySwitch.getParentSwitch();
-		final List<PhysicalSwitch> physicalSwitches = OVXMap.getInstance()
-			    .getPhysicalSwitches(multiSwitch);
-		final PhysicalSwitch physicalSwitch = physicalSwitches.get(0);
-		final PhysicalPort physicalPort = physicalSwitch.getPort(physicalPortNumber);
-		final OVXBabyPort babyPort = new OVXBabyPort(this.tenantId, babySwitch, physicalPort);
-		//babyPort.register();
-		return babyPort;
-	}
 
 
     /**
@@ -553,16 +478,6 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
                 alg, numBackups, linkId);
     }
     
-    public synchronized OVXBabyLink connectBabyLink(final long ovxSrcDpid,
-            final short ovxSrcPort, final long ovxDstDpid,
-            final short ovxDstPort)
-            throws IndexOutOfBoundException, PortMappingException {
-        final int linkId = this.linkCounter.getNewIndex();
-        OVXBabySwitch srcSwitch = (OVXBabySwitch) this.getSwitch(ovxSrcDpid);
-        OVXMultiSwitch multiSwitch = srcSwitch.getParentSwitch();
-        return new OVXBabyLink(linkId, ovxSrcDpid, ovxSrcPort, ovxDstDpid, ovxDstPort, multiSwitch);
-    }
-
     /**
      * Creates virtual link mapping to the physical topology.
      *

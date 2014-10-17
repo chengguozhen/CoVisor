@@ -140,7 +140,7 @@ public class VirtualTopology {
     
     public void exprHelperIP(int ipCount, int macExternal, int macInternal, int ipUpdate, List<String> macs, List<String> ips,
     		Writer writer, SwitchTime switchTime) throws IOException {
-    	
+    	/*
     	List<OFFlowMod> ipRouterRules = initIPRouterRules(ipCount);
     	List<OFFlowMod> gatewayRules = initGatewayRules(macExternal, ips, macs);
     	List<OFFlowMod> macLearnerRules = initMACLearnerRules(macExternal, macInternal, macs);
@@ -210,11 +210,12 @@ public class VirtualTopology {
     	}
     	//writer.write(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
     	System.out.println(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
+    	*/
     }
     
     public void exprHelperMAC(int ipCount, int macExternal, int macInternal, int macUpdate, List<String> macs, List<String> ips,
     		Writer writer, SwitchTime switchTime, boolean aclOpt) throws IOException {
-    	
+    	/*
     	List<OFFlowMod> ipRouterRules = initIPRouterRules(ipCount);
     	List<OFFlowMod> gatewayRules = initGatewayRules(macExternal, ips, macs);
     	List<OFFlowMod> macLearnerRules = initMACLearnerRules(macExternal, macInternal, macs);
@@ -308,11 +309,12 @@ public class VirtualTopology {
     	}
     	writer.write(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
     	//System.out.println(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
+    	*/
     }
     
     public void exprHelperMACStrawman(int ipCount, int macExternal, int macInternal, int macUpdate, List<String> macs, List<String> ips,
     		Writer writer, SwitchTime switchTime) throws IOException {
-    	
+    	/*
     	List<OFFlowMod> ipRouterRules = initIPRouterRules(ipCount);
     	List<OFFlowMod> gatewayRules = initGatewayRules(macExternal, ips, macs);
     	List<OFFlowMod> macLearnerRules = initMACLearnerRules(macExternal, macInternal, macs);
@@ -381,7 +383,7 @@ public class VirtualTopology {
     	
     	writer.write(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
     	//System.out.println(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
-    	
+    	*/
     }
     
     private int calculateUpdateFlowModsStrawman(List<OFFlowMod> oldFlowModsOriginal, List<OFFlowMod> newFlowMods) {

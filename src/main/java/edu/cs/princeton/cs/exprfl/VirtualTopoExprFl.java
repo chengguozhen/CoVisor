@@ -30,7 +30,7 @@ public class VirtualTopoExprFl {
 	public void startExpr(List<OFFlowMod> ipRouterRulesOriginal, List<OFFlowMod> gatewayRulesOriginal,
 			List<OFFlowMod> macLearnerRulesOriginal) {
 
-		SwitchTime switchTime = new SwitchTime("experiments/switch_time.txt");
+		/*SwitchTime switchTime = new SwitchTime("experiments/switch_time.txt");
 		int round = 10;
 		
 		{
@@ -156,14 +156,14 @@ public class VirtualTopoExprFl {
 				}
 			}
 
-		}
+		}*/
 	}
 	
 	public void exprHelperMACStrawman(List<OFFlowMod> ipRouterRules, List<OFFlowMod> gatewayRules, List<OFFlowMod> macLearnerRules,
 			List<OFFlowMod> gatewayUpdateRules, List<OFFlowMod> macLearnerUpdateRules,
     		Writer writer, SwitchTime switchTime) throws IOException {
     	
-    	// build topology
+    	/*// build topology
     	PlumbingGraph graph = new PlumbingGraph();
     	graph.addNode((long) 1);
     	graph.addNode((long) 2);
@@ -224,13 +224,13 @@ public class VirtualTopoExprFl {
     	
     	writer.write(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
     	//System.out.println(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
-    	
+    	*/
     }
 	
 	public void exprHelperMAC(List<OFFlowMod> ipRouterRules, List<OFFlowMod> gatewayRules, List<OFFlowMod> macLearnerRules,
 			List<OFFlowMod> gatewayUpdateRules, List<OFFlowMod> macLearnerUpdateRules,
     		Writer writer, SwitchTime switchTime, boolean aclOpt) throws IOException {
-    	
+    	/*
     	// build topology
     	PlumbingGraph graph = new PlumbingGraph();
     	if (aclOpt) {
@@ -319,6 +319,7 @@ public class VirtualTopoExprFl {
     	}
     	writer.write(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
     	System.out.println(String.format("%f\t%d\t%f\t%f\n", compileTime, fmCount, updateTime, compileTime / 1e3 + updateTime));
+    	*/
     }
 	
 	private int calculateUpdateFlowModsStrawman(List<OFFlowMod> oldFlowModsOriginal, List<OFFlowMod> newFlowMods) {

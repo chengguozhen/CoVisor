@@ -24,7 +24,7 @@ public class HsaTest extends TestCase {
         return new TestSuite(HsaTest.class);
     }
 
-    public void test1() {
+    /*public void test1() {
     	
     	// build graph
     	PlumbingGraph graph = new PlumbingGraph();
@@ -64,7 +64,7 @@ public class HsaTest extends TestCase {
     	
     	log.error(graph);
     	
-    }
+    }*/
     
     @Override
     protected void setUp() throws Exception {
