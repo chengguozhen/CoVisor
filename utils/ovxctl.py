@@ -648,7 +648,7 @@ def pa_createPlumbingSwitch(args, cmd):
     return parser.parse_args(args)
 
 def do_createPlumbingSwitch(gopts, opts, args):
-    if len(args) != 3:
+    if len(args) != 2:
         print ("createPlumbingSwitch : must specify: " +
             "physical_switch_dpid (e.g. 00:00:00:00:00:00:00:01)," +
             "number_of_plumbing_switches")
