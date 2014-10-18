@@ -323,7 +323,7 @@ public class VirtualTopoExprFl {
     }
 	
 	private int calculateUpdateFlowModsStrawman(List<OFFlowMod> oldFlowModsOriginal, List<OFFlowMod> newFlowMods) {
-    	
+    	/*
     	int fmCount = 0;
     	
     	// assign id to flowmod
@@ -405,6 +405,8 @@ public class VirtualTopoExprFl {
     	}
     	
     	return fmCount;
+    	*/
+		return 0;
     }
 
 }

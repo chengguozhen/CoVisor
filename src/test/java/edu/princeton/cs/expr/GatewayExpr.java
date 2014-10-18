@@ -34,11 +34,11 @@ public class GatewayExpr extends TestCase {
     }
     
     public void atestCorrectness() {
-    	PlumbingGraph graph = new PlumbingGraph();
+    	/*PlumbingGraph graph = new PlumbingGraph();
     	graph.addNode(1);
     	graph.addNode(2);
     	graph.addNode(3);
-    	/*graph.addPort(1, (short) 5, (short) 1);
+    	graph.addPort(1, (short) 5, (short) 1);
     	graph.addPort(1, (short) 6, (short) 2);
     	graph.addPort((long) 1, (short) 7, null);
     	graph.addPort((long) 2, (short) 8, null);
@@ -47,40 +47,40 @@ public class GatewayExpr extends TestCase {
     	graph.addPort((long) 3, (short) 11, (short) 3);
     	graph.addPort((long) 3, (short) 12, (short) 4);
     	graph.addEdge((long) 1, (short) 7, (long) 2, (short) 8);
-    	graph.addEdge((long) 2, (short) 9, (long) 3, (short) 10);*/
+    	graph.addEdge((long) 2, (short) 9, (long) 3, (short) 10);
     	
     	
     	// ip router
     	graph.update(OFFlowModHelper
     			.genFlowMod("priority=8,ether-type=2048,dst-ip=1.0.0.0/8,actions=output:5"),
-    			graph.getNode((long) 1));
+    			graph.getNode(1));
     	graph.update(OFFlowModHelper
     			.genFlowMod("priority=8,ether-type=2048,dst-ip=3.0.0.0/8,actions=output:7"),
-    			graph.getNode((long) 1));
+    			graph.getNode(1));
     	
     	// gateway switch
     	graph.update(OFFlowModHelper
     			.genFlowMod("priority=1,ether-type=2048,inport=9,actions=output:8"),
-    			graph.getNode((long) 2));
+    			graph.getNode(2));
     	graph.update(OFFlowModHelper
     			.genFlowMod("priority=8,ether-type=2048,inport=8,dst-ip=3.0.0.1,"
     					+ "actions=output:9,actions=set-src-mac:10:00:00:00:00:00,actions=set-dst-mac:00:00:00:00:00:01"),
-    			graph.getNode((long) 2));
+    			graph.getNode(2));
     	
     	// mac leaner
     	graph.update(OFFlowModHelper
     			.genFlowMod("priority=1,inport=10,src-mac=10:00:00:00:00:00,dst-mac=00:00:00:00:00:01,actions=output:11"),
-    			graph.getNode((long) 3));
+    			graph.getNode(3));
     	graph.update(OFFlowModHelper
     			.genFlowMod("priority=1,inport=11,src-mac=10:00:00:00:00:00,dst-mac=00:00:00:00:00:02,actions=output:12"),
-    			graph.getNode((long) 3));
+    			graph.getNode(3));
     	graph.update(OFFlowModHelper
     			.genFlowMod("priority=1,inport=12,src-mac=00:00:00:00:00:05,dst-mac=10:00:00:00:00:00,actions=output:10"),
-    			graph.getNode((long) 3));
+    			graph.getNode(3));
     	
     	log.error(graph);
     	
-    	/*List<String> macs = genMACs(500);
+    	List<String> macs = genMACs(500);
     	List<String> ips = genIPs(500);
     	System.out.println(macs.get(0));
     	System.out.println(macs.get(100));

@@ -387,7 +387,7 @@ public class VirtualTopology {
     }
     
     private int calculateUpdateFlowModsStrawman(List<OFFlowMod> oldFlowModsOriginal, List<OFFlowMod> newFlowMods) {
-    	
+    	/*
     	int fmCount = 0;
     	
     	// assign id to flowmod
@@ -469,6 +469,8 @@ public class VirtualTopology {
     	}
     	
     	return fmCount;
+    	*/
+    	return 0;
     }
     
     private List<OFFlowMod> initIPRouterRules(int count) {

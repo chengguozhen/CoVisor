@@ -44,9 +44,12 @@ import net.onrc.openvirtex.util.MACAddress;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.google.common.base.FinalizablePhantomReference;
 import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
 import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharArrayNodeFactory;
+
+import edu.princeton.cs.hsa.Tuple;
 
 /**
  * This singleton class maintains all the virtual-to-physical and reverse mappings.
@@ -60,6 +63,7 @@ public final class OVXMap implements Mappable {
     private static AtomicReference<OVXMap> mapInstance = new AtomicReference<>();
 
     private ConcurrentHashMap<OVXSwitch, ArrayList<PhysicalSwitch>> virtualSwitchMap;
+    private ConcurrentHashMap<OVXSwitch, ArrayList<Tuple<PhysicalSwitch, Integer>>> virtualSwitchPlumbingMap;
     private ConcurrentHashMap<PhysicalSwitch, ConcurrentHashMap<Integer, OVXSwitch>> physicalSwitchMap;
     private ConcurrentHashMap<OVXLink, ArrayList<PhysicalLink>> virtualLinkMap;
     private ConcurrentHashMap<PhysicalLink, ConcurrentHashMap<Integer, List<OVXLink>>> physicalLinkMap;
@@ -129,6 +133,18 @@ public final class OVXMap implements Mappable {
         for (final PhysicalSwitch physicalSwitch : physicalSwitches) {
             this.addSwitch(physicalSwitch, virtualSwitch);
         }
+    }
+    
+    @Override
+    public void addPlumbingSwitchIds(final List<PhysicalSwitch> physicalSwitches,
+    		final List<Integer> plumbingSwitchIds,
+    		final OVXSwitch virtualSwitch) {
+    	
+    	ArrayList<Tuple<PhysicalSwitch, Integer>> switchList = new ArrayList<Tuple<PhysicalSwitch, Integer>>();
+    	for (int i = 0; i < physicalSwitches.size(); i++) {
+    		switchList.add(new Tuple<PhysicalSwitch, Integer>(physicalSwitches.get(i), plumbingSwitchIds.get(i)));
+    	}
+    	this.virtualSwitchPlumbingMap.put(virtualSwitch, switchList);
     }
 
     /**
@@ -517,6 +533,10 @@ public final class OVXMap implements Mappable {
                     PhysicalSwitch.class);
         }
         return this.virtualSwitchMap.get(virtualSwitch);
+    }
+    
+    public List<Tuple<PhysicalSwitch, Integer>> getPlumbingSwitches(final OVXSwitch virtualSwitch) {
+    	return this.virtualSwitchPlumbingMap.get(virtualSwitch);
     }
 
     /**

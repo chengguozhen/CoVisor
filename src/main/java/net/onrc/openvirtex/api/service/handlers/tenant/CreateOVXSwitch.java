@@ -56,6 +56,8 @@ public class CreateOVXSwitch extends ApiHandler<Map<String, Object>> {
                     TenantHandler.TENANT, params, true, null);
             final List<Number> dpids = HandlerUtils.<List<Number>>fetchField(
                     TenantHandler.DPIDS, params, true, null);
+            final List<Number> plumbingSwitchIds = HandlerUtils.<List<Number>>fetchField(
+                    TenantHandler.PLUMBING_SWITCH_IDS, params, true, null);
             final Long dp = HandlerUtils.<Number>fetchField(
                     TenantHandler.VDPID, params, false, 0).longValue();
 
@@ -68,13 +70,17 @@ public class CreateOVXSwitch extends ApiHandler<Map<String, Object>> {
             for (final Number dpid : dpids) {
                 longDpids.add(dpid.longValue());
             }
+            final List<Integer> intPlumbingSwitchIds = new ArrayList<Integer>();
+            for (final Number plumbingSwitchId : plumbingSwitchIds) {
+            	intPlumbingSwitchIds.add(plumbingSwitchId.intValue());
+            }
 
             HandlerUtils.isValidDPID(tenantId.intValue(), longDpids);
             final OVXSwitch ovxSwitch;
             if (dp == 0) {
-                ovxSwitch = virtualNetwork.createSwitch(longDpids);
+                ovxSwitch = virtualNetwork.createSwitch(longDpids, intPlumbingSwitchIds);
             } else {
-                ovxSwitch = virtualNetwork.createSwitch(longDpids, dp);
+                ovxSwitch = virtualNetwork.createSwitch(longDpids, intPlumbingSwitchIds, dp);
             }
 
             if (ovxSwitch == null) {

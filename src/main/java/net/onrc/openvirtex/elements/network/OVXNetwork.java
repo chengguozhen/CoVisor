@@ -284,6 +284,35 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
 
         return virtualSwitch;
     }
+    
+    public OVXSwitch createSwitch(final List<Long> dpids, final List<Integer> plumbingSwitchIds, final long switchId)
+            throws IndexOutOfBoundException {
+        OVXSwitch virtualSwitch;
+        /*
+         * The switchId is generated using the ON.Lab OUI (00:A4:23:05) plus a
+         * unique number inside the virtual network
+         */
+        final List<PhysicalSwitch> switches = new ArrayList<PhysicalSwitch>();
+        // TODO: check if dpids are present in physical network
+        for (final long dpid : dpids) {
+            switches.add(PhysicalNetwork.getInstance().getSwitch(dpid));
+        }
+        if (dpids.size() == 1) {
+            virtualSwitch = new OVXSingleSwitch(switchId, this.tenantId);
+        } else {
+            virtualSwitch = new OVXBigSwitch(switchId, this.tenantId);
+        }
+        // Add switch to topology and register it in the map
+        this.addSwitch(virtualSwitch);
+
+        virtualSwitch.register(switches);
+        virtualSwitch.registerPlumbingSwitches(switches, plumbingSwitchIds);
+        if (this.isBooted) {
+            virtualSwitch.boot();
+        }
+
+        return virtualSwitch;
+    }
 
     /**
      * Creates a virtual switch that is mapped to the given list
@@ -298,6 +327,13 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
         final long switchId = (long) 0xa42305 << 32
                 | this.dpidCounter.getNewIndex();
         return this.createSwitch(dpids, switchId);
+    }
+    
+    public OVXSwitch createSwitch(final List<Long> dpids, final List<Integer> plumbingSwitchIds)
+            throws IndexOutOfBoundException {
+        final long switchId = (long) 0xa42305 << 32
+                | this.dpidCounter.getNewIndex();
+        return this.createSwitch(dpids, plumbingSwitchIds, switchId);
     }
 
 	public long getNewDpid()

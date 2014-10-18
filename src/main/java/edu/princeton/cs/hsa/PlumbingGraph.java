@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFFlowMod;
@@ -19,23 +21,29 @@ public class PlumbingGraph {
 	
 	private Logger logger = LogManager.getLogger(PlumbingGraph.class.getName());
 	
-	private Map<Integer, PlumbingNode> nodes;
+	private PhysicalSwitch physicalSwitch;
+	private Map<Integer, PlumbingSwitch> nodes;
 	public PolicyFlowTable flowTable;
 	
-	public PlumbingGraph() {
-		this.nodes = new HashMap<Integer, PlumbingNode>();
+	public PlumbingGraph(PhysicalSwitch physicalSwitch) {
+		this.physicalSwitch = physicalSwitch;
+		this.nodes = new HashMap<Integer, PlumbingSwitch>();
 		this.flowTable = new PolicyFlowTable();
+	}
+	
+	public PhysicalSwitch getPhysicalSwitch() {
+		return this.physicalSwitch;
 	}
 	
 	public void createNodes (int count) {
 		for (int i = 0; i < count; i++) {
-			PlumbingNode node = new PlumbingNode(i, this);
+			PlumbingSwitch node = new PlumbingSwitch(i, this);
 			this.nodes.put(i, node);
 		}
 	}
 	
 	public void addNode (int id) {
-		PlumbingNode node = new PlumbingNode(id, this);
+		PlumbingSwitch node = new PlumbingSwitch(id, this);
 		this.nodes.put(id, node);
 	}
 	
@@ -44,18 +52,18 @@ public class PlumbingGraph {
 	}
 	
 	public void addEdge(int id1, short port1, int id2, short port2) {
-		PlumbingNode node1 = this.nodes.get(id1);
-		PlumbingNode node2 = this.nodes.get(id2);
+		PlumbingSwitch node1 = this.nodes.get(id1);
+		PlumbingSwitch node2 = this.nodes.get(id2);
 		
 		node1.addNextHop(port1, node2, port2);
 		node2.addNextHop(port2, node1, port1);
 	}
 	
-	public PlumbingNode getNode(long dpid) {
-		return this.nodes.get(dpid);
+	public PlumbingSwitch getNode(int id) {
+		return this.nodes.get(id);
 	}
 	
-	public PolicyUpdateTable update(OFFlowMod ofm, PlumbingNode node) {
+	public PolicyUpdateTable update(OFFlowMod ofm, PlumbingSwitch node) {
 		PolicyUpdateTable updateTable = node.update(ofm);
 		for (OFFlowMod fm : updateTable.addFlowMods) {
 			this.flowTable.addFlowMod(fm);
@@ -65,7 +73,7 @@ public class PlumbingGraph {
 	
 	public String getGraphString() {
 		String str = "";
-		for (PlumbingNode node : this.nodes.values()) {
+		for (PlumbingSwitch node : this.nodes.values()) {
 			str = str + node.toString();
 		}
 		return str;
