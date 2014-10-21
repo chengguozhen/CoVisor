@@ -659,6 +659,13 @@ def exprAll():
         expr('strawman', 'res_strawman_%d' %  perSwRoutingRule)
         expr('inc', 'res_inc_%d' %  perSwRoutingRule)
 
+def expr():
+    cleanAll()
+    startFloodlight(2)
+    startOVX()
+    (topo, net) = startMininetWithoutCLI()
+    CLI(net)
+
 
 #********************************************************************
 # main
@@ -742,7 +749,8 @@ if __name__ == '__main__':
         #exprVirtMultiController()
         #exprParallel()
         #exprSequential()
-        exprGateway()
+        #exprGateway()
+        expr()
     else:
         printHelp()
 
