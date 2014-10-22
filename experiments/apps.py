@@ -6,6 +6,112 @@ import random
 from ExprTopo.mtopo import *
 
 #********************************************************************
+# Demo App
+#********************************************************************
+class DemoMonitorApp():
+
+    def __init__(self, topo):
+        self.graph = topo.graph
+        dpid = self.graph.nodes()[0]
+        self.rules = []
+
+        rule = '{"switch":"%s", ' % dpid + \
+                '"name":"DemoMinitor0", ' + \
+                '"priority":"0", ' + \
+                '"active":"true", "actions":""}'
+        self.rules.append(rule)
+
+        rule = '{"switch":"%s", ' % dpid + \
+            '"name":"DemoMonitor1", ' + \
+            '"priority":"1", ' + \
+            '"ether-type":"2048", ' + \
+            '"src-ip":"1.0.0.0/24", ' + \
+            '"active":"true", "actions":""}'
+        self.rules.append(rule)
+
+    def installRules(self):
+        for rule in self.rules:
+            print rule
+            #cmd = "curl -d '%s' http://localhost:10001/wm/staticflowentrypusher/json" % rule
+            #subprocess.call(cmd, shell=True)
+            print ""
+
+class DemoRouterApp():
+
+    def __init__(self, topo):
+        self.graph = topo.graph
+        dpid = self.graph.nodes()[0]
+        self.rules = []
+
+        rule = '{"switch":"%s", ' % dpid + \
+                '"name":"DemoRouter0", ' + \
+                '"priority":"0", ' + \
+                '"active":"true", "actions":""}'
+        self.rules.append(rule)
+
+        rule = '{"switch":"%s", ' % dpid + \
+            '"name":"DemoRouter1", ' + \
+            '"priority":"1", ' + \
+            '"ether-type":"2048", ' + \
+            '"dst-ip":"2.0.0.1", ' + \
+            '"active":"true", "actions":"output=1"}'
+        self.rules.append(rule)
+
+        rule = '{"switch":"%s", ' % dpid + \
+            '"name":"DemoRouter2", ' + \
+            '"priority":"1", ' + \
+            '"ether-type":"2048", ' + \
+            '"dst-ip":"2.0.0.2", ' + \
+            '"active":"true", "actions":"output=2"}'
+        self.rules.append(rule)
+
+    def installRules(self):
+        for rule in self.rules:
+            print rule
+            #cmd = "curl -d '%s' http://localhost:10001/wm/staticflowentrypusher/json" % rule
+            #subprocess.call(cmd, shell=True)
+            print ""
+
+class DemoLoadBalancerApp():
+
+    def __init__(self, topo):
+        self.graph = topo.graph
+        dpid = self.graph.nodes()[0]
+        self.rules = []
+
+        rule = '{"switch":"%s", ' % dpid + \
+                '"name":"DemoLB0", ' + \
+                '"priority":"0", ' + \
+                '"active":"true", "actions":""}'
+        self.rules.append(rule)
+
+        rule = '{"switch":"%s", ' % dpid + \
+            '"name":"DemoLB1", ' + \
+            '"priority":"1", ' + \
+            '"ether-type":"2048", ' + \
+            '"src-ip":"0.0.0.0/2", ' + \
+            '"dst-ip":"3.0.0.0", ' + \
+            '"active":"true", "actions":"set-dst-ip=2.0.0.1"}'
+        self.rules.append(rule)
+
+        rule = '{"switch":"%s", ' % dpid + \
+            '"name":"DemoLB2", ' + \
+            '"priority":"3", ' + \
+            '"ether-type":"2048", ' + \
+            '"dst-ip":"3.0.0.0", ' + \
+            '"active":"true", "actions":"set-dst-ip=2.0.0.2"}'
+        self.rules.append(rule)
+
+    def installRules(self):
+        for rule in self.rules:
+            print rule
+            #cmd = "curl -d '%s' http://localhost:10001/wm/staticflowentrypusher/json" % rule
+            #subprocess.call(cmd, shell=True)
+            print ""
+
+
+
+#********************************************************************
 # Monitor App
 #********************************************************************
 class MonitorApp():
