@@ -69,23 +69,10 @@ def addController1(topo):
     cmd = "%s -n createNetwork tcp:%s:10000 10.0.0.0 16" % (ovxctlPy,
         CONTROLLER_IP)
     subprocess.call(cmd, shell=True)
-    for sw in topo.graph.nodes():
-        # create switch
-        cmd = "%s -n createSwitch 1 %s" % (ovxctlPy,
-            topo.graph.node[sw]['dpid'])
-        subprocess.call(cmd, shell=True)
-        # create port
-        for i in range(topo.hostPerSw):
-            cmd = "%s -n createPort 1 %s %d" % (ovxctlPy,
-                topo.graph.node[sw]['dpid'], i+1)
-            subprocess.call(cmd, shell=True)
-        # add 1 host
-        rawHostMac = topo.graph.node[sw]['dpid'][4:-1] + '1'
-        hostMac = ':'.join(a+b for a,b in zip(rawHostMac[::2], rawHostMac[1::2]))
-        cmd = "%s -n connectHost 1 %s %d %s" % (ovxctlPy,
-            "00a42305" + topo.graph.node[sw]['dpid'][-10:-2], 1,
-            hostMac)
-        subprocess.call(cmd, shell=True)
+
+    cmd = "%s -n createSwitch 1 00:00:00:00:00:00:01:00 0" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+
     cmd = "%s -n startNetwork 1" % ovxctlPy
     subprocess.call(cmd, shell=True)
 
@@ -96,24 +83,10 @@ def addController2(topo):
     cmd = "%s -n createNetwork tcp:%s:20000 10.0.0.0 16" % (ovxctlPy,
         CONTROLLER_IP)
     subprocess.call(cmd, shell=True)
-    for sw in topo.graph.nodes():
-        # create switch
-        cmd = "%s -n createSwitch 2 %s" % (ovxctlPy,
-            topo.graph.node[sw]['dpid'])
-        subprocess.call(cmd, shell=True)
-        # create port
-        for i in range(topo.hostPerSw):
-            cmd = "%s -n createPort 2 %s %d" % (ovxctlPy,
-                topo.graph.node[sw]['dpid'], i+1)
-            subprocess.call(cmd, shell=True)
-        # add the remaining host
-        for i in xrange(1, topo.hostPerSw):
-            rawHostMac = topo.graph.node[sw]['dpid'][4:-1] + '%d' % (i+1)
-            hostMac = ':'.join(a+b for a,b in zip(rawHostMac[::2], rawHostMac[1::2]))
-            cmd = "%s -n connectHost 2 %s %d %s" % (ovxctlPy,
-                "00a42305" + topo.graph.node[sw]['dpid'][-10:-2], i+1,
-                hostMac)
-        subprocess.call(cmd, shell=True)
+
+    cmd = "%s -n createSwitch 2 00:00:00:00:00:00:01:00 0" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+
     cmd = "%s -n startNetwork 2" % ovxctlPy
     subprocess.call(cmd, shell=True)
 
@@ -291,17 +264,24 @@ def exprParallel():
     startOVX()
     (topo, net) = startMininet()
     time.sleep(5)
+    createPlumbingGraph()
     addController1(topo)
-    addController2(topo)
-    addPolicy(policy)
-    startComposition()
-    app2 = MACLearnerApp(topo, perSwRule = perSwRoutingRule)
-    app2.installRules()
-    app1 = MonitorApp(topo, app2.macs, perSwRule = 1000, addRuleCount = 10)
+    app1 = DemoMonitorApp(topo)
     app1.installRules()
-    app1.updateRules()
-    time.sleep(1)
-    setComposeAlgo(algo)
+    app2 = DemoRouterApp(topo)
+    app2.installRules()
+
+
+#    addController2(topo)
+#    addPolicy(policy)
+#    startComposition()
+#    app2 = MACLearnerApp(topo, perSwRule = perSwRoutingRule)
+#    app2.installRules()
+#    app1 = MonitorApp(topo, app2.macs, perSwRule = 1000, addRuleCount = 10)
+#    app1.installRules()
+#    app1.updateRules()
+#    time.sleep(1)
+#    setComposeAlgo(algo)
 
 def exprParallelHelper(algo, policy, outLog):
     cleanAll()
