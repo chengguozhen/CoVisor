@@ -542,7 +542,7 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
         /*
          * Save the channel the msg came in on
          */
-    	log.info("MagicTimestamp\t0\t{}", System.nanoTime());
+    	log.info("MagicTimestamp\t0\t{}\t{}", System.nanoTime(), msg);
         msg.setXid(channelMux.translate(msg.getXid(), channel));
         try {
             /*

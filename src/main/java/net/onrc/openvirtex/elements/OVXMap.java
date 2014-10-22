@@ -79,6 +79,7 @@ public final class OVXMap implements Mappable {
      */
     private OVXMap() {
         this.virtualSwitchMap = new ConcurrentHashMap<OVXSwitch, ArrayList<PhysicalSwitch>>();
+        this.virtualSwitchPlumbingMap = new ConcurrentHashMap<OVXSwitch, ArrayList<Tuple<PhysicalSwitch, Integer>>>();
         this.physicalSwitchMap = new ConcurrentHashMap<PhysicalSwitch, ConcurrentHashMap<Integer, OVXSwitch>>();
         this.virtualLinkMap = new ConcurrentHashMap<OVXLink, ArrayList<PhysicalLink>>();
         this.physicalLinkMap = new ConcurrentHashMap<PhysicalLink, ConcurrentHashMap<Integer, List<OVXLink>>>();
@@ -139,7 +140,6 @@ public final class OVXMap implements Mappable {
     public void addPlumbingSwitchIds(final List<PhysicalSwitch> physicalSwitches,
     		final List<Integer> plumbingSwitchIds,
     		final OVXSwitch virtualSwitch) {
-    	
     	ArrayList<Tuple<PhysicalSwitch, Integer>> switchList = new ArrayList<Tuple<PhysicalSwitch, Integer>>();
     	for (int i = 0; i < physicalSwitches.size(); i++) {
     		switchList.add(new Tuple<PhysicalSwitch, Integer>(physicalSwitches.get(i), plumbingSwitchIds.get(i)));

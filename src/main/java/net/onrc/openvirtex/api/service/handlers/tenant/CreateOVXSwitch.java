@@ -62,7 +62,7 @@ public class CreateOVXSwitch extends ApiHandler<Map<String, Object>> {
                     TenantHandler.VDPID, params, false, 0).longValue();
 
             HandlerUtils.isValidTenantId(tenantId.intValue());
-
+            
             final OVXMap map = OVXMap.getInstance();
             final OVXNetwork virtualNetwork = map.getVirtualNetwork(tenantId
                     .intValue());

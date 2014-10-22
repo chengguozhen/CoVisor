@@ -243,7 +243,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     @Override
     public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
     	if (msg.getType() == OFType.FLOW_MOD) {
-    		
+    		log.info("{}", msg);
     		/*PolicyUpdateTable updateTable = this.plumbingGraph.update((OFFlowMod) msg, (O) from);
     		if ((this.channel.isOpen()) && (this.isConnected)) {
 				for (OFFlowMod fm : updateTable.addFlowMods) {

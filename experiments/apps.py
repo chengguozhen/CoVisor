@@ -12,7 +12,8 @@ class DemoMonitorApp():
 
     def __init__(self, topo):
         self.graph = topo.graph
-        dpid = self.graph.nodes()[0]
+        switch = self.graph.nodes()[0]
+        dpid = self.graph.node[switch]['vdpid']
         self.rules = []
 
         rule = '{"switch":"%s", ' % dpid + \
@@ -32,15 +33,16 @@ class DemoMonitorApp():
     def installRules(self):
         for rule in self.rules:
             print rule
-            #cmd = "curl -d '%s' http://localhost:10001/wm/staticflowentrypusher/json" % rule
-            #subprocess.call(cmd, shell=True)
+            cmd = "curl -d '%s' http://localhost:10001/wm/staticflowentrypusher/json" % rule
+            subprocess.call(cmd, shell=True)
             print ""
 
 class DemoRouterApp():
 
     def __init__(self, topo):
         self.graph = topo.graph
-        dpid = self.graph.nodes()[0]
+        switch = self.graph.nodes()[0]
+        dpid = self.graph.node[switch]['vdpid']
         self.rules = []
 
         rule = '{"switch":"%s", ' % dpid + \
@@ -68,15 +70,16 @@ class DemoRouterApp():
     def installRules(self):
         for rule in self.rules:
             print rule
-            #cmd = "curl -d '%s' http://localhost:10001/wm/staticflowentrypusher/json" % rule
-            #subprocess.call(cmd, shell=True)
+            cmd = "curl -d '%s' http://localhost:10001/wm/staticflowentrypusher/json" % rule
+            subprocess.call(cmd, shell=True)
             print ""
 
 class DemoLoadBalancerApp():
 
     def __init__(self, topo):
         self.graph = topo.graph
-        dpid = self.graph.nodes()[0]
+        switch = self.graph.nodes()[0]
+        dpid = self.graph.node[switch]['vdpid']
         self.rules = []
 
         rule = '{"switch":"%s", ' % dpid + \

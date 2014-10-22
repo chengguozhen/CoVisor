@@ -266,11 +266,12 @@ def exprParallel():
     time.sleep(5)
     createPlumbingGraph()
     addController1(topo)
+    addController2(topo)
     app1 = DemoMonitorApp(topo)
     app1.installRules()
     app2 = DemoRouterApp(topo)
     app2.installRules()
-
+    CLI(net)
 
 #    addController2(topo)
 #    addPolicy(policy)
@@ -469,7 +470,7 @@ if __name__ == '__main__':
         #exprParallel()
         #exprSequential()
         #exprGateway()
-        expr()
+        exprParallel()
     else:
         printHelp()
 
