@@ -20,9 +20,9 @@ public class PlumbingFlowMod extends OFFlowMod {
 	private List<PlumbingFlowMod> nextPmods;
 	private List<PlumbingFlow> prevPflows;
 	private List<PlumbingFlow> nextPflows;
-	private PlumbingNode pNode;
+	private PlumbingSwitch pNode;
 	
-	public PlumbingFlowMod(final OFFlowMod fm, final PlumbingNode pNode) {
+	public PlumbingFlowMod(final OFFlowMod fm, final PlumbingSwitch pNode) {
 		super();
 		this.match = fm.getMatch();
 		this.cookie = fm.getCookie();
@@ -84,7 +84,7 @@ public class PlumbingFlowMod extends OFFlowMod {
 		return this.originalOfm;
 	}
 	
-	public PlumbingNode getPlumbingNode () {
+	public PlumbingSwitch getPlumbingNode () {
 		return this.pNode;
 	}
 

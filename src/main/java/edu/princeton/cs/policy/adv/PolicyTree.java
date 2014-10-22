@@ -63,17 +63,12 @@ public class PolicyTree {
 		case Parallel:
 		case Sequential:
 		case Override:
-			if (UPDATEMECHANISM == PolicyUpdateMechanism.Strawman) {
-				updateTable = updateStrawman(fm, tenantId);
-			} else {
-				updateTable = updateIncremental(fm, tenantId);
-			}
+			updateTable = updateIncremental(fm, tenantId);
 			break;
 		case Predicate:
 			throw new NotImplementedException();
 		case Invalid: // this is leaf, directly add to flow table
 			if (tenantId == this.tenantId) {
-				fm.helperId = this.flowTable.helperSize;
 				updateTable = this.flowTable.update(fm);
 			} else {
 				updateTable = new PolicyUpdateTable();
@@ -82,111 +77,6 @@ public class PolicyTree {
 		default:
 			break;
 		}
-		
-		return updateTable;
-	}
-
-	// strawman solution: calculate a new cross product
-	private PolicyUpdateTable updateStrawman(OFFlowMod newFm, Integer tenantId) {
-		
-		// update children
-		this.leftChild.update(newFm, tenantId);
-		this.rightChild.update(newFm, tenantId);
-		
-		// generate new table
-		List<OFFlowMod> newFlowMods = new ArrayList<OFFlowMod>();
-		if (this.operator == PolicyOperator.Parallel || this.operator == PolicyOperator.Sequential) {
-			
-			for (OFFlowMod fm1 : this.leftChild.flowTable.getFlowModsSorted()) {
-				
-				if (this.operator == PolicyOperator.Sequential) {
-					boolean flag = false;
-					if (fm1.getActions().isEmpty()) {
-						flag = true;
-					}
-					if (!ActionOutputAsPass) {
-						for (OFAction action : fm1.getActions()) {
-							if (action instanceof OFActionOutput) {
-								flag = true;
-								break;
-							}
-						}
-					}
-					if (flag) {
-						OFFlowMod composedFm = null;
-						try {
-							composedFm = fm1.clone();
-							composedFm.setPriority(
-									(short) (fm1.getPriority() * PolicyCompositionUtil.SEQUENTIAL_SHIFT));
-						} catch (CloneNotSupportedException e) {
-							e.printStackTrace();
-						}
-						newFlowMods.add(composedFm);
-						continue;
-					}
-				}
-				
-				for (OFFlowMod fm2 : this.rightChild.flowTable.getFlowModsSorted()) {
-					
-					OFFlowMod composedFm = null;
-					if (this.operator == PolicyOperator.Parallel) {
-						composedFm = PolicyCompositionUtil.parallelComposition(fm1, fm2);
-					} else {
-						composedFm = PolicyCompositionUtil.sequentialComposition(fm1, fm2);
-					}
-					if (composedFm != null) {
-						newFlowMods.add(composedFm);
-						composedFm.helperId = (fm2.helperId << 10) + fm1.helperId;
-					}
-				}
-			}
-		} else if (this.operator == PolicyOperator.Override) {
-			for (OFFlowMod fm1 : this.leftChild.flowTable.getFlowModsSorted()) {
-				try {
-					newFlowMods.add(fm1.clone());
-				} catch (CloneNotSupportedException e) {
-					e.printStackTrace();
-				}
-			}
-			for (OFFlowMod fm2 : this.rightChild.flowTable.getFlowModsSorted()) {
-				try {
-					newFlowMods.add(fm2.clone());
-				} catch (CloneNotSupportedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		
-		short currentPriority = (short) (newFlowMods.size() - 1);
-		for (OFFlowMod fm : newFlowMods) {
-			fm.setPriority(currentPriority);
-			currentPriority -= 1;
-		}
-		
-		// calculate difference between old and new table
-		List<OFFlowMod> oldFlowMods = this.flowTable.getFlowMods();
-		PolicyUpdateTable updateTable = new PolicyUpdateTable();
-		//updateTable.addFlowMods = PolicyCompositionUtil.diffFlowMods(newFlowMods, oldFlowMods);
-		//updateTable.deleteFlowMods = PolicyCompositionUtil.diffFlowMods(oldFlowMods, newFlowMods);
-		Map<Integer, OFFlowMod> oldFlowModsMap = new HashMap<Integer, OFFlowMod>();
-		for (OFFlowMod ofm : oldFlowMods) {
-			oldFlowModsMap.put(ofm.helperId, ofm);
-		}
-		for (OFFlowMod nfm : newFlowMods) {
-			OFFlowMod ofm = oldFlowModsMap.get(nfm.helperId);
-			if (ofm != null) {
-				if (nfm.getPriority() != ofm.getPriority()) {
-					updateTable.addFlowMods.add(nfm);
-					updateTable.deleteFlowMods.add(ofm);
-				}
-			} else {
-				updateTable.addFlowMods.add(nfm);
-			}
-		}
-		
-		
-		// update flow table
-		this.flowTable.setTable(newFlowMods);
 		
 		return updateTable;
 	}

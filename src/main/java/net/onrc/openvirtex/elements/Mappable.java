@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import edu.princeton.cs.hsa.Tuple;
 import net.onrc.openvirtex.elements.address.OVXIPAddress;
 import net.onrc.openvirtex.elements.address.PhysicalIPAddress;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
@@ -58,6 +59,11 @@ public interface Mappable {
      */
     public void addSwitches(final List<PhysicalSwitch> physicalSwitches,
             final OVXSwitch virtualSwitch);
+    
+    public void addPlumbingSwitchIds(final List<PhysicalSwitch> physicalSwitches,
+    		final List<Integer> plumbingSwitchIds,
+    		final OVXSwitch virtualSwitch);
+    
 
     /**
      * Create the mapping between PhysicalLinks and a VirtualLink. This function
@@ -171,6 +177,8 @@ public interface Mappable {
      */
     public List<PhysicalSwitch> getPhysicalSwitches(OVXSwitch virtualSwitch)
             throws SwitchMappingException;
+    
+    public List<Tuple<PhysicalSwitch, Integer>> getPlumbingSwitches(OVXSwitch virtualSwitch);
 
     /**
      * Gets the virtual network instance associated with the given tenant ID.

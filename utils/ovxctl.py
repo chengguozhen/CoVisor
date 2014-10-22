@@ -90,7 +90,7 @@ def do_createNetwork(gopts, opts, args):
         print "Virtual network has been created (network_id %s)." % str(network_id)
 
 def pa_createSwitch(args, cmd):
-    usage = "%s [options] <tenant_id> <physical_dpids>" % USAGE.format(cmd)
+    usage = "%s [options] <tenant_id> <physical_dpids> <plumbing_ids>" % USAGE.format(cmd)
     (sdesc, ldesc) = DESCS[cmd]
     parser = OptionParser(usage=usage, description=ldesc)
     parser.add_option("-d", "--dpid", dest="dpid", type="str", default="0",
@@ -98,13 +98,16 @@ def pa_createSwitch(args, cmd):
     return parser.parse_args(args)
 
 def do_createSwitch(gopts, opts, args):
-    if len(args) != 2:
+    if len(args) != 3:
         print ("createSwitch : must specify: " +
-        "virtual tenant_id and a comma separated list of physical dpids " +
-        "(e.g. 00:00:00:00:00:00:00:01) which will be associated to the virtual switch")
+        "virtual tenant_id, a comma separated list of physical dpids " +
+        "(e.g. 00:00:00:00:00:00:00:01) which will be associated to the virtual switch, " +
+        "and a comma separated list of plumbing switch ids")
         sys.exit()
     dpids = [int(dpid.replace(":", ""), 16) for dpid in args[1].split(',')]
-    req = { "tenantId" : int(args[0]), "dpids" : dpids, "dpid" : int(opts.dpid.replace(":", ""), 16) }
+    plumbingIds = [int(plumbingId) for plumbingId in args[2].split(',')]
+    req = { "tenantId" : int(args[0]), "dpids" : dpids, "plumbingSwitchIds" : plumbingIds, "dpid" : int(opts.dpid.replace(":", ""), 16) }
+    print req
     reply = connect(gopts, "tenant", "createSwitch", data=req, passwd=getPasswd(gopts))
     switchId = reply.get('vdpid')
     if switchId:
@@ -835,8 +838,10 @@ DESCS = {
                        ("Creates a virtual network. Input: protocol, controllerIP, controller port, ip address, mask. "
                         "\nExample: createNetwork tcp 1.1.1.1 6634 192.168.1.0 24")),
     'createSwitch' : ("Create virtual switch", 
-                      ("Create a virtual switch. Must specify a tenant_id, and a list of the physical_dpids that will be part of the virtual switch."
-                        "\nExample: createSwitch 1 00:00:00:00:00:00:00:01,00:00:00:00:00:00:00:02")),
+        ("Create a virtual switch. Must specify a tenant_id, a list of the "
+        "physical_dpids that will be part of the virtual switch, "
+        "and a list of the plumbing switch ids."
+        "\nExample: createSwitch 1 00:00:00:00:00:00:00:01,00:00:00:00:00:00:00:02 0,0")),
     'createPort' : ("Create virtual port", 
                       ("Create a virtual port. Must specify a tenant_id, a physical_dpid and a physical_port."
                         "\nExample: createPort 1 00:00:00:00:00:00:00:01 1")),         

@@ -22,6 +22,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFMessage;
 
+import edu.princeton.cs.hsa.PlumbingSwitch;
+import edu.princeton.cs.hsa.Tuple;
+
 public class OVXSingleSwitch extends OVXSwitch {
 
     private static Logger log = LogManager.getLogger(OVXSingleSwitch.class
@@ -43,11 +46,10 @@ public class OVXSingleSwitch extends OVXSwitch {
     }
 
     @Override
-    // TODO: this is probably not optimal
     public void sendSouth(final OFMessage msg, final OVXPort inPort) {
-        PhysicalSwitch psw = getPhySwitch(inPort);
-        log.debug("Sending packet to sw {}: {}", psw.getName(), msg);
-        psw.sendMsg(msg, this);
+        PlumbingSwitch plumbingSwitch = getPlumbingSwitch();
+        log.debug("Sending packet to sw {}: {}", plumbingSwitch.getName(), msg);
+        plumbingSwitch.sendMsg(msg, this);
     }
 
     @Override
@@ -56,7 +58,6 @@ public class OVXSingleSwitch extends OVXSwitch {
         PhysicalSwitch psw = getPhySwitch(inPort);
         return psw.translate(ofm, this);
     }
-
 
     private PhysicalSwitch getPhySwitch(OVXPort inPort) {
         PhysicalSwitch psw = null;
@@ -71,4 +72,10 @@ public class OVXSingleSwitch extends OVXSwitch {
         }
         return psw;
     }
+    
+    private PlumbingSwitch getPlumbingSwitch() {
+    	Tuple<PhysicalSwitch, Integer> tuple = this.map.getPlumbingSwitches(this).get(0);
+    	return tuple.first.getPlumbingGraph().getNode(tuple.second);
+    }
+    
 }

@@ -247,6 +247,10 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
         this.map.addSwitches(physicalSwitches, this);
         DBManager.getInstance().save(this);
     }
+    
+    public void registerPlumbingSwitches(final List<PhysicalSwitch> physicalSwitches, final List<Integer> plumbingSwitchIds) {
+    	this.map.addPlumbingSwitchIds(physicalSwitches, plumbingSwitchIds, this);
+    }
 
     /**
      * Unregisters switch from persistent storage, from the mapping,

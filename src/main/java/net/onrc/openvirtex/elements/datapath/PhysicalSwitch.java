@@ -112,7 +112,7 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
         this.portStats = new AtomicReference<Map<Short, OVXPortStatisticsReply>>();
         this.flowStats = new AtomicReference<Map<Integer, List<OVXFlowStatisticsReply>>>();
         this.statsMan = new StatisticsManager(this);
-        this.plumbingGraph = new PlumbingGraph();
+        this.plumbingGraph = new PlumbingGraph(this);
     }
     
     public PlumbingGraph getPlumbingGraph() {

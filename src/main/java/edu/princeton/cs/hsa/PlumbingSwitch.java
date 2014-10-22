@@ -6,11 +6,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.onrc.openvirtex.core.io.OVXSendMsg;
+import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFMatch;
+import org.openflow.protocol.OFMessage;
+import org.openflow.protocol.OFType;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionDataLayerDestination;
 import org.openflow.protocol.action.OFActionDataLayerSource;
@@ -19,46 +24,50 @@ import org.openflow.protocol.action.OFActionOutput;
 
 import edu.princeton.cs.policy.adv.PolicyCompositionUtil;
 import edu.princeton.cs.policy.adv.PolicyFlowTable;
+import edu.princeton.cs.policy.adv.PolicyTree;
 import edu.princeton.cs.policy.adv.PolicyUpdateTable;
 import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreKey;
 import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreType;
 
-public class PlumbingNode {
+public class PlumbingSwitch implements OVXSendMsg {
 	
-	private Logger logger = LogManager.getLogger(PlumbingNode.class.getName());
+	private Logger logger = LogManager.getLogger(PlumbingSwitch.class.getName());
 	
 	public final int id;
 	public PlumbingGraph graph;
+	public PolicyTree policyTree;
 	private PolicyFlowTable flowTable;
 	//private Map<Short, Boolean> isEdgePortMap;
 	private Map<Short, Short> portMap; // virtual port -> physical port, null if it is an internal port
-	private Map<Short, PlumbingNode> prevHopMap;
-	private Map<Short, PlumbingNode> nextHopMap;
+	private Map<Short, PlumbingSwitch> prevHopMap;
+	private Map<Short, PlumbingSwitch> nextHopMap;
 	private Map<Short, Short> nextHopPortMap;
 	private int portNumber;
 	
-	public PlumbingNode(int id, PlumbingGraph graph) {
+	public PlumbingSwitch(int id, PlumbingGraph graph) {
 		this.id = id;
 		this.graph = graph;
+		this.policyTree = null;
 		this.flowTable = new PolicyFlowTable();
 		//this.isEdgePortMap = new HashMap<Short, Boolean>();
 		this.portMap = new HashMap<Short, Short>();
-		this.prevHopMap = new HashMap<Short, PlumbingNode>();
-		this.nextHopMap = new HashMap<Short, PlumbingNode>();
+		this.prevHopMap = new HashMap<Short, PlumbingSwitch>();
+		this.nextHopMap = new HashMap<Short, PlumbingSwitch>();
 		this.nextHopPortMap = new HashMap<Short, Short>();
 		this.portNumber = 0;
 	}
 	
-	public PlumbingNode(int id, PlumbingGraph graph,
+	public PlumbingSwitch(int id, PlumbingGraph graph,
 			List<PolicyFlowModStoreType> storeTypes,
 			List<PolicyFlowModStoreKey> storeKeys) {
 		this.id = id;
 		this.graph = graph;
+		this.policyTree = null;
 		this.flowTable = new PolicyFlowTable(storeTypes, storeKeys);
 		//this.isEdgePortMap = new HashMap<Short, Boolean>();
 		this.portMap = new HashMap<Short, Short>();
-		this.prevHopMap = new HashMap<Short, PlumbingNode>();
-		this.nextHopMap = new HashMap<Short, PlumbingNode>();
+		this.prevHopMap = new HashMap<Short, PlumbingSwitch>();
+		this.nextHopMap = new HashMap<Short, PlumbingSwitch>();
 		this.nextHopPortMap = new HashMap<Short, Short>();
 	}
 	
@@ -71,7 +80,7 @@ public class PlumbingNode {
 		this.portMap.put(this.getNextPortNumber(), physicalPort);
 	}
 	
-	public void addNextHop(short port, PlumbingNode nextHop, short nextHopPort) {
+	public void addNextHop(short port, PlumbingSwitch nextHop, short nextHopPort) {
 		nextHop.prevHopMap.put(nextHopPort, this);
 		this.nextHopMap.put(port, nextHop);
 		this.nextHopPortMap.put(port, nextHopPort);
@@ -79,6 +88,39 @@ public class PlumbingNode {
 	
 	public Short getPhysicalPort(short port) {
 		return this.portMap.get(port);
+	}
+	
+	@Override
+	public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
+		
+		if (msg.getType() == OFType.FLOW_MOD) {
+			
+			PolicyUpdateTable updateTable1 = this.policyTree.update((OFFlowMod) msg, ((OVXSwitch) from).getTenantId());
+			PolicyUpdateTable updateTable2 = new PolicyUpdateTable();
+			
+			for (OFFlowMod fm : updateTable1.addFlowMods) {
+				PolicyUpdateTable partialUpdateTable = this.update(fm);
+				updateTable2.addUpdateTable(partialUpdateTable);
+			}
+			for (OFFlowMod fm : updateTable1.deleteFlowMods) {
+				fm.setCommand(OFFlowMod.OFPFC_DELETE);
+				PolicyUpdateTable partialUpdateTable = this.update(fm);
+				updateTable2.addUpdateTable(partialUpdateTable);
+			}
+			
+			for (OFFlowMod fm : updateTable2.addFlowMods) {
+				this.graph.getPhysicalSwitch().sendMsg(fm, this);
+			}
+			for (OFFlowMod fm : updateTable2.deleteFlowMods) {
+				fm.setCommand(OFFlowMod.OFPFC_DELETE);
+				this.graph.getPhysicalSwitch().sendMsg(fm, this);
+			}
+			
+			
+		} else {
+			this.graph.getPhysicalSwitch().sendMsg(msg, this);
+		}
+		
 	}
 	
 	public PolicyUpdateTable update(OFFlowMod ofm) {
@@ -106,7 +148,7 @@ public class PlumbingNode {
 		PolicyUpdateTable updateTable = new PolicyUpdateTable();
 		
 		// update filter to descendant
-		PlumbingNode nextHop = this.getNextHop(pmod);
+		PlumbingSwitch nextHop = this.getNextHop(pmod);
 		if (nextHop != null) {
 			for (OFFlowMod nextOfm : nextHop.flowTable
 					.getPotentialFlowMods(pmod)) {
@@ -115,7 +157,7 @@ public class PlumbingNode {
 		}
 		
 		// update filter to ascendant
-		for (PlumbingNode prevHop : this.getPrevHops(pmod)) {
+		for (PlumbingSwitch prevHop : this.getPrevHops(pmod)) {
 			for (OFFlowMod prevOfm : prevHop.flowTable.getPotentialFlowMods(pmod)) {
 				PlumbingFlowMod prevPmod = (PlumbingFlowMod) prevOfm;
 				if (prevHop.getNextHop(prevPmod) == this) {
@@ -403,7 +445,7 @@ public class PlumbingNode {
 		}
 	}
 	
-	private PlumbingNode getNextHop(PlumbingFlowMod pmod) {
+	private PlumbingSwitch getNextHop(PlumbingFlowMod pmod) {
 		for (OFAction action : pmod.getActions()) {
 			if (action instanceof OFActionOutput) {
 				short outport = ((OFActionOutput) action).getPort();
@@ -423,11 +465,11 @@ public class PlumbingNode {
 		return null;
 	}
 	
-	private Collection<PlumbingNode> getPrevHops(PlumbingFlowMod pmod) {
+	private Collection<PlumbingSwitch> getPrevHops(PlumbingFlowMod pmod) {
 		OFMatch match = pmod.getMatch();
 		if ((match.getWildcards() & OFMatch.OFPFW_IN_PORT) == 0) {
-			List<PlumbingNode> prevHops = new ArrayList<PlumbingNode>();
-			PlumbingNode prevHop = this.prevHopMap.get(match.getInputPort());
+			List<PlumbingSwitch> prevHops = new ArrayList<PlumbingSwitch>();
+			PlumbingSwitch prevHop = this.prevHopMap.get(match.getInputPort());
 			if (prevHop != null) {
 				prevHops.add(prevHop);
 			}
@@ -491,5 +533,10 @@ public class PlumbingNode {
 			}
 		}
 		return str;
+	}
+
+	@Override
+	public String getName() {
+		return this.graph.getPhysicalSwitch().getName() + ":" + this.id;
 	}
 }

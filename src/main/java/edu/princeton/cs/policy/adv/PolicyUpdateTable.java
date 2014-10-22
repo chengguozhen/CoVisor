@@ -14,4 +14,9 @@ public class PolicyUpdateTable {
 		this.addFlowMods = new ArrayList<OFFlowMod>();
 		this.deleteFlowMods = new ArrayList<OFFlowMod>();
 	}
+
+	public void addUpdateTable(PolicyUpdateTable partialUpdateTable) {
+		this.addFlowMods.addAll(partialUpdateTable.addFlowMods);
+		this.deleteFlowMods.addAll(partialUpdateTable.deleteFlowMods);
+	}
 }

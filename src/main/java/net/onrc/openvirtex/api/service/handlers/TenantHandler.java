@@ -157,6 +157,7 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
     public static final String PHYSICAL_PORT = "physicalPort";
     public static final String NUMBER_OF_PLUMBING_SWITCHES = "numberOfPlumbingSwitches";
     public static final String PLUMBING_SWITCH_ID = "plumbingSwitchId";
+    public static final String PLUMBING_SWITCH_IDS = "plumbingSwitchIds";
     public static final String SRC_PLUMBING_SWITCH_ID = "srcPlumbingSwitchId";
     public static final String DST_PLUMBING_SWITCH_ID = "dstPlumbingSwitchId";
     /*public static final String PPORT = "pport";
