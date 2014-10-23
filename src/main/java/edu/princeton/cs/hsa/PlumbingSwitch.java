@@ -35,7 +35,7 @@ public class PlumbingSwitch implements OVXSendMsg {
 	
 	public final int id;
 	public PlumbingGraph graph;
-	public PolicyTree policyTree;
+	private PolicyTree policyTree;
 	private PolicyFlowTable flowTable;
 	//private Map<Short, Boolean> isEdgePortMap;
 	private Map<Short, Short> portMap; // virtual port -> physical port, null if it is an internal port
@@ -71,8 +71,8 @@ public class PlumbingSwitch implements OVXSendMsg {
 		this.nextHopPortMap = new HashMap<Short, Short>();
 	}
 	
-	public void createPolicy(String policy) {
-		//TODO
+	public void setPolicyTree (PolicyTree policyTree) {
+		this.policyTree = policyTree;
 	}
 	
 	public short getNextPortNumber() {
@@ -99,8 +99,17 @@ public class PlumbingSwitch implements OVXSendMsg {
 		
 		if (msg.getType() == OFType.FLOW_MOD) {
 			
-			/*PolicyUpdateTable updateTable1 = this.policyTree.update((OFFlowMod) msg, ((OVXSwitch) from).getTenantId());
-			PolicyUpdateTable updateTable2 = new PolicyUpdateTable();
+			this.logger.info("{} get msg {}", this, msg);
+			PolicyUpdateTable updateTable1 = this.policyTree.update((OFFlowMod) msg, ((OVXSwitch) from).getTenantId());
+			for (OFFlowMod fm : updateTable1.addFlowMods) {
+				this.graph.getPhysicalSwitch().sendMsg(fm, this);
+			}
+			for (OFFlowMod fm : updateTable1.deleteFlowMods) {
+				fm.setCommand(OFFlowMod.OFPFC_DELETE);
+				this.graph.getPhysicalSwitch().sendMsg(fm, this);
+			}
+			
+			/*PolicyUpdateTable updateTable2 = new PolicyUpdateTable();
 			
 			for (OFFlowMod fm : updateTable1.addFlowMods) {
 				PolicyUpdateTable partialUpdateTable = this.update(fm);
@@ -119,8 +128,8 @@ public class PlumbingSwitch implements OVXSendMsg {
 				fm.setCommand(OFFlowMod.OFPFC_DELETE);
 				this.graph.getPhysicalSwitch().sendMsg(fm, this);
 			}*/
-			this.logger.info("{} get msg {}", this, msg);
-			this.graph.getPhysicalSwitch().sendMsg(msg, this);
+			//this.logger.info("{} get msg {}", this, msg);
+			//this.graph.getPhysicalSwitch().sendMsg(msg, this);
 			
 		} else {
 			this.graph.getPhysicalSwitch().sendMsg(msg, this);

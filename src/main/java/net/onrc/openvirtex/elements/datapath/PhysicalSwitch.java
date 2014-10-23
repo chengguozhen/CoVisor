@@ -43,8 +43,6 @@ import org.openflow.protocol.OFType;
 import org.openflow.protocol.OFVendor;
 import org.openflow.protocol.statistics.OFStatistics;
 
-import edu.cs.princeton.cs.exprfl.ParallelExprFl;
-import edu.cs.princeton.cs.exprfl.SequentialExprFl;
 import edu.princeton.cs.hsa.PlumbingGraph;
 import edu.princeton.cs.policy.adv.PolicyTree;
 import edu.princeton.cs.policy.adv.PolicyUpdateTable;
@@ -232,18 +230,11 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
         this.tearDown();
     }
     
-    public void runExpr() {
-    	//ParallelExprFl expr = new ParallelExprFl();
-    	//expr.startExpr(fmFlowMods1, fmFlowMods2);
-    	
-    	//SequentialExprFl expr = new SequentialExprFl();
-    	//expr.startExpr(fmFlowMods1, fmFlowMods2);
-    }
-    
     @Override
     public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
     	if (msg.getType() == OFType.FLOW_MOD) {
     		log.info("{}", msg);
+    		this.channel.write(Collections.singletonList(msg));
     		/*PolicyUpdateTable updateTable = this.plumbingGraph.update((OFFlowMod) msg, (O) from);
     		if ((this.channel.isOpen()) && (this.isConnected)) {
 				for (OFFlowMod fm : updateTable.addFlowMods) {

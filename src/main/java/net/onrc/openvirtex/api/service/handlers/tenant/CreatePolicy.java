@@ -14,6 +14,7 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
 import edu.princeton.cs.hsa.PlumbingSwitch;
+import edu.princeton.cs.policy.adv.PolicyParseUtil;
 import edu.princeton.cs.policy.adv.PolicyTree;
 import edu.princeton.cs.policy.adv.PolicyTree.PolicyOperator;
 import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreKey;
@@ -40,15 +41,16 @@ public class CreatePolicy extends ApiHandler<Map<String, Object>> {
 					params, true, null).longValue();
 			final Integer plumbingSwitchId = HandlerUtils.<Number> fetchField(
 					TenantHandler.PLUMBING_SWITCH_ID, params, true, null).intValue();
-			//final String policy = (String) params.get("policy");
 			final String policy = HandlerUtils.<String> fetchField(
 					TenantHandler.POLICY, params, true, null);
 			this.log.info("create policy {} {} {}", dpid, plumbingSwitchId, policy);
 			
-			/*final PhysicalSwitch physicalSwitch = PhysicalNetwork.getInstance().getSwitch(dpid);
+			PolicyTree policyTree = PolicyParseUtil.parsePolicyString(policy);
+			
+			final PhysicalSwitch physicalSwitch = PhysicalNetwork.getInstance().getSwitch(dpid);
 			final PlumbingSwitch plumbingSwitch = physicalSwitch.getPlumbingGraph().getNode(plumbingSwitchId);
-			plumbingSwitch.createPolicy(policy);
-			this.log.info("create policy {} {} {}", dpid, plumbingSwitchId, policy);*/
+			plumbingSwitch.setPolicyTree(policyTree);
+			this.log.info("create policy {} {} {}", dpid, plumbingSwitchId, policy);
 			
 		} catch (Exception e) {
 			resp = new JSONRPC2Response(new JSONRPC2Error(
@@ -84,7 +86,6 @@ public class CreatePolicy extends ApiHandler<Map<String, Object>> {
         resp = new JSONRPC2Response(0);
 		return resp;
 	}
-	
 
 	@Override
 	public JSONRPC2ParamsType getType() {

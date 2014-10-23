@@ -15,7 +15,6 @@
  ******************************************************************************/
 package net.onrc.openvirtex;
 
-import edu.princeton.cs.expr.BaseExprs;
 import edu.princeton.cs.policy.adv.BasePolicyTests;
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -40,7 +39,7 @@ public final class AllTests {
     public static Test suite() {
         final TestSuite suite = new TestSuite(AllTests.class.getName());
         // $JUnit-BEGIN$
-        suite.addTest(BaseExprs.suite());
+        //suite.addTest(BaseExprs.suite());
         //suite.addTest(BasePolicyTests.suite());
         /*suite.addTest(BaseCtrlTests.suite());
         suite.addTest(BaseMapTests.suite());

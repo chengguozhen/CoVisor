@@ -9,7 +9,6 @@ import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFFlowMod;
 
 import edu.princeton.cs.policy.adv.PolicyTree.PolicyOperator;
-import edu.princeton.cs.policy.adv.PolicyTree.PolicyUpdateMechanism;
 import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreKey;
 import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreType;
 import junit.framework.TestCase;
@@ -134,7 +133,6 @@ public class ACLTest extends TestCase {
     // Routing: dstPrefix
     // index: dstPrefix
 	public void testSequentialPrefixDstIp() {
-		PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Incremental;
 		
     	List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
     	storeTypes.add(PolicyFlowModStoreType.PREFIX);

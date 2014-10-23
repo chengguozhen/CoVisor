@@ -16,7 +16,6 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
 import edu.princeton.cs.policy.adv.PolicyTree;
-import edu.princeton.cs.policy.adv.PolicyTree.PolicyUpdateMechanism;
 
 public class SetComposeAlgo extends ApiHandler<Map<String, Object>> {
 

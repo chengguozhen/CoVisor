@@ -13,6 +13,9 @@ import com.thetransactioncompany.jsonrpc2.JSONRPC2Error;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType;
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response;
 
+import edu.princeton.cs.policy.adv.PolicyACL;
+import edu.princeton.cs.policy.adv.PolicyParseUtil;
+
 public class CreateACL extends ApiHandler<Map<String, Object>> {
 	
 	private Logger log = LogManager.getLogger(CreateACL.class.getName());
@@ -30,6 +33,7 @@ public class CreateACL extends ApiHandler<Map<String, Object>> {
 					TenantHandler.ACL_ACTION, params, true, null);
 			this.log.info("create acl {} {} {}", tenantId, aclMatch, aclAction);
 			
+			PolicyACL policyACL = PolicyParseUtil.parseAclString(aclMatch, aclAction);
 			/*final PhysicalSwitch physicalSwitch = PhysicalNetwork.getInstance().getSwitch(dpid);
 			final PlumbingSwitch plumbingSwitch = physicalSwitch.getPlumbingGraph().getNode(plumbingSwitchId);
 			plumbingSwitch.createPolicy(policy);

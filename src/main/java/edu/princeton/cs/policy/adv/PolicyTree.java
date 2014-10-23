@@ -1,13 +1,7 @@
 package edu.princeton.cs.policy.adv;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang.NotImplementedException;
 import org.openflow.protocol.OFFlowMod;
-import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
 
@@ -20,16 +14,9 @@ public class PolicyTree {
 		Parallel,
 		Sequential,
 		Override,
-		Predicate,
-		Invalid
+		Tenant
 	}
 	
-	public enum PolicyUpdateMechanism {
-		Incremental,
-		Strawman
-	}
-	
-	public static PolicyUpdateMechanism UPDATEMECHANISM = PolicyUpdateMechanism.Incremental;
 	public static boolean ActionOutputAsPass = true; // set true for firewall app
 	
 	public PolicyOperator operator;
@@ -39,7 +26,28 @@ public class PolicyTree {
 	public Integer tenantId; // only meaningful when operator is Invalid
 	
 	public PolicyTree() {
-		this.operator = PolicyOperator.Invalid;
+		this.operator = PolicyOperator.Tenant;
+		this.leftChild = null;
+		this.rightChild = null;
+		this.flowTable = new PolicyFlowTable();
+		this.tenantId = -1;
+	}
+	
+	public PolicyTree(Character ch) {
+		switch(ch){
+		case '+':
+			this.operator = PolicyOperator.Parallel;
+			break;
+		case '>':
+			this.operator = PolicyOperator.Sequential;
+			break;
+		case '/':
+			this.operator = PolicyOperator.Override;
+			break;
+		default:
+			this.operator = PolicyOperator.Tenant;
+			break;
+		}
 		this.leftChild = null;
 		this.rightChild = null;
 		this.flowTable = new PolicyFlowTable();
@@ -48,7 +56,7 @@ public class PolicyTree {
 	
 	public PolicyTree(List<PolicyFlowModStoreType> storeTypes,
 			List<PolicyFlowModStoreKey> storeKeys) {
-		this.operator = PolicyOperator.Invalid;
+		this.operator = PolicyOperator.Tenant;
 		this.leftChild = null;
 		this.rightChild = null;
 		this.flowTable = new PolicyFlowTable(storeTypes, storeKeys);
@@ -65,11 +73,9 @@ public class PolicyTree {
 		case Override:
 			updateTable = updateIncremental(fm, tenantId);
 			break;
-		case Predicate:
-			throw new NotImplementedException();
-		case Invalid: // this is leaf, directly add to flow table
+		case Tenant: // this is leaf, directly add to flow table
 			if (tenantId == this.tenantId) {
-				updateTable = this.flowTable.update(fm);
+				updateTable = this.flowTable.update(fm); // TODO: special case: 1+(1+2), process by 1 with two times
 			} else {
 				updateTable = new PolicyUpdateTable();
 			}
@@ -122,15 +128,7 @@ public class PolicyTree {
 					}
 				}
 				
-				// check point 1
-				//long startTime = System.nanoTime();
 				List<OFFlowMod> potentialFlowMods = rightChild.flowTable.getPotentialFlowMods(fm1);
-				//long elapseTime = System.nanoTime() - startTime;
-				//System.out.println("check point 1: " + elapseTime / 1e6 + " size: " + potentialFlowMods.size());
-				
-				// check point 2
-				//startTime = System.nanoTime();
-				//int count = 0;
 				for (OFFlowMod fm2: potentialFlowMods) {
 					
 					OFFlowMod composedFm = null;
@@ -139,7 +137,7 @@ public class PolicyTree {
 					} else {
 						composedFm = PolicyCompositionUtil.sequentialComposition(fm1, fm2);
 					}
-					//count++;
+
 					if (composedFm != null) {
 						this.flowTable.addFlowMod(composedFm);
 						leftChild.flowTable.addGeneratedParentFlowMod(fm1, composedFm);
@@ -147,8 +145,6 @@ public class PolicyTree {
 						updateTable.addFlowMods.add(composedFm);
 					}
 				}
-				//elapseTime = System.nanoTime() - startTime;
-				//System.out.println("check point 2: " + elapseTime / 1e6 + " count: " + count + " " + updateTable.addFlowMods.size());
 			}
 			
 			for (OFFlowMod fm2 : rightUpdateTable.addFlowMods) {
@@ -249,31 +245,25 @@ public class PolicyTree {
 		
 		return updateTable;
 	}
-
-	// strawman solution: calculate a new cross product
-	/*private PolicyUpdateTable updateSequentialStrawman(OFFlowMod fm,
-			Integer tenantId) {
-
-		this.leftChild.update(fm, tenantId);
-		this.rightChild.update(fm, tenantId);
-
-		this.flowTable.clearTable();
-		for (OFFlowMod fm1 : this.leftChild.flowTable.getFlowMods()) {
-			for (OFFlowMod fm2 : this.rightChild.flowTable.getFlowMods()) {
-				OFFlowMod composedFm = PolicyCompositionUtil
-						.sequentialComposition(fm1, fm2);
-				if (composedFm != null) {
-					this.flowTable.addFlowMod(composedFm);
-				}
-			}
+	
+	@Override
+	public String toString() {
+		String str = null;
+		switch (this.operator) {
+		case Parallel:
+			str = "(" + this.leftChild + "+" + this.rightChild + ")";
+			break;
+		case Sequential:
+			str = "(" + this.leftChild + ">" + this.rightChild + ")";
+			break;
+		case Override:
+			str = "(" + this.leftChild + "/" + this.rightChild + ")";
+			break;
+		default:
+			str = tenantId.toString();
+			break;
 		}
-
-		PolicyUpdateTable updateTable = new PolicyUpdateTable();
-		for (OFFlowMod ofm : this.flowTable.getFlowMods()) {
-			updateTable.addFlowMods.add(ofm);
-		}
-
-		return updateTable;
-	}*/
+		return str;
+	}
 	
 }

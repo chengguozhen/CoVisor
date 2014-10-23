@@ -17,7 +17,6 @@ import org.openflow.protocol.action.OFActionNetworkLayerDestination;
 import org.openflow.protocol.action.OFActionOutput;
 
 import edu.princeton.cs.policy.adv.PolicyTree.PolicyOperator;
-import edu.princeton.cs.policy.adv.PolicyTree.PolicyUpdateMechanism;
 import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreKey;
 import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreType;
 import junit.framework.Assert;
@@ -225,7 +224,6 @@ public class PolicyTreeTest extends TestCase {
     	policyTree.leftChild = leftTree;
     	policyTree.rightChild = rightTree;
 		
-    	PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Incremental;
     	PolicyTree.ActionOutputAsPass = true;
     	
 		// firewall policy
@@ -306,156 +304,6 @@ public class PolicyTreeTest extends TestCase {
 		log.error("add {}, delete {}", updateTable.addFlowMods.size(), updateTable.deleteFlowMods.size());
     }
     
-    // experiment: M + R, test time
-    public void atest4() {
-    	
-    	//int mInitial = 70;
-    	//int rInitial = 70;
-    	//int mUpdate = 100;
-    	
-    	// bootstrap expr
-    	/*System.out.println("Incremental:");
-    	for (int mInitial = 10, rInitial = 10; mInitial < 110; mInitial += 10, rInitial += 10) {
-    	    	runParallelCompositionExprBootstrap(mInitial, rInitial, PolicyUpdateMechanism.Incremental);
-    	}
-    	
-    	System.out.println("Strawman:");
-    	for (int mInitial = 10, rInitial = 10; mInitial < 110; mInitial += 10, rInitial += 10) {
-			runParallelCompositionExprBootstrap(mInitial, rInitial, PolicyUpdateMechanism.Strawman);
-    	}*/
-    	
-    	// update expr
-    	System.out.println("Incremental:");
-    	for (int mInitial = 10, rInitial = 10, mUpdate = 1; mInitial < 110; mInitial += 10, rInitial += 10) {
-    	    	runParallelCompositionExprUpdate(mInitial, rInitial, PolicyUpdateMechanism.Incremental, mUpdate);
-    	}
-    	
-    	System.out.println("Strawman:");
-    	for (int mInitial = 10, rInitial = 10, mUpdate = 1; mInitial < 110; mInitial += 10, rInitial += 10) {
-    	    	runParallelCompositionExprUpdate(mInitial, rInitial, PolicyUpdateMechanism.Strawman, mUpdate);
-    	}
-    	
-    }
-    
-    private void runParallelCompositionExprBootstrap(int mInitial, int rInitial, PolicyUpdateMechanism updateMechanism) {
-    	PolicyTree leftTree = new PolicyTree();
-    	leftTree.tenantId = 1;
-    	
-    	PolicyTree rightTree = new PolicyTree();
-    	rightTree.tenantId = 2;
-    	
-    	PolicyTree policyTree = new PolicyTree();
-    	policyTree.operator = PolicyOperator.Parallel;
-    	policyTree.leftChild = leftTree;
-    	policyTree.rightChild = rightTree;
-    	
-    	// initialize M
-		List<OFFlowMod> mRules = new ArrayList<OFFlowMod>();
-		mRules.add(RuleGenerationUtil.generateDefaultRule());
-    	for (int i = 0; i < mInitial; i++) {
-    		mRules.add(RuleGenerationUtil.generateMonitoringRule());
-    	}
-    	
-    	List<OFFlowMod> rRules = new ArrayList<OFFlowMod>();
-    	rRules.add(RuleGenerationUtil.generateDefaultRule());
-    	for (int i = 0; i < rInitial; i++) {
-    		rRules.add(RuleGenerationUtil.generateRoutingRule());
-    	}
-    	
-    	// add rules to policy
-    	PolicyTree.UPDATEMECHANISM = updateMechanism;
-    	//log.error("begin experiment m:{} r:{} update:{}", mInitial, rInitial, updateMechanism);
-    	long startTime = System.nanoTime();
-    	for (OFFlowMod fm : mRules) {
-    		policyTree.update(fm, 1);
-    	}
-    	for (OFFlowMod fm : rRules) {
-    		policyTree.update(fm, 2);
-    	}
-    	long elapseTime = System.nanoTime() - startTime;
-    	//log.error("elapse time:{}", elapseTime / (1e9));
-    	System.out.println(elapseTime / (1e9));
-    }
-    
-    private void runParallelCompositionExprUpdate(int mInitial, int rInitial,
-    		PolicyUpdateMechanism updateMechanism, int mUpdate) {
-    	PolicyTree leftTree = new PolicyTree();
-    	leftTree.tenantId = 1;
-    	
-    	PolicyTree rightTree = new PolicyTree();
-    	rightTree.tenantId = 2;
-    	
-    	PolicyTree policyTree = new PolicyTree();
-    	policyTree.operator = PolicyOperator.Parallel;
-    	policyTree.leftChild = leftTree;
-    	policyTree.rightChild = rightTree;
-    	
-    	// initialize M
-		List<OFFlowMod> mRules = new ArrayList<OFFlowMod>();
-		mRules.add(RuleGenerationUtil.generateDefaultRule());
-    	for (int i = 0; i < mInitial; i++) {
-    		mRules.add(RuleGenerationUtil.generateMonitoringRule());
-    	}
-    	
-    	List<OFFlowMod> rRules = new ArrayList<OFFlowMod>();
-    	rRules.add(RuleGenerationUtil.generateDefaultRule());
-    	for (int i = 0; i < rInitial; i++) {
-    		rRules.add(RuleGenerationUtil.generateRoutingRule());
-    	}
-    	
-    	PolicyTree.UPDATEMECHANISM = PolicyUpdateMechanism.Incremental;
-    	for (OFFlowMod fm : mRules) {
-    		policyTree.update(fm, 1);
-    	}
-    	for (OFFlowMod fm : rRules) {
-    		policyTree.update(fm, 2);
-    	}
-    	
-    	// generate update
-    	List<OFFlowMod> mUpdateRules = new ArrayList<OFFlowMod>();
-    	if (mUpdate == 1) {
-    		{
-				OFFlowMod fmDelete = null;
-				try {
-					fmDelete = mRules.get(1).clone();
-				} catch (CloneNotSupportedException e) {
-					e.printStackTrace();
-				}
-				fmDelete.setCommand(OFFlowMod.OFPFC_DELETE);
-				mUpdateRules.add(fmDelete);
-			}
-    		//mUpdateRules.add(generateMonotoringRule());
-		} else {
-			for (int i = 0; i < mUpdate / 2; i++) {
-				OFFlowMod fmDelete = null;
-				try {
-					fmDelete = mRules.get(i+1).clone();
-				} catch (CloneNotSupportedException e) {
-					e.printStackTrace();
-				}
-				fmDelete.setCommand(OFFlowMod.OFPFC_DELETE);
-				mUpdateRules.add(fmDelete);
-			}
-			for (int i = 0; i < mUpdate / 2; i++) {
-				mUpdateRules.add(RuleGenerationUtil.generateMonitoringRule());
-			}
-			Collections.shuffle(mUpdateRules);
-		}
-    	
-    	// add rules to policy
-    	PolicyTree.UPDATEMECHANISM = updateMechanism;
-    	int totalFlowMods = 0;
-    	long startTime = System.nanoTime();
-    	for (OFFlowMod fm : mUpdateRules) {
-    		PolicyUpdateTable updateTable = policyTree.update(fm, 1);
-    		totalFlowMods += updateTable.addFlowMods.size();
-    		totalFlowMods += updateTable.deleteFlowMods.size();
-    		//log.error("{} {} {}", fm.getCommand(), updateTable.addFlowMods.size(), updateTable.deleteFlowMods.size());
-    	}
-    	long elapseTime = System.nanoTime() - startTime;
-    	System.out.println(elapseTime / (1e9) + "\t" + totalFlowMods);
-    }
-
     @Override
     protected void setUp() throws Exception {
         super.setUp();
