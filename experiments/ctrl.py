@@ -200,6 +200,10 @@ def addVirtMultiController(topo):
     cmd = "%s -n startNetwork 3" % ovxctlPy
     subprocess.call(cmd, shell=True)
 
+def createPolicy(policy):
+    cmd = "%s -n createPolicy 00:00:00:00:00:00:01:00 0 %s" % (ovxctlPy, policy)
+    subprocess.call(cmd, shell=True)
+
 def startComposition():
     subprocess.call("%s -n startComposition" % ovxctlPy, shell=True)
 
@@ -267,105 +271,31 @@ def exprParallel():
     createPlumbingGraph()
     addController1(topo)
     addController2(topo)
+    createPolicy('"1+2"')
     app1 = DemoMonitorApp(topo)
     app1.installRules()
     app2 = DemoRouterApp(topo)
     app2.installRules()
     CLI(net)
 
-#    addController2(topo)
-#    addPolicy(policy)
-#    startComposition()
-#    app2 = MACLearnerApp(topo, perSwRule = perSwRoutingRule)
-#    app2.installRules()
-#    app1 = MonitorApp(topo, app2.macs, perSwRule = 1000, addRuleCount = 10)
-#    app1.installRules()
-#    app1.updateRules()
-#    time.sleep(1)
-#    setComposeAlgo(algo)
-
-def exprParallelHelper(algo, policy, outLog):
-    cleanAll()
-    startFloodlight(2)
-    startOVX()
-    (topo, net) = startMininet()
-    time.sleep(5)
-    addController1(topo)
-    addController2(topo)
-    addPolicy(policy)
-    startComposition()
-    app2 = MACLearnerApp(topo, perSwRule = perSwRoutingRule)
-    app2.installRules()
-    #app1 = MonitorApp(topo, app2.macs, perSwRule = perSwRoutingRule, addRuleCount = 10)
-    app1 = MonitorApp(topo, app2.macs, perSwRule = 1000, addRuleCount = 10)
-    app1.installRules()
-    time.sleep(1)
-    setComposeAlgo(algo)
-    app1.updateRules()
-    cleanAll()
-    processLog(outLog)
-
 #********************************************************************
 # expr: sequential
 #********************************************************************
-def exprSequentialOne(algo, policy, outLog):
-    cleanAll()
-    startFloodlight(2)
-    startOVX()
-    (topo, net) = startMininet()
-    time.sleep(5)
-    addController1(topo)
-    addController2(topo)
-    addPolicy(policy)
-    startComposition()
-    app1 = FirewallApp(topo, fwFile, 1000, 10)
-    app1.genRules()
-    app1.installRules()
-    app1.updateRules()
-    app2 = RoutingApp(topo, prefixFile, perSwRule = perSwRoutingRule)
-    app2.genRules()
-    app2.installRules()
-    time.sleep(1)
-    setComposeAlgo(algo)
-
-def exprSequentialHelper(algo, policy, outLog):
-    cleanAll()
-    startFloodlight(2)
-    startOVX()
-    (topo, net) = startMininet()
-    time.sleep(5)
-    addController1(topo)
-    addController2(topo)
-    addPolicy(policy)
-    startComposition()
-    app1 = FirewallApp(topo, fwFile, 10)
-    app1.genRules()
-    app1.installRules()
-    app2 = RoutingApp(topo, prefixFile, perSwRule = perSwRoutingRule)
-    app2.genRules()
-    app2.installRules()
-    time.sleep(1)
-    setComposeAlgo(algo)
-    app1.updateRules()
-    cleanAll()
-    #processLog('res.' + algo)
-    processLog(outLog)
-
-def exprSequentialRule():
-    global fwFile
-    global perSwRoutingRule
-
-    perSwRoutingRule = 100
-    for perSwRoutingRule in [8000]:#[100, 200, 300, 400, 500]:
-        #fwFile = 'classbench/fw1_%d' % perSwRoutingRule
-        #exprSequentialHelper('strawman', '10', 'res_strawman_%d' % perSwRoutingRule)
-        #exprSequentialHelper('inc', '10', 'res_inc_%d' % perSwRoutingRule)
-        #exprSequentialHelper('inc', '12', 'res_inc_acl_%d' % perSwRoutingRule)
-        fwFile = 'experiments/classbench/fw1_5000'
-        exprSequentialOne('inc', '10', 'res_inc_%d' % perSwRoutingRule)
-
 def exprSequential():
-    exprSequentialRule()
+    cleanAll()
+    startFloodlight(2)
+    startOVX()
+    (topo, net) = startMininet()
+    time.sleep(5)
+    createPlumbingGraph()
+    addController1(topo)
+    addController2(topo)
+    createPolicy('"1>2"')
+    app1 = DemoLoadBalancerApp(topo)
+    app1.installRules()
+    app2 = DemoRouterApp(topo)
+    app2.installRules()
+    CLI(net)
 
 #********************************************************************
 # expr: gateway
@@ -468,9 +398,8 @@ if __name__ == '__main__':
         #exprAll()
         #exprVirtMultiController()
         #exprParallel()
-        #exprSequential()
+        exprSequential()
         #exprGateway()
-        exprParallel()
     else:
         printHelp()
 

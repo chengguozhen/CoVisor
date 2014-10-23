@@ -109,6 +109,10 @@ public class PlumbingSwitch implements OVXSendMsg {
 				this.graph.getPhysicalSwitch().sendMsg(fm, this);
 			}
 			
+            this.logger.info("{}", this.policyTree);
+            this.logger.info("this flow table {}", this.policyTree.flowTable);
+            this.logger.info("left flow table {}", this.policyTree.leftChild.flowTable);
+            this.logger.info("right flow table {}", this.policyTree.rightChild.flowTable);
 			/*PolicyUpdateTable updateTable2 = new PolicyUpdateTable();
 			
 			for (OFFlowMod fm : updateTable1.addFlowMods) {

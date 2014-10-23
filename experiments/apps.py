@@ -70,7 +70,7 @@ class DemoRouterApp():
     def installRules(self):
         for rule in self.rules:
             print rule
-            cmd = "curl -d '%s' http://localhost:10001/wm/staticflowentrypusher/json" % rule
+            cmd = "curl -d '%s' http://localhost:20001/wm/staticflowentrypusher/json" % rule
             subprocess.call(cmd, shell=True)
             print ""
 
@@ -108,8 +108,8 @@ class DemoLoadBalancerApp():
     def installRules(self):
         for rule in self.rules:
             print rule
-            #cmd = "curl -d '%s' http://localhost:10001/wm/staticflowentrypusher/json" % rule
-            #subprocess.call(cmd, shell=True)
+            cmd = "curl -d '%s' http://localhost:10001/wm/staticflowentrypusher/json" % rule
+            subprocess.call(cmd, shell=True)
             print ""
 
 
