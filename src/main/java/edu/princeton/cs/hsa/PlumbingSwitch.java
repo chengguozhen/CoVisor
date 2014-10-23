@@ -71,6 +71,10 @@ public class PlumbingSwitch implements OVXSendMsg {
 		this.nextHopPortMap = new HashMap<Short, Short>();
 	}
 	
+	public void createPolicy(String policy) {
+		//TODO
+	}
+	
 	public short getNextPortNumber() {
 		this.portNumber++;
 		return (short) this.portNumber;

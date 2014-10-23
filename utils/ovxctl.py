@@ -570,18 +570,35 @@ def translate_path(path_string):
     return path
 
 def pa_createPolicy(args, cmd):
-    usage = "%s <policy>" % USAGE.format(cmd)
+    usage = "%s <physical_dpid> <plumbing_id> <policy>" % USAGE.format(cmd)
     (sdesc, ldesc) = DESCS[cmd]
     parser = OptionParser(usage=usage, description=ldesc)
     return parser.parse_args(args)
 
 def do_createPolicy(gopts, opts, args):
-    if len(args) != 1:
-        print ("createPolicy : Must specify a policy") 
+    if len(args) != 3:
+        print ("createPolicy : Must specify a physical switch dpid, a plumbing switch id, and a policy") 
         sys.exit()
-    req = { "policy" : args[0] }
+    req = { "dpid":int(args[0].replace(":", ""), 16), "plumbingSwitchId":int(args[1]), "policy":args[2] }
+    print req
     result = connect(gopts, "tenant", "createPolicy", data=req, passwd=getPasswd(gopts))
-    print "Policy '%s' has been created" % args[0] 
+    print "Policy has been created" 
+
+def pa_createACL(args, cmd):
+    usage = "%s <tenant_id> <acl_match> <acl_action>" % USAGE.format(cmd)
+    (sdesc, ldesc) = DESCS[cmd]
+    parser = OptionParser(usage=usage, description=ldesc)
+    return parser.parse_args(args)
+
+def do_createACL(gopts, opts, args):
+    if len(args) != 3:
+        print ("createACL : Must specify a tenant ID, acl on match, and acl on action") 
+        sys.exit()
+    req = { "tenantId":int(args[0]), "aclMatch":args[1], "aclAction":args[2] }
+    print req
+    result = connect(gopts, "tenant", "createACL", data=req, passwd=getPasswd(gopts))
+    print "acl has been created" 
+
 
 def pa_startComposition(args, cmd):
     usage = "%s" % USAGE.format(cmd)
@@ -816,6 +833,7 @@ CMDS = {
     'getVirtualTopology': (pa_getVirtualTopology, do_getVirtualTopology),
 
     'createPolicy': (pa_createPolicy, do_createPolicy),
+    'createACL': (pa_createACL, do_createACL),
     'startComposition': (pa_startComposition, do_startComposition),
     'stopComposition': (pa_stopComposition, do_stopComposition),
     'setComposeAlgo': (pa_setComposeAlgo, do_setComposeAlgo),
@@ -939,9 +957,12 @@ DESCS = {
                                "\nExample: getVirtualTopology 1")),
 
     'createPolicy' : ("Create controller policy",
-                                ("Create controller policy. Must specify a policy.",
-                                "\nExample: createPolicy 1+2")),
-    'startComposition' : ("Start composition",
+                                ("Create controller policy. Must specify a physical switch dpid, plumbing switch id, and a policy.",
+                                "\nExample: createPolicy 00:00:00:00:00:00:00:01 1 1+2")),
+    'createACL' : ("Create ACL policy",
+                                ("Create ACL policy. Must specify a tenantId, acl on match, and acl on action",
+                                "\nExample: createACL 1 srcip:exact,dstip:exact output,mod:dstip")),
+'startComposition' : ("Start composition",
                                 ("Start composition.",
                                 "\nExample: startComposition")),
     'stopComposition' : ("Stop composition",

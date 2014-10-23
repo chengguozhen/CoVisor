@@ -20,6 +20,7 @@ import java.util.HashMap;
 import net.onrc.openvirtex.api.service.handlers.tenant.AddController;
 import net.onrc.openvirtex.api.service.handlers.tenant.ConnectHost;
 import net.onrc.openvirtex.api.service.handlers.tenant.ConnectOVXLink;
+import net.onrc.openvirtex.api.service.handlers.tenant.CreateACL;
 import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXNetwork;
 import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXPort;
 import net.onrc.openvirtex.api.service.handlers.tenant.CreateOVXSwitch;
@@ -160,6 +161,9 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
     public static final String PLUMBING_SWITCH_IDS = "plumbingSwitchIds";
     public static final String SRC_PLUMBING_SWITCH_ID = "srcPlumbingSwitchId";
     public static final String DST_PLUMBING_SWITCH_ID = "dstPlumbingSwitchId";
+    public static final String POLICY = "policy";
+    public static final String ACL_MATCH = "aclMatch";
+    public static final String ACL_ACTION = "aclAction";
     /*public static final String PPORT = "pport";
     public static final String NUMBER_OF_BABY_SWITCHES = "numberOfBabySwitches";
     public static final String MULTI_DPID = "multiDpid";
@@ -197,6 +201,7 @@ public class TenantHandler extends AbstractHandler implements RequestHandler {
             
             // composition policy handlers
             this.put("createPolicy", new CreatePolicy());
+            this.put("createACL", new CreateACL());
             this.put("startComposition", new StartComposition());
             this.put("stopComposition", new StopComposition());
             this.put("setComposeAlgo", new SetComposeAlgo());
