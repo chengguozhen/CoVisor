@@ -101,18 +101,7 @@ public class PlumbingSwitch implements OVXSendMsg {
 			
 			//this.logger.info("{} get msg {}", this, msg);
 			PolicyUpdateTable updateTable1 = this.policyTree.update((OFFlowMod) msg, ((OVXSwitch) from).getTenantId());
-			for (OFFlowMod fm : updateTable1.addFlowMods) {
-				this.graph.getPhysicalSwitch().sendMsg(fm, this);
-			}
-			for (OFFlowMod fm : updateTable1.deleteFlowMods) {
-				fm.setCommand(OFFlowMod.OFPFC_DELETE);
-				this.graph.getPhysicalSwitch().sendMsg(fm, this);
-			}
-			
-            this.logger.info("this flow table {}", this.policyTree.flowTable);
-            //this.logger.info("left flow table {}", this.policyTree.leftChild.flowTable);
-            //this.logger.info("right flow table {}", this.policyTree.rightChild.flowTable);
-			/*PolicyUpdateTable updateTable2 = new PolicyUpdateTable();
+			PolicyUpdateTable updateTable2 = new PolicyUpdateTable();
 			
 			for (OFFlowMod fm : updateTable1.addFlowMods) {
 				PolicyUpdateTable partialUpdateTable = this.update(fm);
@@ -130,9 +119,10 @@ public class PlumbingSwitch implements OVXSendMsg {
 			for (OFFlowMod fm : updateTable2.deleteFlowMods) {
 				fm.setCommand(OFFlowMod.OFPFC_DELETE);
 				this.graph.getPhysicalSwitch().sendMsg(fm, this);
-			}*/
-			//this.logger.info("{} get msg {}", this, msg);
-			//this.graph.getPhysicalSwitch().sendMsg(msg, this);
+			}
+			
+			this.logger.info("plumbing {} flow table {}", this.id, this.policyTree.flowTable);
+			this.logger.info("graph flow table {}", this.graph.flowTable);
 			
 		} else {
 			this.graph.getPhysicalSwitch().sendMsg(msg, this);
