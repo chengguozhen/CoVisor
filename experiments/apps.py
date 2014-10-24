@@ -134,14 +134,14 @@ class DemoVirtApp():
             '"active":"true", "actions":"output=2"}'
         self.rules1.append(rule)
 
-        dpid = "00:a4:23:05:00:00:00:02"
+        dpid = "00:a4:23:05:00:00:00:01"
         self.rules2 = []
         rule = '{"switch":"%s", ' % dpid + \
             '"name":"DemoVirt2R1", ' + \
             '"priority":"1", ' + \
             '"ether-type":"2048", ' + \
             '"dst-ip":"1.0.0.0/4", ' + \
-            '"active":"true", "actions":"output=3,dstip=2.0.0.0"}'
+            '"active":"true", "actions":"set-dst-ip=2.0.0.0,output=3"}'
         self.rules2.append(rule)
         rule = '{"switch":"%s", ' % dpid + \
             '"name":"DemoVirt2R2", ' + \
@@ -151,7 +151,7 @@ class DemoVirtApp():
             '"active":"true", "actions":"output=2"}'
         self.rules2.append(rule)
 
-        dpid = "00:a4:23:05:00:00:00:03"
+        dpid = "00:a4:23:05:00:00:00:01"
         self.rules3 = []
         rule = '{"switch":"%s", ' % dpid + \
             '"name":"DemoVirt3R1", ' + \
@@ -166,7 +166,7 @@ class DemoVirtApp():
             '"ether-type":"2048", ' + \
             '"dst-ip":"2.0.0.0/16", ' + \
             '"active":"true", "actions":"output=2"}'
-        self.rules1.append(rule)
+        self.rules3.append(rule)
 
     def installRules(self):
         for rule in self.rules1:
@@ -182,7 +182,7 @@ class DemoVirtApp():
         for rule in self.rules3:
             print rule
             cmd = "curl -d '%s' http://localhost:30001/wm/staticflowentrypusher/json" % rule
-            subprocess.call(cmd, shell=True)
+            #subprocess.call(cmd, shell=True)
             print ""
 
 #********************************************************************

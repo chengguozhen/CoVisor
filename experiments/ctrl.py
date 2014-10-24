@@ -285,7 +285,7 @@ def exprSequential():
 #********************************************************************
 # expr: gateway
 #********************************************************************
-def createPlumbingGraphOneToManyDemo():
+def virtCreatePlumbingGraph():
     cmd = "%s -n createPlumbingSwitch 00:00:00:00:00:00:01:00 3" % ovxctlPy
     subprocess.call(cmd, shell=True)
     cmd = "%s -n createPlumbingPort 00:00:00:00:00:00:01:00 0 1" % ovxctlPy
@@ -374,7 +374,7 @@ def exprVirt():
     virtCreatePolicy()
     app = DemoVirtApp(topo)
     app.installRules()
-    CLI(net)
+    #CLI(net)
 
 #********************************************************************
 # main
@@ -433,8 +433,8 @@ if __name__ == '__main__':
         #exprAll()
         #exprVirtMultiController()
         #exprParallel()
-        exprSequential()
-        #exprGateway()
+        #exprSequential()
+        exprVirt()
     else:
         printHelp()
 

@@ -529,8 +529,6 @@ public class ControllerChannelHandler extends OFChannelHandler {
     @Override
     public void messageReceived(final ChannelHandlerContext ctx,
             final MessageEvent e) throws Exception {
-    	log.info("MagicTimestamp\t00\t{}", System.nanoTime());
-
         /*
          * Pass all messages to the handlers, except LLDP which goes to the
          * virtual network handler.

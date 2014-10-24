@@ -99,7 +99,7 @@ public class PlumbingSwitch implements OVXSendMsg {
 		
 		if (msg.getType() == OFType.FLOW_MOD) {
 			
-			this.logger.info("{} get msg {}", this, msg);
+			//this.logger.info("{} get msg {}", this, msg);
 			PolicyUpdateTable updateTable1 = this.policyTree.update((OFFlowMod) msg, ((OVXSwitch) from).getTenantId());
 			for (OFFlowMod fm : updateTable1.addFlowMods) {
 				this.graph.getPhysicalSwitch().sendMsg(fm, this);
@@ -109,10 +109,9 @@ public class PlumbingSwitch implements OVXSendMsg {
 				this.graph.getPhysicalSwitch().sendMsg(fm, this);
 			}
 			
-            this.logger.info("{}", this.policyTree);
             this.logger.info("this flow table {}", this.policyTree.flowTable);
-            this.logger.info("left flow table {}", this.policyTree.leftChild.flowTable);
-            this.logger.info("right flow table {}", this.policyTree.rightChild.flowTable);
+            //this.logger.info("left flow table {}", this.policyTree.leftChild.flowTable);
+            //this.logger.info("right flow table {}", this.policyTree.rightChild.flowTable);
 			/*PolicyUpdateTable updateTable2 = new PolicyUpdateTable();
 			
 			for (OFFlowMod fm : updateTable1.addFlowMods) {
