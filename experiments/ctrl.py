@@ -204,21 +204,6 @@ def createPolicy(policy):
     cmd = "%s -n createPolicy 00:00:00:00:00:00:01:00 0 %s" % (ovxctlPy, policy)
     subprocess.call(cmd, shell=True)
 
-def startComposition():
-    subprocess.call("%s -n startComposition" % ovxctlPy, shell=True)
-
-def stopComposition():
-    subprocess.call("%s -n stopComposition" % ovxctlPy, shell=True)
-
-def setComposeAlgo(algo):
-    subprocess.call("%s -n setComposeAlgo %s" % (ovxctlPy, algo), shell=True)
-
-# policy: ab
-# a: 0 -> parallel, 1 -> sequential
-# b: 0 -> normal, 1 -> exact, 2 -> trie
-def addPolicy(policy):
-    subprocess.call([ovxctlPy, "-n", "createPolicy", policy])
-
 #********************************************************************
 # floodlight: start, show, kill
 #********************************************************************
@@ -300,23 +285,96 @@ def exprSequential():
 #********************************************************************
 # expr: gateway
 #********************************************************************
-def exprGatewayHelper(ipCount):
+def createPlumbingGraphOneToManyDemo():
+    cmd = "%s -n createPlumbingSwitch 00:00:00:00:00:00:01:00 3" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+    cmd = "%s -n createPlumbingPort 00:00:00:00:00:00:01:00 0 1" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+    cmd = "%s -n createPlumbingPort 00:00:00:00:00:00:01:00 0 2" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+    cmd = "%s -n createPlumbingPort 00:00:00:00:00:00:01:00 0 0" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+    cmd = "%s -n createPlumbingPort 00:00:00:00:00:00:01:00 1 0" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+    cmd = "%s -n createPlumbingPort 00:00:00:00:00:00:01:00 1 3" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+    cmd = "%s -n createPlumbingPort 00:00:00:00:00:00:01:00 1 0" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+    cmd = "%s -n createPlumbingPort 00:00:00:00:00:00:01:00 2 0" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+    cmd = "%s -n createPlumbingPort 00:00:00:00:00:00:01:00 2 4" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+    cmd = "%s -n createPlumbingPort 00:00:00:00:00:00:01:00 2 5" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+    cmd = "%s -n createPlumbingLink 00:00:00:00:00:00:01:00 0 3 1 1" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+    cmd = "%s -n createPlumbingLink 00:00:00:00:00:00:01:00 1 3 2 1" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+
+def virtAddController1(topo):
+    print "*****************************"
+    print "******** Controller 1 *******"
+    print "*****************************"
+    cmd = "%s -n createNetwork tcp:%s:10000 10.0.0.0 16" % (ovxctlPy,
+        CONTROLLER_IP)
+    subprocess.call(cmd, shell=True)
+
+    cmd = "%s -n createSwitch 1 00:00:00:00:00:00:01:00 0" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+
+    cmd = "%s -n startNetwork 1" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+
+def virtAddController2(topo):
+    print "*****************************"
+    print "******** Controller 2 *******"
+    print "*****************************"
+    cmd = "%s -n createNetwork tcp:%s:20000 10.0.0.0 16" % (ovxctlPy,
+        CONTROLLER_IP)
+    subprocess.call(cmd, shell=True)
+
+    cmd = "%s -n createSwitch 2 00:00:00:00:00:00:01:00 1" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+
+    cmd = "%s -n startNetwork 2" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+
+def virtAddController3(topo):
+    print "*****************************"
+    print "******** Controller 3 *******"
+    print "*****************************"
+    cmd = "%s -n createNetwork tcp:%s:30000 10.0.0.0 16" % (ovxctlPy,
+        CONTROLLER_IP)
+    subprocess.call(cmd, shell=True)
+
+    cmd = "%s -n createSwitch 3 00:00:00:00:00:00:01:00 2" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+
+    cmd = "%s -n startNetwork 3" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+
+def virtCreatePolicy():
+    cmd = "%s -n createPolicy 00:00:00:00:00:00:01:00 0 1" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+    cmd = "%s -n createPolicy 00:00:00:00:00:00:01:00 1 2" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+    cmd = "%s -n createPolicy 00:00:00:00:00:00:01:00 2 3" % ovxctlPy
+    subprocess.call(cmd, shell=True)
+
+def exprVirt():
     cleanAll()
     startFloodlight(3)
     startOVX()
     (topo, net) = startMininet()
     time.sleep(5)
-    addVirtMultiController(topo)
-    app1 = GWIPRouterApp(ipCount)
-    app3 = GWMACLearnerApp(800, 100)
-    app2 = GWGatewayApp(app3.macs, app3.ips, 100)
-    app1.installRules()
-    app2.installRules()
-    app3.installRules()
-    setComposeAlgo('inc')
-
-def exprGateway():
-    exprGatewayHelper(8000)
+    virtCreatePlumbingGraph()
+    virtAddController1(topo)
+    virtAddController2(topo)
+    virtAddController3(topo)
+    virtCreatePolicy()
+    app = DemoVirtApp(topo)
+    app.installRules()
+    CLI(net)
 
 #********************************************************************
 # main
@@ -327,29 +385,6 @@ def expr():
     startOVX()
     (topo, net) = startMininet()
     CLI(net)
-
-def startAll():
-    startFloodlight()
-    startOVX()
-    (topo, net) = startMininet()
-    time.sleep(5)
-    addController1(topo)
-    addController2(topo)
-    addPolicy()
-    startComposition()
-    app1 = FirewallApp(topo, fwFile)
-    app1.genRules()
-    app1.installRules()
-    CLI(net)
-    app2 = RoutingApp(topo, prefixFile, perSwRule = 5)
-    app2.genRules()
-    app2.installRules()
-    CLI(net)
-    setComposeAlgo('incremental')
-    app1.updateRules()
-    #CLI(net)
-    
-    cleanAll()
 
 def testApp():
     topo = MNTopo(sw_number = 1, topoFile=topoFile)

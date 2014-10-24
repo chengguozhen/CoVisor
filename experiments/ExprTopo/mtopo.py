@@ -7,7 +7,7 @@ import networkx as nx
 
 class MNTopo(Topo):
 
-    def __init__(self, enable_all = True, sw_number = 2, host_per_sw = 3,  topoFile = ""):
+    def __init__(self, enable_all = True, sw_number = 2, host_per_sw = 5,  topoFile = ""):
         "Create topology with multiple switches for mininet."
 
         # Add default members to class.
