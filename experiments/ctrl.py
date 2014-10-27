@@ -85,6 +85,10 @@ def createPolicy(policy):
     cmd = "%s -n createPolicy 00:00:00:00:00:00:01:00 0 %s" % (ovxctlPy, policy)
     subprocess.call(cmd, shell=True)
 
+def createACL(acl):
+    cmd = "%s -n createACL %s" % (ovxctlPy, acl)
+    subprocess.call(cmd, shell=True)
+
 #********************************************************************
 # floodlight: start, show, kill
 #********************************************************************
@@ -133,6 +137,8 @@ def exprParallel():
     createPlumbingGraph()
     addController1(topo)
     addController2(topo)
+    createACL('1 srcip:prefix,dstip:prefix output')
+    createACL('2 dstip:prefix output')
     createPolicy('"1+2"')
     app1 = DemoMonitorApp(topo)
     app1.installRules()

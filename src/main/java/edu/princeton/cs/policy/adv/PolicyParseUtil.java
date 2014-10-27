@@ -39,7 +39,9 @@ public class PolicyParseUtil {
 			policyACL.aclAction.put(action, true);
 		}
 		
-		return null;
+        System.out.println(policyACL);
+
+		return policyACL;
 	}
 	
 	private static PolicyFlowModStoreKey parseAclField(String str) {
@@ -101,10 +103,12 @@ public class PolicyParseUtil {
 	 * Example: 1 + 2/3 > 4
 	 */
 	public static PolicyTree parsePolicyString(String policy) throws NetworkMappingException {
+        System.out.println("enter parse policy ----------------------------------------");
 		List<PolicyTree> postfix = transformToPostfixForm(policy);
 		PolicyTree policyTree = buildPolicyTree(postfix);
 		policyTree.initializeFlowTable();
-		
+		policyTree.flowTable = new PolicyFlowTable();
+
 		System.out.println(policyTree);
 		
 		return policyTree;

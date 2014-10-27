@@ -55,6 +55,12 @@ public class PolicyFlowModStoreGoogleTrie extends PolicyFlowModStore {
 			if (value == null) {
 				value = PolicyFlowModStore.createFlowModStore(
 						this.childStoreTypes, this.childStoreKeys, this.isLeftInSequentialComposition);
+                System.out.println(fm);
+                for (int i = 0; i < this.childStoreKeys.size(); i++) {
+                    System.out.println(this.childStoreKeys.get(i) + "\t" + this.childStoreTypes.get(i) + "\t");
+                }
+                System.out.println(this.isLeftInSequentialComposition + key);
+                System.out.println(value);
 				this.flowModsTrie.put(key, value);
 			}
 			value.add(fm);
@@ -74,12 +80,12 @@ public class PolicyFlowModStoreGoogleTrie extends PolicyFlowModStore {
 		int prefixLen = 0;
 		switch (this.storeKey) {
 		case NETWORK_SRC:
-			ip = fm.getMatch().getNetworkSource();
-			prefixLen = fm.getMatch().getNetworkSourceMaskLen(); 
+			ip = match.getNetworkSource();
+			prefixLen = match.getNetworkSourceMaskLen(); 
 			break;
 		case NETWORK_DST:
-			ip = fm.getMatch().getNetworkDestination();
-			prefixLen = fm.getMatch().getNetworkDestinationMaskLen();
+			ip = match.getNetworkDestination();
+			prefixLen = match.getNetworkDestinationMaskLen();
 			break;
 		default:
 			break;

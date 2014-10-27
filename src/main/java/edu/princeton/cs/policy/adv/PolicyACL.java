@@ -61,11 +61,15 @@ public class PolicyACL implements Cloneable {
 	public String toString() {
 		String str = "";
 		for (PolicyFlowModStoreKey field : PolicyFlowModStoreKey.values()) {
-			str = str + field + ":" + this.aclMatch.get(field) + ",";
+            if (this.aclMatch.containsKey(field) && this.aclMatch.get(field) != PolicyFlowModStoreType.DISALLOW) {
+			    str = str + field + ":" + this.aclMatch.get(field) + ",";
+            }
 		}
 		str += "\n";
 		for (PolicyFlowModAction action : PolicyFlowModAction.values()) {
-			str = str + action + ":" + this.aclAction.get(action) + ",";
+            if (this.aclAction.containsKey(action) && this.aclAction.get(action)) {
+			    str = str + action + ",";
+            }
 		}
 		return str;
 	}
@@ -82,7 +86,7 @@ public class PolicyACL implements Cloneable {
 		PolicyACL leftACL = leftChild.policyACL;
 		PolicyACL rightACL = rightChild.policyACL;
 		PolicyACL policyACL = new PolicyACL();
-		
+	
 		// generate policy acl
 		// deal with match, union
 		for (PolicyFlowModStoreKey field : PolicyFlowModStoreKey.values()) {
@@ -111,6 +115,10 @@ public class PolicyACL implements Cloneable {
 					|| rightACL.aclAction.get(action));
 		}
 		
+        System.out.println(leftACL);
+        System.out.println(rightACL);
+        System.out.println(policyACL);
+
 		// generate flow table for children
 		if (operator == PolicyOperator.Parallel || operator == PolicyOperator.Sequential) {
 			

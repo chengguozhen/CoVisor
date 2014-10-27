@@ -274,7 +274,8 @@ public class PolicyTree {
 			str = "(" + this.leftChild + "/" + this.rightChild + ")";
 			break;
 		default:
-			str = "\n\t" + tenantId.toString() + policyACL + flowTable;
+			//str = tenantId.toString();
+			str = "\n\t" + tenantId.toString() + "\n" + policyACL + "\n" + flowTable;
 			break;
 		}
 		return str;
