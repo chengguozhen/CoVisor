@@ -104,12 +104,12 @@ public class PlumbingSwitch implements OVXSendMsg {
 			PolicyUpdateTable updateTable2 = new PolicyUpdateTable();
 			
 			for (OFFlowMod fm : updateTable1.addFlowMods) {
-				PolicyUpdateTable partialUpdateTable = this.update(fm);
+				PolicyUpdateTable partialUpdateTable = this.graph.update(fm, this);
 				updateTable2.addUpdateTable(partialUpdateTable);
 			}
 			for (OFFlowMod fm : updateTable1.deleteFlowMods) {
 				fm.setCommand(OFFlowMod.OFPFC_DELETE);
-				PolicyUpdateTable partialUpdateTable = this.update(fm);
+				PolicyUpdateTable partialUpdateTable = this.graph.update(fm, this);
 				updateTable2.addUpdateTable(partialUpdateTable);
 			}
 			

@@ -9,22 +9,13 @@ from apps import *
 WorkDir = "/home/xinjin/xin-flowmaster"
 CONTROLLER_IP = "localhost"
 ovxctlPy = "%s/OpenVirteX/utils/ovxctl.py" % WorkDir
-
-
-topoFile = "%s/OpenVirteX/experiments/ExprTopo/Rocketfuel/" % WorkDir + \
-    "internet2/weights.intra"
-prefixFile = "%s/OpenVirteX/experiments/classbench/" % WorkDir + \
-    "fw1_prefix"
-fwFile = "%s/OpenVirteX/experiments/classbench/" % WorkDir + \
-    "fw1_10"
 swNumber = 1
-perSwRoutingRule = 2
 
 #********************************************************************
 # mininet: start, kill
 #********************************************************************
 def startMininet():
-    topo = MNTopo(sw_number = swNumber, topoFile=topoFile)
+    topo = MNTopo(sw_number = swNumber)
     net = Mininet(topo, autoSetMacs=True, xterms=False,
         controller=RemoteController)
     net.addController('c', ip='127.0.0.1')
@@ -90,116 +81,6 @@ def addController2(topo):
     cmd = "%s -n startNetwork 2" % ovxctlPy
     subprocess.call(cmd, shell=True)
 
-def addVirtController(topo):
-    print "*****************************"
-    print "******** Controller *********"
-    print "*****************************"
-    cmd = "%s -n createNetwork tcp:%s:10000 10.0.0.0 16" % (ovxctlPy,
-        CONTROLLER_IP)
-    print cmd
-    subprocess.call(cmd, shell=True)
-
-    cmd = "%s -n createMultiSwitch 1 00:00:00:00:00:00:01:00 3" % ovxctlPy
-    print cmd
-    subprocess.call(cmd, shell=True)
-
-    cmd = "%s -n createBabyPort 1 00:a4:23:05:00:00:00:02 1" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n createBabyPort 1 00:a4:23:05:00:00:00:02 0" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n createBabyPort 1 00:a4:23:05:00:00:00:02 0" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-
-    cmd = "%s -n createBabyPort 1 00:a4:23:05:00:00:00:03 2" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n createBabyPort 1 00:a4:23:05:00:00:00:03 0" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n createBabyPort 1 00:a4:23:05:00:00:00:03 0" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-
-    cmd = "%s -n createBabyPort 1 00:a4:23:05:00:00:00:04 3" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n createBabyPort 1 00:a4:23:05:00:00:00:04 0" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n createBabyPort 1 00:a4:23:05:00:00:00:04 0" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-
-    cmd = "%s -n connectBabyLink 1 00:a4:23:05:00:00:00:02 2 00:a4:23:05:00:00:00:03 5" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n connectBabyLink 1 00:a4:23:05:00:00:00:02 3 00:a4:23:05:00:00:00:04 9" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n connectBabyLink 1 00:a4:23:05:00:00:00:03 6 00:a4:23:05:00:00:00:04 8" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-
-    cmd = "%s -n startNetwork 1" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-
-def addVirtMultiController(topo):
-    print "*****************************"
-    print "******** Controller *********"
-    print "*****************************"
-    cmd = "%s -n createNetwork tcp:%s:10000 10.0.0.0 16" % (ovxctlPy,
-        CONTROLLER_IP)
-    subprocess.call(cmd, shell=True)
-    
-    cmd = "%s -n createNetwork tcp:%s:20000 10.0.0.0 16" % (ovxctlPy,
-        CONTROLLER_IP)
-    subprocess.call(cmd, shell=True)
-
-    cmd = "%s -n createNetwork tcp:%s:30000 10.0.0.0 16" % (ovxctlPy,
-        CONTROLLER_IP)
-    subprocess.call(cmd, shell=True)
-
-
-    cmd = "%s -n createMultiSwitch 1 00:00:00:00:00:00:01:00 0" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-
-    cmd = "%s -n createBabySwitch 1 00:a4:23:05:00:00:00:01 1" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-
-    cmd = "%s -n createBabySwitch 1 00:a4:23:05:00:00:00:01 2" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-
-    cmd = "%s -n createBabySwitch 1 00:a4:23:05:00:00:00:01 3" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-
-    cmd = "%s -n createBabyPort 1 00:a4:23:05:00:00:00:02 1" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n createBabyPort 1 00:a4:23:05:00:00:00:02 0" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n createBabyPort 1 00:a4:23:05:00:00:00:02 0" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-
-    cmd = "%s -n createBabyPort 2 00:a4:23:05:00:00:00:03 2" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n createBabyPort 2 00:a4:23:05:00:00:00:03 0" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n createBabyPort 2 00:a4:23:05:00:00:00:03 0" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-
-    cmd = "%s -n createBabyPort 3 00:a4:23:05:00:00:00:04 3" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n createBabyPort 3 00:a4:23:05:00:00:00:04 0" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n createBabyPort 3 00:a4:23:05:00:00:00:04 0" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-
-    cmd = "%s -n connectBabyLink 1 00:a4:23:05:00:00:00:02 2 00:a4:23:05:00:00:00:03 2" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n connectBabyLink 1 00:a4:23:05:00:00:00:02 3 00:a4:23:05:00:00:00:04 3" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n connectBabyLink 2 00:a4:23:05:00:00:00:03 3 00:a4:23:05:00:00:00:04 2" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-
-    cmd = "%s -n startNetwork 1" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-
-    cmd = "%s -n startNetwork 2" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-
-    cmd = "%s -n startNetwork 3" % ovxctlPy
-    subprocess.call(cmd, shell=True)
-
 def createPolicy(policy):
     cmd = "%s -n createPolicy 00:00:00:00:00:00:01:00 0 %s" % (ovxctlPy, policy)
     subprocess.call(cmd, shell=True)
@@ -231,7 +112,7 @@ def killFloodlight():
         "| xargs kill -9 > /dev/null 2>&1", shell=True)
 
 #********************************************************************
-# expr utils
+# utils
 #********************************************************************
 def cleanAll():
     killMininet()
@@ -239,10 +120,6 @@ def cleanAll():
     killOVX()
     showOVX()
     showFloodlight()
-
-def processLog(fout):
-    cmd = "python log_process.py ovx.log %s" % fout
-    subprocess.call(cmd, shell=True)
 
 #********************************************************************
 # expr: parallel
@@ -283,7 +160,7 @@ def exprSequential():
     CLI(net)
 
 #********************************************************************
-# expr: gateway
+# expr: virtual topology
 #********************************************************************
 def virtCreatePlumbingGraph():
     cmd = "%s -n createPlumbingSwitch 00:00:00:00:00:00:01:00 3" % ovxctlPy
@@ -374,32 +251,19 @@ def exprVirt():
     virtCreatePolicy()
     app = DemoVirtApp(topo)
     app.installRules()
-    #CLI(net)
+    CLI(net)
 
 #********************************************************************
 # main
 #********************************************************************
-def expr():
-    cleanAll()
-    startFloodlight(2)
-    startOVX()
-    (topo, net) = startMininet()
-    CLI(net)
-
-def testApp():
-    topo = MNTopo(sw_number = 1, topoFile=topoFile)
-    app1 = DemoMonitorApp(topo)
-    app1.installRules()
-    app2 = DemoRouterApp(topo)
-    app2.installRules()
-    app3 = DemoLoadBalancerApp(topo)
-    app3.installRules()
-    
+   
 def printHelp():
     print "\tUsage: ctrl.py"
     print "\t\tstart-mn kill-mn"
     print "\t\tstart-ovx show-ovx kill-ovx"
     print "\t\tstart-fl show-fl kill-fl"
+    print "\t\texpr-parallel expr-sequential expr-virt"
+    print "\t\tclean"
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
@@ -422,19 +286,14 @@ if __name__ == '__main__':
         showFloodlight()
     elif sys.argv[1] == "kill-fl":
         killFloodlight()
-    elif sys.argv[1] == "start":
-        startAll()
+    elif sys.argv[1] == "expr-parallel":
+        exprParallel()
+    elif sys.argv[1] == "expr-sequential":
+        exprSequential()
+    elif sys.argv[1] == "expr-virt":
+        exprVirt()
     elif sys.argv[1] == "clean":
         cleanAll()
-    elif sys.argv[1] == "test-app":
-        testApp()
-    elif sys.argv[1] == "expr":
-        #expr(sys.argv[2])
-        #exprAll()
-        #exprVirtMultiController()
-        #exprParallel()
-        #exprSequential()
-        exprVirt()
     else:
         printHelp()
 

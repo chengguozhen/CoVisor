@@ -107,7 +107,6 @@ def do_createSwitch(gopts, opts, args):
     dpids = [int(dpid.replace(":", ""), 16) for dpid in args[1].split(',')]
     plumbingIds = [int(plumbingId) for plumbingId in args[2].split(',')]
     req = { "tenantId" : int(args[0]), "dpids" : dpids, "plumbingSwitchIds" : plumbingIds, "dpid" : int(opts.dpid.replace(":", ""), 16) }
-    print req
     reply = connect(gopts, "tenant", "createSwitch", data=req, passwd=getPasswd(gopts))
     switchId = reply.get('vdpid')
     if switchId:
@@ -675,7 +674,6 @@ def do_createPlumbingSwitch(gopts, opts, args):
         sys.exit()
     req = { "physicalDpid" : int(args[0].replace(":", ""), 16),
             "numberOfPlumbingSwitches" : int(args[1]) };
-    print "req:  " + str(req)
     reply = connect(gopts, "tenant", "createPlumbingSwitch", data=req, passwd=getPasswd(gopts))
     print "Plumbing switches have been created"
 
@@ -693,7 +691,6 @@ def do_createPlumbingPort(gopts, opts, args):
     req = {"physicalDpid" : int(args[0].replace(":", ""), 16),
         "plumbingSwitchId" : int(args[1]),
         "physicalPort" : int(args[2]) }
-    print "req:  " + str(req)
     reply = connect(gopts, "tenant", "createPlumbingPort", data=req, passwd=getPasswd(gopts))
     print "Plumbing port has been created"
 
@@ -701,7 +698,6 @@ def pa_createPlumbingLink(args, cmd):
     usage = "%s <physical_dpid> <src_id> <src_port> <dst_id> <dst_port>" % USAGE.format(cmd)
     (sdesc, ldesc) = DESCS[cmd]
     parser = OptionParser(usage=usage, description=ldesc)
-
     return parser.parse_args(args)
 
 def do_createPlumbingLink(gopts, opts, args):
