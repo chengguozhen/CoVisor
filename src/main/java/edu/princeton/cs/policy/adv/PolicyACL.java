@@ -140,7 +140,7 @@ public class PolicyACL implements Cloneable {
 				} else if (leftACL.aclMatch.get(field) == PolicyFlowModStoreType.PREFIX
 						|| rightACL.aclMatch.get(field) == PolicyFlowModStoreType.PREFIX) {
 					keyTypes.add(new Tuple<PolicyFlowModStoreKey, PolicyFlowModStoreType>(field, PolicyFlowModStoreType.PREFIX));
-				} else {
+				} else if (leftACL.aclMatch.get(field) != null) {
 					keyTypes.add(new Tuple<PolicyFlowModStoreKey, PolicyFlowModStoreType>(field, PolicyFlowModStoreType.EXACT));
 				}
 			}
@@ -167,6 +167,8 @@ public class PolicyACL implements Cloneable {
 				storeKeys.add(keyType.first);
 				storeTypes.add(keyType.second);
 			}
+			storeKeys.add(PolicyFlowModStoreKey.ALL);
+			storeTypes.add(PolicyFlowModStoreType.WILDCARD);
 			if (operator == PolicyOperator.Sequential) {
 				leftChild.flowTable = new PolicyFlowTable(storeTypes, storeKeys, true);
 			} else {
@@ -176,6 +178,8 @@ public class PolicyACL implements Cloneable {
 		} else { // override composition
 			List<PolicyFlowModStoreKey> storeKeys = new ArrayList<PolicyFlowModStoreKey>();
 			List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
+			storeKeys.add(PolicyFlowModStoreKey.ALL);
+			storeTypes.add(PolicyFlowModStoreType.WILDCARD);
 			leftChild.flowTable = new PolicyFlowTable(storeTypes, storeKeys, false);
 			rightChild.flowTable = new PolicyFlowTable(storeTypes, storeKeys, false);
 		}

@@ -21,7 +21,8 @@ public abstract class PolicyFlowModStore {
 		NETWORK_DST,
 		NETWORK_PROTO,
 		TRANSPORT_SRC,
-		TRANSPORT_DST
+		TRANSPORT_DST,
+		ALL
 	}
 	
 	public enum PolicyFlowModAction {
@@ -90,12 +91,6 @@ public abstract class PolicyFlowModStore {
 	public static PolicyFlowModStore createFlowModStore(List<PolicyFlowModStoreType> storeTypes,
 			List<PolicyFlowModStoreKey> storeKeys,
 			Boolean isLeftInSequentialComposition) {
-		
-		if (storeTypes.size() == 0) {
-			return new PolicyFlowModStoreList(storeTypes, storeKeys, isLeftInSequentialComposition);
-		}
-		
-		
 		PolicyFlowModStore flowModStore = null;
 		switch (storeTypes.get(0)) {
 		case EXACT: {
