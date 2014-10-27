@@ -174,9 +174,4 @@ public class PolicyFlowModStoreMap<O> extends PolicyFlowModStore {
 			return potentialFlowMods;
 		}
 	}
-
-	@Override
-	public String toString() {
-		return "Type: " + this.storeType + "\tKey: " + this.storeKey;
-	}
 }

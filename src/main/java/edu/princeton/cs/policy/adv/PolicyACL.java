@@ -129,6 +129,9 @@ public class PolicyACL implements Cloneable {
 			List<Tuple<PolicyFlowModStoreKey, PolicyFlowModStoreType>> keyTypes =
 					new ArrayList<Tuple<PolicyFlowModStoreKey, PolicyFlowModStoreType>>();
 			for (PolicyFlowModStoreKey field : PolicyFlowModStoreKey.values()) {
+				
+				System.out.println(field + "\tleft:" + leftACL.aclMatch.get(field) + "\tright:" + rightACL.aclMatch.get(field));
+				
 				if (leftACL.aclMatch.get(field) == PolicyFlowModStoreType.DISALLOW
 						|| rightACL.aclMatch.get(field) == PolicyFlowModStoreType.DISALLOW) {
 					continue;

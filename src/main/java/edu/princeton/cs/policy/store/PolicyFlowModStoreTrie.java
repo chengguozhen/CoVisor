@@ -151,10 +151,4 @@ public class PolicyFlowModStoreTrie extends PolicyFlowModStore {
 		flowMods.addAll(this.wildcardFlowStore.getFlowMods());
 		return flowMods;
 	}
-	
-	@Override
-	public String toString() {
-		return "Type: " + this.storeType + "\tKey: " + this.storeKey;
-	}
-
 }

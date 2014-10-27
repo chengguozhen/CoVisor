@@ -70,10 +70,5 @@ public class PolicyFlowModStoreList extends PolicyFlowModStore {
 	public List<OFFlowMod> getPotentialFlowMods(OFFlowMod fm) {
 		return this.flowMods;
 	}
-	
-	@Override
-	public String toString() {
-		return "Type: " + this.storeType + "\tKey: " + this.storeKey;
-	}
 
 }
