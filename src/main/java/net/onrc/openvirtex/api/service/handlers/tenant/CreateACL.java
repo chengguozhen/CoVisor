@@ -5,6 +5,8 @@ import java.util.Map;
 import net.onrc.openvirtex.api.service.handlers.ApiHandler;
 import net.onrc.openvirtex.api.service.handlers.HandlerUtils;
 import net.onrc.openvirtex.api.service.handlers.TenantHandler;
+import net.onrc.openvirtex.elements.OVXMap;
+import net.onrc.openvirtex.elements.network.OVXNetwork;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,13 +33,10 @@ public class CreateACL extends ApiHandler<Map<String, Object>> {
 					TenantHandler.ACL_MATCH, params, true, null);
 			final String aclAction = HandlerUtils.<String> fetchField(
 					TenantHandler.ACL_ACTION, params, true, null);
-			this.log.info("create acl {} {} {}", tenantId, aclMatch, aclAction);
 			
 			PolicyACL policyACL = PolicyParseUtil.parseAclString(aclMatch, aclAction);
-			/*final PhysicalSwitch physicalSwitch = PhysicalNetwork.getInstance().getSwitch(dpid);
-			final PlumbingSwitch plumbingSwitch = physicalSwitch.getPlumbingGraph().getNode(plumbingSwitchId);
-			plumbingSwitch.createPolicy(policy);
-			this.log.info("create policy {} {} {}", dpid, plumbingSwitchId, policy);*/
+			final OVXNetwork virtualNetwork = OVXMap.getInstance().getVirtualNetwork(tenantId);
+			virtualNetwork.setPolicyACL(policyACL);
 			
 		} catch (Exception e) {
 			resp = new JSONRPC2Response(new JSONRPC2Error(

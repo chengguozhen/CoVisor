@@ -41,6 +41,8 @@ import org.openflow.protocol.factory.OFActionFactory;
 import org.openflow.protocol.factory.OFActionFactoryAware;
 import org.openflow.util.U16;
 
+import edu.princeton.cs.policy.adv.PolicyCompositionUtil;
+
 /**
  * Represents an ofp_flow_mod message
  *
@@ -80,12 +82,15 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
     protected short outPort;
     protected short flags;
     protected List<OFAction> actions;
+    
+    protected OFMatch actApplyMatch;
 
     public OFFlowMod() {
         super();
         this.outPort = OFPort.OFPP_NONE.getValue();
         this.type = OFType.FLOW_MOD;
         this.length = U16.t(OFFlowMod.MINIMUM_LENGTH);
+        this.actApplyMatch = null;
     }
 
     /**
@@ -210,6 +215,13 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
      */
     public OFMatch getMatch() {
         return this.match;
+    }
+    
+    public OFMatch getActApplyMatch() {
+    	if (this.actApplyMatch == null) {
+    		this.actApplyMatch = PolicyCompositionUtil.actApplyMatch(this.match, this.actions);
+    	}
+    	return this.actApplyMatch;
     }
 
     /**

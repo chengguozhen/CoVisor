@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.openflow.protocol.OFFlowMod;
+import org.openflow.protocol.OFMatch;
 
 public class PolicyFlowModStoreMap<O> extends PolicyFlowModStore {
 
@@ -13,8 +14,9 @@ public class PolicyFlowModStoreMap<O> extends PolicyFlowModStore {
 	private O wildcardKey;
 	
 	public PolicyFlowModStoreMap(List<PolicyFlowModStoreType> storeTypes,
-			List<PolicyFlowModStoreKey> storeKeys) {
-		super(storeTypes, storeKeys);
+			List<PolicyFlowModStoreKey> storeKeys,
+			Boolean isLeftInSequentialComposition) {
+		super(storeTypes, storeKeys, isLeftInSequentialComposition);
 		this.flowModsMap = new HashMap<O, PolicyFlowModStore>();
 		this.wildcardKey = generateWildcardKey();
 	}
@@ -37,7 +39,7 @@ public class PolicyFlowModStoreMap<O> extends PolicyFlowModStore {
 		O key = this.getKey(fm);
 		PolicyFlowModStore value = this.flowModsMap.get(key);
 		if (value == null) {
-			value = PolicyFlowModStore.createFlowModStore(this.childStoreTypes, this.childStoreKeys);
+			value = PolicyFlowModStore.createFlowModStore(this.childStoreTypes, this.childStoreKeys, this.isLeftInSequentialComposition);
 			this.flowModsMap.put(key, value);
 		}
 		value.add(fm);
@@ -45,28 +47,36 @@ public class PolicyFlowModStoreMap<O> extends PolicyFlowModStore {
 	
 	@SuppressWarnings("unchecked")
 	private O getKey (OFFlowMod fm) {
+		
+		OFMatch match = null;
+		if (this.isLeftInSequentialComposition) {
+			match = fm.getActApplyMatch();
+		} else {
+			match = fm.getMatch();
+		}
+		
 		O key = null;
 		switch (this.storeKey) {
 		case DATA_SRC:
-			key = (O) new ByteArrayWrapper(fm.getMatch().getDataLayerSource());
+			key = (O) new ByteArrayWrapper(match.getDataLayerSource());
 			break;
 		case DATA_DST:
-			key = (O) new ByteArrayWrapper(fm.getMatch().getDataLayerDestination());
+			key = (O) new ByteArrayWrapper(match.getDataLayerDestination());
 			break;
 		case NETWORK_SRC:
-			key = (O) Integer.valueOf(fm.getMatch().getNetworkSource());
+			key = (O) Integer.valueOf(match.getNetworkSource());
 			break;
 		case NETWORK_DST:
-			key = (O) Integer.valueOf(fm.getMatch().getNetworkDestination());
+			key = (O) Integer.valueOf(match.getNetworkDestination());
 			break;
 		case NETWORK_PROTO:
-			key = (O) Byte.valueOf(fm.getMatch().getNetworkProtocol());
+			key = (O) Byte.valueOf(match.getNetworkProtocol());
 			break;
 		case TRANSPORT_SRC:
-			key = (O) Short.valueOf(fm.getMatch().getTransportSource());
+			key = (O) Short.valueOf(match.getTransportSource());
 			break;
 		case TRANSPORT_DST:
-			key = (O) Short.valueOf(fm.getMatch().getTransportDestination());
+			key = (O) Short.valueOf(match.getTransportDestination());
 			break;
 		default:
 			break;

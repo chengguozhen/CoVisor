@@ -63,7 +63,7 @@ public class PlumbingSwitch implements OVXSendMsg {
 		this.id = id;
 		this.graph = graph;
 		this.policyTree = null;
-		this.flowTable = new PolicyFlowTable(storeTypes, storeKeys);
+		this.flowTable = new PolicyFlowTable(storeTypes, storeKeys, false);
 		//this.isEdgePortMap = new HashMap<Short, Boolean>();
 		this.portMap = new HashMap<Short, Short>();
 		this.prevHopMap = new HashMap<Short, PlumbingSwitch>();

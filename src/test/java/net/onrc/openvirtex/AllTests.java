@@ -15,7 +15,6 @@
  ******************************************************************************/
 package net.onrc.openvirtex;
 
-import edu.princeton.cs.policy.adv.BasePolicyTests;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import net.onrc.openvirtex.api.service.handlers.tenant.APITests;

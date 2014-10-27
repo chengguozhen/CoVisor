@@ -65,6 +65,8 @@ import org.openflow.protocol.action.OFActionOutput;
 
 import com.google.common.collect.Lists;
 
+import edu.princeton.cs.policy.adv.PolicyACL;
+
 /**
  * Virtual networks contain tenantId, controller info, subnet and gateway
  * information. Handles registration of virtual switches and links. Responds to
@@ -88,6 +90,7 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
     private final BitSetIndex hostCounter;
     private final Map<OVXPort, Host> hostMap;
     private final OVXFlowManager flowManager;
+    private PolicyACL policyACL;
 
     /**
      * Instantiates a virtual network. Only use if you have reserved the tenantId
@@ -116,6 +119,15 @@ public class OVXNetwork extends Network<OVXSwitch, OVXPort, OVXLink> implements
         this.hostMap = new HashMap<OVXPort, Host>();
         this.flowManager = new OVXFlowManager(this.tenantId,
                 this.hostMap.values());
+        this.policyACL = null;
+    }
+    
+    public void setPolicyACL(PolicyACL policyACL) {
+    	this.policyACL = policyACL;
+    }
+    
+    public PolicyACL getPolicyACL() {
+    	return this.policyACL;
     }
 
     /**

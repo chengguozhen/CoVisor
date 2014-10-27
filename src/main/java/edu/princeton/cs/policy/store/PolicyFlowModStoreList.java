@@ -10,8 +10,9 @@ public class PolicyFlowModStoreList extends PolicyFlowModStore {
 	private List<OFFlowMod> flowMods;
 	
 	public PolicyFlowModStoreList (List<PolicyFlowModStoreType> storeTypes,
-			List<PolicyFlowModStoreKey> storeKeys) {
-		super(storeTypes, storeKeys);
+			List<PolicyFlowModStoreKey> storeKeys,
+			Boolean isLeftInSequentialComposition) {
+		super(storeTypes, storeKeys, isLeftInSequentialComposition);
 		this.flowMods = new ArrayList<OFFlowMod>();
 	}
 
