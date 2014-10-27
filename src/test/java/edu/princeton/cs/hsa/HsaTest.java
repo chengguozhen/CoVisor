@@ -7,8 +7,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFFlowMod;
 
-import edu.princeton.cs.policy.adv.RuleGenerationUtil;
-
 public class HsaTest extends TestCase {
 	
 	private static Logger log = LogManager.getLogger(HsaTest.class.getName());

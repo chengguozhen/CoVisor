@@ -35,7 +35,6 @@ public class CreatePolicy extends ApiHandler<Map<String, Object>> {
 	@Override
 	public JSONRPC2Response process(final Map<String, Object> params) {
 		JSONRPC2Response resp = null;
-		this.log.info("enter create policy");
 		try {
 			final Long dpid = HandlerUtils.<Number> fetchField(TenantHandler.DPID,
 					params, true, null).longValue();
@@ -43,14 +42,12 @@ public class CreatePolicy extends ApiHandler<Map<String, Object>> {
 					TenantHandler.PLUMBING_SWITCH_ID, params, true, null).intValue();
 			final String policy = HandlerUtils.<String> fetchField(
 					TenantHandler.POLICY, params, true, null);
-			this.log.info("create policy {} {} {}", dpid, plumbingSwitchId, policy);
 			
 			PolicyTree policyTree = PolicyParseUtil.parsePolicyString(policy);
 			
 			final PhysicalSwitch physicalSwitch = PhysicalNetwork.getInstance().getSwitch(dpid);
 			final PlumbingSwitch plumbingSwitch = physicalSwitch.getPlumbingGraph().getNode(plumbingSwitchId);
 			plumbingSwitch.setPolicyTree(policyTree);
-			this.log.info("create policy {} {} {}", dpid, plumbingSwitchId, policy);
 			
 		} catch (Exception e) {
 			resp = new JSONRPC2Response(new JSONRPC2Error(

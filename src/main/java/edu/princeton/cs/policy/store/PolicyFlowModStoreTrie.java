@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.openflow.protocol.OFFlowMod;
+import org.openflow.protocol.OFMatch;
 
 import edu.princeton.cs.iptrie.IPTrie;
 
@@ -14,15 +15,16 @@ public class PolicyFlowModStoreTrie extends PolicyFlowModStore {
 	private PolicyFlowModStore wildcardFlowStore;
 	
 	public PolicyFlowModStoreTrie(List<PolicyFlowModStoreType> storeTypes,
-			List<PolicyFlowModStoreKey> storeKeys) {
-		super(storeTypes, storeKeys);
+			List<PolicyFlowModStoreKey> storeKeys,
+			Boolean isLeftInSequentialComposition) {
+		super(storeTypes, storeKeys, isLeftInSequentialComposition);
 		this.flowModsTrie = new IPTrie<PolicyFlowModStore>();
 		
 		List<PolicyFlowModStoreType> wildcardStoreTypes = new ArrayList<PolicyFlowModStoreType>();
 		wildcardStoreTypes.add(PolicyFlowModStoreType.WILDCARD);
     	List<PolicyFlowModStoreKey> wildcardStoreKeys = new ArrayList<PolicyFlowModStoreKey>();
     	wildcardStoreKeys.add(PolicyFlowModStoreKey.ALL);
-		this.wildcardFlowStore = new PolicyFlowModStoreList(wildcardStoreTypes, wildcardStoreKeys);
+		this.wildcardFlowStore = new PolicyFlowModStoreList(wildcardStoreTypes, wildcardStoreKeys, isLeftInSequentialComposition);
 	}
 
 	@Override
@@ -48,7 +50,7 @@ public class PolicyFlowModStoreTrie extends PolicyFlowModStore {
 			PolicyFlowModStore value = this.flowModsTrie.getExact(key);
 			if (value == null) {
 				value = PolicyFlowModStore.createFlowModStore(
-						this.childStoreTypes, this.childStoreKeys);
+						this.childStoreTypes, this.childStoreKeys, this.isLeftInSequentialComposition);
 				this.flowModsTrie.put(key, value);
 			}
 			value.add(fm);
@@ -56,16 +58,24 @@ public class PolicyFlowModStoreTrie extends PolicyFlowModStore {
 	}
 	
 	private String getKey (OFFlowMod fm) {
+		
+		OFMatch match = null;
+		if (this.isLeftInSequentialComposition) {
+			match = fm.getActApplyMatch();
+		} else {
+			match = fm.getMatch();
+		}
+		
 		int ip = 0;
 		int prefixLen = 0;
 		switch (this.storeKey) {
 		case NETWORK_SRC:
-			ip = fm.getMatch().getNetworkSource();
-			prefixLen = fm.getMatch().getNetworkSourceMaskLen(); 
+			ip = match.getNetworkSource();
+			prefixLen = match.getNetworkSourceMaskLen(); 
 			break;
 		case NETWORK_DST:
-			ip = fm.getMatch().getNetworkDestination();
-			prefixLen = fm.getMatch().getNetworkDestinationMaskLen();
+			ip = match.getNetworkDestination();
+			prefixLen = match.getNetworkDestinationMaskLen();
 			break;
 		default:
 			break;

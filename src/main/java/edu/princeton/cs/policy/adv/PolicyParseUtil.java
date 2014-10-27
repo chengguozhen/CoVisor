@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.commons.lang.NotImplementedException;
+
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
 import edu.princeton.cs.policy.adv.PolicyTree.PolicyOperator;
 import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModAction;
 import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreKey;
@@ -90,16 +93,19 @@ public class PolicyParseUtil {
 		case "mod:dstport":
 			return PolicyFlowModAction.TransportLayerDestination;
 		default:
-			return PolicyFlowModAction.Vendor;
+			throw new NotImplementedException("not implemented acl action");
 		}
 	}
 	
 	/*
 	 * Example: 1 + 2/3 > 4
 	 */
-	public static PolicyTree parsePolicyString(String policy) {
+	public static PolicyTree parsePolicyString(String policy) throws NetworkMappingException {
 		List<PolicyTree> postfix = transformToPostfixForm(policy);
 		PolicyTree policyTree = buildPolicyTree(postfix);
+		policyTree.initializeFlowTable();
+		
+		System.out.println(policyTree);
 		
 		return policyTree;
 	}

@@ -13,7 +13,6 @@ import org.openflow.protocol.OFFlowMod;
 
 import edu.princeton.cs.policy.adv.PolicyFlowTable;
 import edu.princeton.cs.policy.adv.PolicyParseUtil;
-import edu.princeton.cs.policy.adv.RuleGenerationUtil;
 
 public class PlayGroundTest extends TestCase {
 	

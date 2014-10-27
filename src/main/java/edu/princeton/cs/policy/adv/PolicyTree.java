@@ -1,6 +1,10 @@
 package edu.princeton.cs.policy.adv;
 
 import java.util.List;
+
+import net.onrc.openvirtex.elements.OVXMap;
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
+
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
@@ -22,6 +26,7 @@ public class PolicyTree {
 	public PolicyOperator operator;
 	public PolicyTree leftChild;
 	public PolicyTree rightChild;
+	public PolicyACL policyACL;
 	public PolicyFlowTable flowTable;
 	public Integer tenantId; // only meaningful when operator is Invalid
 	
@@ -29,7 +34,8 @@ public class PolicyTree {
 		this.operator = PolicyOperator.Tenant;
 		this.leftChild = null;
 		this.rightChild = null;
-		this.flowTable = new PolicyFlowTable();
+		this.policyACL = null;
+		this.flowTable = null;
 		this.tenantId = -1;
 	}
 	
@@ -50,17 +56,25 @@ public class PolicyTree {
 		}
 		this.leftChild = null;
 		this.rightChild = null;
-		this.flowTable = new PolicyFlowTable();
+		this.flowTable = null;
 		this.tenantId = -1;
 	}
 	
-	public PolicyTree(List<PolicyFlowModStoreType> storeTypes,
-			List<PolicyFlowModStoreKey> storeKeys) {
-		this.operator = PolicyOperator.Tenant;
-		this.leftChild = null;
-		this.rightChild = null;
-		this.flowTable = new PolicyFlowTable(storeTypes, storeKeys);
-		this.tenantId = -1;
+	public void initializeFlowTable() throws NetworkMappingException {
+
+		switch (this.operator) {
+		case Parallel:
+		case Sequential:
+		case Override:
+			this.policyACL = PolicyACL.composeACL(this.leftChild, this.rightChild, this.operator);
+			break;
+		case Tenant:
+			this.policyACL = OVXMap.getInstance().getVirtualNetwork(tenantId).getPolicyACL();
+			break;
+		default:
+			break;
+		}
+
 	}
 	
 	public PolicyUpdateTable update(OFFlowMod fm, Integer tenantId) {
@@ -260,7 +274,7 @@ public class PolicyTree {
 			str = "(" + this.leftChild + "/" + this.rightChild + ")";
 			break;
 		default:
-			str = tenantId.toString();
+			str = "\n\t" + tenantId.toString() + policyACL + flowTable;
 			break;
 		}
 		return str;

@@ -45,7 +45,7 @@ public class PolicyFlowTable {
     	storeTypes.add(PolicyFlowModStoreType.WILDCARD);
     	List<PolicyFlowModStoreKey> storeKeys = new ArrayList<PolicyFlowModStoreKey>();
     	storeKeys.add(PolicyFlowModStoreKey.ALL);
-    	this.flowModStore = PolicyFlowModStore.createFlowModStore(storeTypes, storeKeys);
+    	this.flowModStore = PolicyFlowModStore.createFlowModStore(storeTypes, storeKeys, false);
     	
     	this.ACLOn = false;
     	this.ACLMatch = new ArrayList<PolicyFlowModStore.PolicyFlowModStoreType>();
@@ -53,9 +53,10 @@ public class PolicyFlowTable {
 	}
 
 	public PolicyFlowTable(List<PolicyFlowModStoreType> storeTypes,
-			List<PolicyFlowModStoreKey> storeKeys) {
+			List<PolicyFlowModStoreKey> storeKeys,
+			boolean isLeftInSequentialComposition) {
 		this.generatedParentFlowModsDictionary = new ConcurrentHashMap<OFFlowMod, List<OFFlowMod>>();
-		this.flowModStore = PolicyFlowModStore.createFlowModStore(storeTypes, storeKeys);
+		this.flowModStore = PolicyFlowModStore.createFlowModStore(storeTypes, storeKeys, isLeftInSequentialComposition);
 	}
 	
 	public void addFlowMod(OFFlowMod fm) {
@@ -139,7 +140,7 @@ public class PolicyFlowTable {
 	
 	@Override
     public String toString() {
-		String str = "Flow Table:\n";
+		String str = "Flow Table\t" + this.flowModStore + "\n";
 		for (OFFlowMod fm : this.flowModStore.getFlowMods()) {
 			str = str + fm.toString() + "\n";
 		}
