@@ -42,9 +42,7 @@ public class PolicyFlowTable {
 		this.generatedParentFlowModsDictionary = new ConcurrentHashMap<OFFlowMod, List<OFFlowMod>>();
 		
 		List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
-    	storeTypes.add(PolicyFlowModStoreType.WILDCARD);
     	List<PolicyFlowModStoreKey> storeKeys = new ArrayList<PolicyFlowModStoreKey>();
-    	storeKeys.add(PolicyFlowModStoreKey.ALL);
     	this.flowModStore = PolicyFlowModStore.createFlowModStore(storeTypes, storeKeys, false);
     	
     	this.ACLOn = false;

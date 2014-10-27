@@ -32,7 +32,6 @@ public class PolicyACL implements Cloneable {
 		for (PolicyFlowModStoreKey field : PolicyFlowModStoreKey.values()) {
 			this.aclMatch.put(field, PolicyFlowModStoreType.DISALLOW);
 		}
-		this.aclMatch.remove(PolicyFlowModStoreKey.ALL);
 		for (PolicyFlowModAction action : PolicyFlowModAction.values()) {
 			this.aclAction.put(action, false);
 		}
@@ -168,8 +167,6 @@ public class PolicyACL implements Cloneable {
 				storeKeys.add(keyType.first);
 				storeTypes.add(keyType.second);
 			}
-			storeKeys.add(PolicyFlowModStoreKey.ALL);
-			storeTypes.add(PolicyFlowModStoreType.WILDCARD);
 			if (operator == PolicyOperator.Sequential) {
 				leftChild.flowTable = new PolicyFlowTable(storeTypes, storeKeys, true);
 			} else {
@@ -179,8 +176,6 @@ public class PolicyACL implements Cloneable {
 		} else { // override composition
 			List<PolicyFlowModStoreKey> storeKeys = new ArrayList<PolicyFlowModStoreKey>();
 			List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
-			storeKeys.add(PolicyFlowModStoreKey.ALL);
-			storeTypes.add(PolicyFlowModStoreType.WILDCARD);
 			leftChild.flowTable = new PolicyFlowTable(storeTypes, storeKeys, false);
 			rightChild.flowTable = new PolicyFlowTable(storeTypes, storeKeys, false);
 		}

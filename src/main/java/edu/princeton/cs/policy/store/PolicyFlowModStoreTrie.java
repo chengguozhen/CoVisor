@@ -21,9 +21,7 @@ public class PolicyFlowModStoreTrie extends PolicyFlowModStore {
 		this.flowModsTrie = new IPTrie<PolicyFlowModStore>();
 		
 		List<PolicyFlowModStoreType> wildcardStoreTypes = new ArrayList<PolicyFlowModStoreType>();
-		wildcardStoreTypes.add(PolicyFlowModStoreType.WILDCARD);
     	List<PolicyFlowModStoreKey> wildcardStoreKeys = new ArrayList<PolicyFlowModStoreKey>();
-    	wildcardStoreKeys.add(PolicyFlowModStoreKey.ALL);
 		this.wildcardFlowStore = new PolicyFlowModStoreList(wildcardStoreTypes, wildcardStoreKeys, isLeftInSequentialComposition);
 	}
 

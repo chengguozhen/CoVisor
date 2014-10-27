@@ -61,7 +61,7 @@ public class PolicyParseUtil {
 		case "dstport":
 			return PolicyFlowModStoreKey.TRANSPORT_DST;
 		default:
-			return PolicyFlowModStoreKey.ALL;
+			throw new NotImplementedException("not implemented match field");
 		}
 	}
 	
