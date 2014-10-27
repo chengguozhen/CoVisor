@@ -64,11 +64,15 @@ public class PlumbingGraph {
 	}
 	
 	public PolicyUpdateTable update(OFFlowMod ofm, PlumbingSwitch node) {
-		PolicyUpdateTable updateTable = node.update(ofm);
-		for (OFFlowMod fm : updateTable.addFlowMods) {
-			this.flowTable.addFlowMod(fm);
-		}
-		return updateTable;
+        if (this.nodes.size() == 1) {
+            return this.flowTable.update(ofm);
+        } else {
+    		PolicyUpdateTable updateTable = node.update(ofm);
+    		for (OFFlowMod fm : updateTable.addFlowMods) {
+    			this.flowTable.addFlowMod(fm);
+    		}
+		    return updateTable;
+        }
 	}
 	
 	public String getGraphString() {

@@ -25,7 +25,6 @@ public class CreateACL extends ApiHandler<Map<String, Object>> {
 	@Override
 	public JSONRPC2Response process(final Map<String, Object> params) {
 		JSONRPC2Response resp = null;
-		this.log.info("enter create acl");
 		try {
 			final Integer tenantId = HandlerUtils.<Number>fetchField(
                     TenantHandler.TENANT, params, true, null).intValue();

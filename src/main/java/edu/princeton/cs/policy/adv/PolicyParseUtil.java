@@ -38,8 +38,6 @@ public class PolicyParseUtil {
 			PolicyFlowModAction action = parseAclAction(actionStr);
 			policyACL.aclAction.put(action, true);
 		}
-		
-        System.out.println(policyACL);
 
 		return policyACL;
 	}

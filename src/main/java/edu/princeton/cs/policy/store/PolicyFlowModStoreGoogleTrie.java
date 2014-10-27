@@ -55,12 +55,6 @@ public class PolicyFlowModStoreGoogleTrie extends PolicyFlowModStore {
 			if (value == null) {
 				value = PolicyFlowModStore.createFlowModStore(
 						this.childStoreTypes, this.childStoreKeys, this.isLeftInSequentialComposition);
-                System.out.println(fm);
-                for (int i = 0; i < this.childStoreKeys.size(); i++) {
-                    System.out.println(this.childStoreKeys.get(i) + "\t" + this.childStoreTypes.get(i) + "\t");
-                }
-                System.out.println(this.isLeftInSequentialComposition + key);
-                System.out.println(value);
 				this.flowModsTrie.put(key, value);
 			}
 			value.add(fm);
