@@ -9,11 +9,6 @@ import java.util.Map;
 
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
 
-import org.openflow.protocol.OFFlowMod;
-import org.openflow.protocol.OFMatch;
-
-import com.googlecode.concurrenttrees.common.KeyValuePair;
-
 import edu.princeton.cs.hsa.Tuple;
 import edu.princeton.cs.policy.adv.PolicyTree.PolicyOperator;
 import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreKey;
@@ -140,7 +135,7 @@ public class PolicyACL implements Cloneable {
 				} else if (leftACL.aclMatch.get(field) == PolicyFlowModStoreType.PREFIX
 						|| rightACL.aclMatch.get(field) == PolicyFlowModStoreType.PREFIX) {
 					keyTypes.add(new Tuple<PolicyFlowModStoreKey, PolicyFlowModStoreType>(field, PolicyFlowModStoreType.PREFIX));
-				} else if (leftACL.aclMatch.get(field) != null) {
+				} else {
 					keyTypes.add(new Tuple<PolicyFlowModStoreKey, PolicyFlowModStoreType>(field, PolicyFlowModStoreType.EXACT));
 				}
 			}

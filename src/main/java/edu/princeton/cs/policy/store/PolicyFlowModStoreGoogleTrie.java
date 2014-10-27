@@ -24,7 +24,9 @@ public class PolicyFlowModStoreGoogleTrie extends PolicyFlowModStore {
 		this.flowModsTrie = new ConcurrentIPRadixTree<PolicyFlowModStore>(new DefaultCharArrayNodeFactory());
 		
 		List<PolicyFlowModStoreType> wildcardStoreTypes = new ArrayList<PolicyFlowModStoreType>();
+		wildcardStoreTypes.add(PolicyFlowModStoreType.WILDCARD);
     	List<PolicyFlowModStoreKey> wildcardStoreKeys = new ArrayList<PolicyFlowModStoreKey>();
+    	wildcardStoreKeys.add(PolicyFlowModStoreKey.ALL);
 		this.wildcardFlowStore = new PolicyFlowModStoreList(wildcardStoreTypes, wildcardStoreKeys, isLeftInSequentialComposition);
 	}
 

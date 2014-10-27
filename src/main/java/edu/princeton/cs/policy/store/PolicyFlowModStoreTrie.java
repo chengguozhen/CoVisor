@@ -7,6 +7,8 @@ import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFMatch;
 
 import edu.princeton.cs.iptrie.IPTrie;
+import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreKey;
+import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreType;
 
 
 public class PolicyFlowModStoreTrie extends PolicyFlowModStore {
@@ -21,7 +23,9 @@ public class PolicyFlowModStoreTrie extends PolicyFlowModStore {
 		this.flowModsTrie = new IPTrie<PolicyFlowModStore>();
 		
 		List<PolicyFlowModStoreType> wildcardStoreTypes = new ArrayList<PolicyFlowModStoreType>();
+		wildcardStoreTypes.add(PolicyFlowModStoreType.WILDCARD);
     	List<PolicyFlowModStoreKey> wildcardStoreKeys = new ArrayList<PolicyFlowModStoreKey>();
+    	wildcardStoreKeys.add(PolicyFlowModStoreKey.ALL);
 		this.wildcardFlowStore = new PolicyFlowModStoreList(wildcardStoreTypes, wildcardStoreKeys, isLeftInSequentialComposition);
 	}
 
