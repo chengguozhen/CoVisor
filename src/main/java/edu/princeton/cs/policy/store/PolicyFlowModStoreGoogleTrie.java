@@ -73,11 +73,11 @@ public class PolicyFlowModStoreGoogleTrie extends PolicyFlowModStore {
 		int ip = 0;
 		int prefixLen = 0;
 		switch (this.storeKey) {
-		case NETWORK_SRC:
+		case NW_SRC:
 			ip = match.getNetworkSource();
 			prefixLen = match.getNetworkSourceMaskLen(); 
 			break;
-		case NETWORK_DST:
+		case NW_DST:
 			ip = match.getNetworkDestination();
 			prefixLen = match.getNetworkDestinationMaskLen();
 			break;

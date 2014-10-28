@@ -57,26 +57,41 @@ public class PolicyFlowModStoreMap<O> extends PolicyFlowModStore {
 		
 		O key = null;
 		switch (this.storeKey) {
-		case DATA_SRC:
+		case IN_PORT:
+			key = (O) Short.valueOf(match.getInputPort());
+			break;
+		case DL_VLAN:
+			key = (O) Short.valueOf(match.getDataLayerVirtualLan());
+			break;
+		case DL_SRC:
 			key = (O) new ByteArrayWrapper(match.getDataLayerSource());
 			break;
-		case DATA_DST:
+		case DL_DST:
 			key = (O) new ByteArrayWrapper(match.getDataLayerDestination());
 			break;
-		case NETWORK_SRC:
-			key = (O) Integer.valueOf(match.getNetworkSource());
+		case DL_TYPE:
+			key = (O) Short.valueOf(match.getDataLayerType());
 			break;
-		case NETWORK_DST:
-			key = (O) Integer.valueOf(match.getNetworkDestination());
-			break;
-		case NETWORK_PROTO:
+		case NW_PROTO:
 			key = (O) Byte.valueOf(match.getNetworkProtocol());
 			break;
-		case TRANSPORT_SRC:
+		case TP_SRC:
 			key = (O) Short.valueOf(match.getTransportSource());
 			break;
-		case TRANSPORT_DST:
+		case TP_DST:
 			key = (O) Short.valueOf(match.getTransportDestination());
+			break;
+		case NW_SRC:
+			key = (O) Integer.valueOf(match.getNetworkSource());
+			break;
+		case NW_DST:
+			key = (O) Integer.valueOf(match.getNetworkDestination());
+			break;
+		case DL_VLAN_PCP:
+			key = (O) Byte.valueOf(match.getDataLayerVirtualLanPriorityCodePoint());
+			break;
+		case NW_TOS:
+			key = (O) Byte.valueOf(match.getNetworkTypeOfService());
 			break;
 		default:
 			break;
@@ -88,25 +103,25 @@ public class PolicyFlowModStoreMap<O> extends PolicyFlowModStore {
 	private O generateWildcardKey () {
 		O key = null;
 		switch (this.storeKey) {
-		case DATA_SRC:
+		case DL_SRC:
 			key = (O) new ByteArrayWrapper(new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00});
 			break;
-		case DATA_DST:
+		case DL_DST:
 			key = (O) new ByteArrayWrapper(new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00});
 			break;
-		case NETWORK_SRC:
+		case NW_SRC:
 			key = (O) Integer.valueOf(0);
 			break;
-		case NETWORK_DST:
+		case NW_DST:
 			key = (O) Integer.valueOf(0);
 			break;
-		case NETWORK_PROTO:
+		case NW_PROTO:
 			key = (O) Byte.valueOf((byte) 0);
 			break;
-		case TRANSPORT_SRC:
+		case TP_SRC:
 			key = (O) Short.valueOf((short) 0);
 			break;
-		case TRANSPORT_DST:
+		case TP_DST:
 			key = (O) Short.valueOf((short) 0);
 			break;
 		default:

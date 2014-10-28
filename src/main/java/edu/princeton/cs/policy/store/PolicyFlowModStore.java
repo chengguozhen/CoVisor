@@ -15,30 +15,35 @@ public abstract class PolicyFlowModStore {
 	}
 	
 	public enum PolicyFlowModStoreKey {
-		DATA_SRC,
-		DATA_DST,
-		NETWORK_SRC,
-		NETWORK_DST,
-		NETWORK_PROTO,
-		TRANSPORT_SRC,
-		TRANSPORT_DST,
+		IN_PORT,
+		DL_VLAN,
+		DL_SRC,
+		DL_DST,
+		DL_TYPE,
+		NW_PROTO,
+		TP_SRC,
+		TP_DST,
+		NW_SRC,
+		NW_DST,
+		DL_VLAN_PCP,
+		NW_TOS,
 		ALL
 	}
 	
 	public enum PolicyFlowModAction {
-		Output,
 		DataLayerDestination,
 		DataLayerSource,
-		//Enqueue,
+		Enqueue,
 		NetworkLayerDestination,
 		NetworkLayerSource,
-		//NetworkTypeOfService,
-		//StripVirtualLan,
+		NetworkTypeOfService,
+		Output,
+		StripVirtualLan,
 		TransportLayerDestination,
 		TransportLayerSource,
-		//Vendor,
-		//VirtuaLanIdentifier,
-		//VirtalLanPriorityCodePoint
+		Vendor,
+		VirtuaLanIdentifier,
+		VirtalLanPriorityCodePoint
 	}
 	
 	protected PolicyFlowModStoreType storeType;
@@ -67,7 +72,7 @@ public abstract class PolicyFlowModStore {
 	
 	@Override
 	public String toString() {
-		String str = this.storeKey + ":" + this.storeType;
+		String str = "self-" + this.storeKey + ":" + this.storeType + "\tchildren-";
 		for (int i = 0; i < childStoreKeys.size(); i++) {
 			str = "," + this.childStoreKeys.get(i) + ":" + this.childStoreTypes.get(i);
 		}
@@ -95,19 +100,24 @@ public abstract class PolicyFlowModStore {
 		switch (storeTypes.get(0)) {
 		case EXACT: {
 			switch (storeKeys.get(0)) {
-			case DATA_SRC:
-			case DATA_DST:
+			case DL_SRC:
+			case DL_DST:
 				flowModStore = new PolicyFlowModStoreMap<ByteArrayWrapper>(storeTypes, storeKeys, isLeftInSequentialComposition);
 				break;
-			case NETWORK_SRC:
-			case NETWORK_DST:
+			case NW_SRC:
+			case NW_DST:
 				flowModStore = new PolicyFlowModStoreMap<Integer>(storeTypes, storeKeys, isLeftInSequentialComposition);
 				break;
-			case NETWORK_PROTO:
+			case DL_VLAN_PCP:
+			case NW_PROTO:
+			case NW_TOS:
 				flowModStore = new PolicyFlowModStoreMap<Byte>(storeTypes, storeKeys, isLeftInSequentialComposition);
 				break;
-			case TRANSPORT_SRC:
-			case TRANSPORT_DST:
+			case IN_PORT:
+			case DL_VLAN:
+			case DL_TYPE:
+			case TP_SRC:
+			case TP_DST:
 				flowModStore = new PolicyFlowModStoreMap<Short>(storeTypes, storeKeys, isLeftInSequentialComposition);
 				break;
 			default:

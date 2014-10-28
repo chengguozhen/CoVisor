@@ -7,8 +7,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.onrc.openvirtex.exceptions.NetworkMappingException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.openflow.protocol.OFFlowMod;
+import org.openflow.protocol.OFMatch;
+import org.openflow.protocol.action.OFAction;
+import org.openflow.protocol.action.OFActionDataLayerDestination;
+import org.openflow.protocol.action.OFActionDataLayerSource;
+import org.openflow.protocol.action.OFActionEnqueue;
+import org.openflow.protocol.action.OFActionNetworkLayerDestination;
+import org.openflow.protocol.action.OFActionNetworkLayerSource;
+import org.openflow.protocol.action.OFActionNetworkTypeOfService;
+import org.openflow.protocol.action.OFActionOutput;
+import org.openflow.protocol.action.OFActionStripVirtualLan;
+import org.openflow.protocol.action.OFActionTransportLayerDestination;
+import org.openflow.protocol.action.OFActionTransportLayerSource;
+import org.openflow.protocol.action.OFActionVendor;
+import org.openflow.protocol.action.OFActionVirtualLanIdentifier;
+import org.openflow.protocol.action.OFActionVirtualLanPriorityCodePoint;
 
+import net.onrc.openvirtex.exceptions.NetworkMappingException;
+import edu.princeton.cs.hsa.PlumbingSwitch;
 import edu.princeton.cs.hsa.Tuple;
 import edu.princeton.cs.policy.adv.PolicyTree.PolicyOperator;
 import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreKey;
@@ -31,6 +50,136 @@ public class PolicyACL implements Cloneable {
 			this.aclAction.put(action, false);
 		}
 		
+	}
+	
+	public boolean checkACL (OFFlowMod fm) {
+		
+		// check match
+		OFMatch match = fm.getMatch();
+		int wcard = match.getWildcards();
+		if ((wcard & OFMatch.OFPFW_IN_PORT) == 0
+				&& (this.aclMatch.get(PolicyFlowModStoreKey.IN_PORT) != PolicyFlowModStoreType.EXACT)) {
+			return false;
+		}
+
+		if ((wcard & OFMatch.OFPFW_DL_VLAN) == 0
+				&& (this.aclMatch.get(PolicyFlowModStoreKey.DL_VLAN) != PolicyFlowModStoreType.EXACT)) {
+			return false;
+		}
+
+		if ((wcard & OFMatch.OFPFW_DL_SRC) == 0
+				&& (this.aclMatch.get(PolicyFlowModStoreKey.DL_SRC) != PolicyFlowModStoreType.EXACT)) {
+			return false;
+		}
+
+		if ((wcard & OFMatch.OFPFW_DL_DST) == 0
+				&& (this.aclMatch.get(PolicyFlowModStoreKey.DL_DST) != PolicyFlowModStoreType.EXACT)) {
+			return false;
+		}
+
+		if ((wcard & OFMatch.OFPFW_DL_TYPE) == 0
+				&& (this.aclMatch.get(PolicyFlowModStoreKey.DL_TYPE) != PolicyFlowModStoreType.EXACT)) {
+			return false;
+		}
+
+		if ((wcard & OFMatch.OFPFW_NW_PROTO) == 0
+				&& (this.aclMatch.get(PolicyFlowModStoreKey.NW_PROTO) != PolicyFlowModStoreType.EXACT)) {
+			return false;
+		}
+
+		if ((wcard & OFMatch.OFPFW_TP_SRC) == 0
+				&& (this.aclMatch.get(PolicyFlowModStoreKey.TP_SRC) != PolicyFlowModStoreType.EXACT)) {
+			return false;
+		}
+
+		if ((wcard & OFMatch.OFPFW_TP_DST) == 0
+				&& (this.aclMatch.get(PolicyFlowModStoreKey.TP_DST) != PolicyFlowModStoreType.EXACT)) {
+			return false;
+		}
+
+		// network source IP
+		{
+			int mask = wcard & OFMatch.OFPFW_NW_SRC_MASK;
+			int shift = Math.min(mask >> OFMatch.OFPFW_NW_SRC_SHIFT, 32);
+			if (shift == 0
+					&& (this.aclMatch.get(PolicyFlowModStoreKey.NW_SRC) != PolicyFlowModStoreType.EXACT)) {
+				return false;
+			} else if (shift >= 0 && shift <= 32
+					&& (this.aclMatch.get(PolicyFlowModStoreKey.NW_SRC) != PolicyFlowModStoreType.PREFIX)) {
+				return false;
+			}
+		}
+
+		// network destination IP
+		{
+			int mask = wcard & OFMatch.OFPFW_NW_DST_MASK;
+			int shift = Math.min(mask >> OFMatch.OFPFW_NW_DST_SHIFT, 32);
+			if (shift == 0
+					&& (this.aclMatch.get(PolicyFlowModStoreKey.NW_DST) != PolicyFlowModStoreType.EXACT)) {
+				return false;
+			} else if (shift >= 0 && shift <= 32
+					&& (this.aclMatch.get(PolicyFlowModStoreKey.NW_DST) != PolicyFlowModStoreType.PREFIX)) {
+				return false;
+			}
+		}
+
+		if ((wcard & OFMatch.OFPFW_DL_VLAN_PCP) == 0
+				&& (this.aclMatch.get(PolicyFlowModStoreKey.DL_VLAN_PCP) != PolicyFlowModStoreType.EXACT)) {
+			return false;
+		}
+
+		if ((wcard & OFMatch.OFPFW_NW_TOS) == 0
+				&& (this.aclMatch.get(PolicyFlowModStoreKey.NW_TOS) != PolicyFlowModStoreType.EXACT)) {
+			return false;
+		}
+
+		// check action
+		for (OFAction action : fm.getActions()) {
+
+			if (action instanceof OFActionDataLayerDestination
+					&& !this.aclAction.get(PolicyFlowModAction.DataLayerDestination)) {
+				return false;
+			} else if (action instanceof OFActionDataLayerSource
+					&& !this.aclAction.get(PolicyFlowModAction.DataLayerSource)) {
+				return false;
+			} else if (action instanceof OFActionEnqueue
+					&& !this.aclAction.get(PolicyFlowModAction.Enqueue)) {
+				return false;
+			} else if (action instanceof OFActionNetworkLayerDestination
+					&& !this.aclAction.get(PolicyFlowModAction.NetworkLayerDestination)) {
+				return false;
+			} else if (action instanceof OFActionNetworkLayerSource
+					&& !this.aclAction.get(PolicyFlowModAction.NetworkLayerSource)) {
+				return false;
+			} else if (action instanceof OFActionNetworkTypeOfService
+					&& !this.aclAction.get(PolicyFlowModAction.NetworkTypeOfService)) {
+				return false;
+			} else if (action instanceof OFActionOutput
+					&& !this.aclAction.get(PolicyFlowModAction.Output)) {
+				return false;
+			} else if (action instanceof OFActionStripVirtualLan
+					&& !this.aclAction.get(PolicyFlowModAction.StripVirtualLan)) {
+				return false;
+			} else if (action instanceof OFActionTransportLayerDestination
+					&& !this.aclAction.get(PolicyFlowModAction.TransportLayerDestination)) {
+				return false;
+			} else if (action instanceof OFActionTransportLayerSource
+					&& !this.aclAction.get(PolicyFlowModAction.TransportLayerSource)) {
+				return false;
+			} else if (action instanceof OFActionVendor
+					&& !this.aclAction.get(PolicyFlowModAction.Vendor)) {
+				return false;
+			} else if (action instanceof OFActionVirtualLanIdentifier
+					&& !this.aclAction.get(PolicyFlowModAction.VirtuaLanIdentifier)) {
+				return false;
+			} else if (action instanceof OFActionVirtualLanPriorityCodePoint
+					&& !this.aclAction.get(PolicyFlowModAction.VirtalLanPriorityCodePoint)) {
+				return false;
+			}
+
+		}
+
+		return true;
 	}
 	
 	@Override
@@ -181,22 +330,22 @@ public class PolicyACL implements Cloneable {
 			if (acl.aclAction.get(action)) {
 				switch (action) {
 				case DataLayerDestination:
-					ret.aclMatch.put(PolicyFlowModStoreKey.DATA_DST, PolicyFlowModStoreType.EXACT);
+					ret.aclMatch.put(PolicyFlowModStoreKey.DL_DST, PolicyFlowModStoreType.EXACT);
 					break;
 				case DataLayerSource:
-					ret.aclMatch.put(PolicyFlowModStoreKey.DATA_SRC, PolicyFlowModStoreType.EXACT);
+					ret.aclMatch.put(PolicyFlowModStoreKey.DL_SRC, PolicyFlowModStoreType.EXACT);
 					break;
 				case NetworkLayerDestination:
-					ret.aclMatch.put(PolicyFlowModStoreKey.NETWORK_DST, PolicyFlowModStoreType.EXACT);
+					ret.aclMatch.put(PolicyFlowModStoreKey.NW_DST, PolicyFlowModStoreType.EXACT);
 					break;
 				case NetworkLayerSource:
-					ret.aclMatch.put(PolicyFlowModStoreKey.NETWORK_SRC, PolicyFlowModStoreType.EXACT);
+					ret.aclMatch.put(PolicyFlowModStoreKey.NW_SRC, PolicyFlowModStoreType.EXACT);
 					break;
 				case TransportLayerDestination:
-					ret.aclMatch.put(PolicyFlowModStoreKey.TRANSPORT_DST, PolicyFlowModStoreType.EXACT);
+					ret.aclMatch.put(PolicyFlowModStoreKey.TP_DST, PolicyFlowModStoreType.EXACT);
 					break;
 				case TransportLayerSource:
-					ret.aclMatch.put(PolicyFlowModStoreKey.TRANSPORT_SRC, PolicyFlowModStoreType.EXACT);
+					ret.aclMatch.put(PolicyFlowModStoreKey.TP_SRC, PolicyFlowModStoreType.EXACT);
 					break;
 				default:
 					break;

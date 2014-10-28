@@ -34,10 +34,6 @@ public class PolicyFlowTable {
 	private ConcurrentHashMap<OFFlowMod, List<OFFlowMod>> generatedParentFlowModsDictionary;
 	private PolicyFlowModStore flowModStore;
 	
-	public boolean ACLOn;
-	public List<PolicyFlowModStoreType> ACLMatch;
-	public List<Boolean> ACLAction;
-	
 	public PolicyFlowTable() {
 		this.generatedParentFlowModsDictionary = new ConcurrentHashMap<OFFlowMod, List<OFFlowMod>>();
 		
@@ -46,10 +42,6 @@ public class PolicyFlowTable {
     	List<PolicyFlowModStoreKey> storeKeys = new ArrayList<PolicyFlowModStoreKey>();
     	storeKeys.add(PolicyFlowModStoreKey.ALL);
     	this.flowModStore = PolicyFlowModStore.createFlowModStore(storeTypes, storeKeys, false);
-    	
-    	this.ACLOn = false;
-    	this.ACLMatch = new ArrayList<PolicyFlowModStore.PolicyFlowModStoreType>();
-    	this.ACLAction = new ArrayList<Boolean>();
 	}
 
 	public PolicyFlowTable(List<PolicyFlowModStoreType> storeTypes,
@@ -60,10 +52,6 @@ public class PolicyFlowTable {
 	}
 	
 	public void addFlowMod(OFFlowMod fm) {
-		if (ACLOn && !this.checkACL(fm)) {
-			System.out.println("rule not compliant");
-		}
-		
 		this.flowModStore.add(fm);
 		this.generatedParentFlowModsDictionary.put(fm, new ArrayList<OFFlowMod>());
 	}
@@ -172,138 +160,4 @@ public class PolicyFlowTable {
 	public List<OFFlowMod> getPotentialFlowMods (OFFlowMod fm) {
 		return this.flowModStore.getPotentialFlowMods(fm);
 	}
-	
-	public boolean checkACL(OFFlowMod fm) {
-		// check match
-		OFMatch match = fm.getMatch();
-		int wcard = match.getWildcards();
-		if ((wcard & OFMatch.OFPFW_IN_PORT) == 0
-				&& (this.ACLMatch.get(0) != PolicyFlowModStoreType.EXACT)) {
-			return false;
-		}
-		
-		if ((wcard & OFMatch.OFPFW_DL_VLAN) == 0
-				&& (this.ACLMatch.get(1) != PolicyFlowModStoreType.EXACT)) {
-			return false;
-		}
-		
-		if ((wcard & OFMatch.OFPFW_DL_SRC) == 0
-				&& (this.ACLMatch.get(2) != PolicyFlowModStoreType.EXACT)) {
-			return false;
-		}
-		
-		if ((wcard & OFMatch.OFPFW_DL_DST) == 0
-				&& (this.ACLMatch.get(3) != PolicyFlowModStoreType.EXACT)) {
-			return false;
-		}
-		
-		if ((wcard & OFMatch.OFPFW_DL_TYPE) == 0
-				&& (this.ACLMatch.get(4) != PolicyFlowModStoreType.EXACT)) {
-			return false;
-		}
-		
-		if ((wcard & OFMatch.OFPFW_NW_PROTO) == 0
-				&& (this.ACLMatch.get(5) != PolicyFlowModStoreType.EXACT)) {
-			return false;
-		}
-		
-		if ((wcard & OFMatch.OFPFW_TP_SRC) == 0
-				&& (this.ACLMatch.get(6) != PolicyFlowModStoreType.EXACT)) {
-			return false;
-		}
-		
-		if ((wcard & OFMatch.OFPFW_TP_DST) == 0
-				&& (this.ACLMatch.get(7) != PolicyFlowModStoreType.EXACT)) {
-			return false;
-		}
-		
-		// network source IP
-		{
-			int mask = wcard & OFMatch.OFPFW_NW_SRC_MASK;
-			int shift = Math.min(mask >> OFMatch.OFPFW_NW_SRC_SHIFT, 32);
-			if (shift == 0
-					&& (this.ACLMatch.get(8) != PolicyFlowModStoreType.EXACT)) {
-				return false;
-			} else if (shift > 0 && shift < 32
-					&& (this.ACLMatch.get(8) != PolicyFlowModStoreType.PREFIX)) {
-				return false;
-			}
-		}
-		
-		// network destination IP
-		{
-			int mask = wcard & OFMatch.OFPFW_NW_DST_MASK;
-			int shift = Math.min(mask >> OFMatch.OFPFW_NW_DST_SHIFT, 32);
-			if (shift == 0
-					&& (this.ACLMatch.get(9) != PolicyFlowModStoreType.EXACT)) {
-				return false;
-			} else if (shift > 0 && shift < 32
-					&& (this.ACLMatch.get(9) != PolicyFlowModStoreType.PREFIX)) {
-				return false;
-			}
-		}
-		
-		if ((wcard & OFMatch.OFPFW_DL_VLAN_PCP) == 0
-				&& (this.ACLMatch.get(10) != PolicyFlowModStoreType.EXACT)) {
-			return false;
-		}
-		
-		if ((wcard & OFMatch.OFPFW_NW_TOS) == 0
-				&& (this.ACLMatch.get(11) != PolicyFlowModStoreType.EXACT)) {
-			return false;
-		}
-		
-		
-		// check action
-		for (OFAction action : fm.getActions()) {
-			
-			if (action instanceof OFActionDataLayerDestination
-					&& !this.ACLAction.get(0)) {
-				return false;
-			} else if (action instanceof OFActionDataLayerSource
-					&& !this.ACLAction.get(1)) {
-				return false;
-			} else if (action instanceof OFActionEnqueue
-					&& !this.ACLAction.get(2)) {
-				return false;
-			} else if (action instanceof OFActionNetworkLayerDestination
-					&& !this.ACLAction.get(3)) {
-				return false;
-			} else if (action instanceof OFActionNetworkLayerSource
-					&& !this.ACLAction.get(4)) {
-				return false;
-			} else if (action instanceof OFActionNetworkTypeOfService
-					&& !this.ACLAction.get(5)) {
-				return false;
-			} else if (action instanceof OFActionOutput
-					&& !this.ACLAction.get(6)) {
-				return false;
-			} else if (action instanceof OFActionEnqueue
-					&& !this.ACLAction.get(7)) {
-				return false;
-			} else if (action instanceof OFActionStripVirtualLan
-					&& !this.ACLAction.get(8)) {
-				return false;
-			} else if (action instanceof OFActionTransportLayerDestination
-					&& !this.ACLAction.get(9)) {
-				return false;
-			} else if (action instanceof OFActionTransportLayerSource
-					&& !this.ACLAction.get(10)) {
-				return false;
-			} else if (action instanceof OFActionVendor
-					&& !this.ACLAction.get(11)) {
-				return false;
-			} else if (action instanceof OFActionVirtualLanIdentifier
-					&& !this.ACLAction.get(12)) {
-				return false;
-			} else if (action instanceof OFActionVirtualLanPriorityCodePoint
-					&& !this.ACLAction.get(13)) {
-				return false;
-			}
-			
-		}
-		
-		return true;
-	}
-	
 }

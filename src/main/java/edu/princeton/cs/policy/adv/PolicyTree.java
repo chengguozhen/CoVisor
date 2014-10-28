@@ -5,10 +5,13 @@ import java.util.List;
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.action.OFAction;
 import org.openflow.protocol.action.OFActionOutput;
 
+import edu.princeton.cs.hsa.PlumbingSwitch;
 import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreKey;
 import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreType;
 
@@ -22,6 +25,7 @@ public class PolicyTree {
 	}
 	
 	public static boolean ActionOutputAsPass = true; // set true for firewall app
+	private static Logger logger = LogManager.getLogger(PlumbingSwitch.class.getName());
 	
 	public PolicyOperator operator;
 	public PolicyTree leftChild;
@@ -89,7 +93,12 @@ public class PolicyTree {
 			break;
 		case Tenant: // this is leaf, directly add to flow table
 			if (tenantId == this.tenantId) {
-				updateTable = this.flowTable.update(fm); // TODO: special case: 1+(1+2), process by 1 with two times
+				if (this.policyACL.checkACL(fm)) {
+					// TODO: special case: 1+(1+2), process by 1 with two times
+					updateTable = this.flowTable.update(fm);
+				} else {
+					logger.info("acl violation controller:{} flowmod:{} acl:{}", tenantId, fm, this.policyACL);
+				}
 			} else {
 				updateTable = new PolicyUpdateTable();
 			}

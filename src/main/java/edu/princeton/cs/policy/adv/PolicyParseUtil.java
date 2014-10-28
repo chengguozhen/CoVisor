@@ -44,20 +44,30 @@ public class PolicyParseUtil {
 	
 	private static PolicyFlowModStoreKey parseAclField(String str) {
 		switch (str) {
+		case "input":
+			return PolicyFlowModStoreKey.IN_PORT;
+		case "vlan":
+			return PolicyFlowModStoreKey.DL_VLAN;
 		case "srcmac":
-			return PolicyFlowModStoreKey.DATA_SRC;
+			return PolicyFlowModStoreKey.DL_SRC;
 		case "dstmac":
-			return PolicyFlowModStoreKey.DATA_DST;
-		case "srcip":
-			return PolicyFlowModStoreKey.NETWORK_SRC;
-		case "dstip":
-			return PolicyFlowModStoreKey.NETWORK_DST;
+			return PolicyFlowModStoreKey.DL_DST;
+		case "dltype":
+			return PolicyFlowModStoreKey.DL_TYPE;
 		case "proto":
-			return PolicyFlowModStoreKey.NETWORK_PROTO;
+			return PolicyFlowModStoreKey.NW_PROTO;
 		case "srcport":
-			return PolicyFlowModStoreKey.TRANSPORT_SRC;
+			return PolicyFlowModStoreKey.TP_SRC;
 		case "dstport":
-			return PolicyFlowModStoreKey.TRANSPORT_DST;
+			return PolicyFlowModStoreKey.TP_DST;
+		case "srcip":
+			return PolicyFlowModStoreKey.NW_SRC;
+		case "dstip":
+			return PolicyFlowModStoreKey.NW_DST;
+		case "vlanpcp":
+			return PolicyFlowModStoreKey.DL_VLAN_PCP;
+		case "tos":
+			return PolicyFlowModStoreKey.NW_TOS;
 		default:
 			throw new NotImplementedException("not implemented match field");
 		}
@@ -78,8 +88,6 @@ public class PolicyParseUtil {
 	
 	private static PolicyFlowModAction parseAclAction(String str) {
 		switch (str){
-		case "output":
-			return PolicyFlowModAction.Output;
 		case "mod:srcmac":
 			return PolicyFlowModAction.DataLayerSource;
 		case "mod:dstmac":
@@ -88,6 +96,8 @@ public class PolicyParseUtil {
 			return PolicyFlowModAction.NetworkLayerSource;
 		case "mod:dstip":
 			return PolicyFlowModAction.NetworkLayerDestination;
+		case "output":
+			return PolicyFlowModAction.Output;
 		case "mod:srcport":
 			return PolicyFlowModAction.TransportLayerSource;
 		case "mod:dstport":
