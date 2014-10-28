@@ -74,7 +74,7 @@ public abstract class PolicyFlowModStore {
 	public String toString() {
 		String str = "self-" + this.storeKey + ":" + this.storeType + "\tchildren-";
 		for (int i = 0; i < childStoreKeys.size(); i++) {
-			str = "," + this.childStoreKeys.get(i) + ":" + this.childStoreTypes.get(i);
+			str = str + "," + this.childStoreKeys.get(i) + ":" + this.childStoreTypes.get(i);
 		}
 		return str;
 	}

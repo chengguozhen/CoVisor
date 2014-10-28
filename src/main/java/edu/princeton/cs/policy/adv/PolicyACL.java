@@ -53,7 +53,7 @@ public class PolicyACL implements Cloneable {
 	}
 	
 	public boolean checkACL (OFFlowMod fm) {
-		
+	
 		// check match
 		OFMatch match = fm.getMatch();
 		int wcard = match.getWildcards();
@@ -101,25 +101,21 @@ public class PolicyACL implements Cloneable {
 		{
 			int mask = wcard & OFMatch.OFPFW_NW_SRC_MASK;
 			int shift = Math.min(mask >> OFMatch.OFPFW_NW_SRC_SHIFT, 32);
-			if (shift == 0
-					&& (this.aclMatch.get(PolicyFlowModStoreKey.NW_SRC) != PolicyFlowModStoreType.EXACT)) {
-				return false;
-			} else if (shift >= 0 && shift <= 32
-					&& (this.aclMatch.get(PolicyFlowModStoreKey.NW_SRC) != PolicyFlowModStoreType.PREFIX)) {
-				return false;
+            if ( !((shift == 0 && this.aclMatch.get(PolicyFlowModStoreKey.NW_SRC) == PolicyFlowModStoreType.EXACT)
+                || (shift >= 0 && shift < 32 && this.aclMatch.get(PolicyFlowModStoreKey.NW_SRC) == PolicyFlowModStoreType.PREFIX)
+                || shift == 32) ) {
+                return false;
 			}
-		}
+        }
 
 		// network destination IP
 		{
 			int mask = wcard & OFMatch.OFPFW_NW_DST_MASK;
 			int shift = Math.min(mask >> OFMatch.OFPFW_NW_DST_SHIFT, 32);
-			if (shift == 0
-					&& (this.aclMatch.get(PolicyFlowModStoreKey.NW_DST) != PolicyFlowModStoreType.EXACT)) {
-				return false;
-			} else if (shift >= 0 && shift <= 32
-					&& (this.aclMatch.get(PolicyFlowModStoreKey.NW_DST) != PolicyFlowModStoreType.PREFIX)) {
-				return false;
+            if ( !((shift == 0 && this.aclMatch.get(PolicyFlowModStoreKey.NW_DST) == PolicyFlowModStoreType.EXACT)
+                || (shift >= 0 && shift < 32 && this.aclMatch.get(PolicyFlowModStoreKey.NW_DST) == PolicyFlowModStoreType.PREFIX)
+                || shift == 32) ) {
+                return false;
 			}
 		}
 
@@ -285,13 +281,13 @@ public class PolicyACL implements Cloneable {
 				public int compare(Tuple<PolicyFlowModStoreKey, PolicyFlowModStoreType> keyType1,
 						Tuple<PolicyFlowModStoreKey, PolicyFlowModStoreType> keyType2) {
 					if (keyType1.second == PolicyFlowModStoreType.EXACT) {
-						return 1;
+						return -1;
 					} else if (keyType2.second == PolicyFlowModStoreType.EXACT) {
-						return -1;
-					} else if (keyType1.second == PolicyFlowModStoreType.PREFIX) {
 						return 1;
-					} else if (keyType2.second == PolicyFlowModStoreType.PREFIX) {
+					} else if (keyType1.second == PolicyFlowModStoreType.PREFIX) {
 						return -1;
+					} else if (keyType2.second == PolicyFlowModStoreType.PREFIX) {
+						return 1;
 					} else {
 						return 0;
 					}

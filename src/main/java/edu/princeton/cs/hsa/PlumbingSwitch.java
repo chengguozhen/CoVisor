@@ -121,8 +121,10 @@ public class PlumbingSwitch implements OVXSendMsg {
 				this.graph.getPhysicalSwitch().sendMsg(fm, this);
 			}
 			
+            this.logger.info("left child {}", this.policyTree.leftChild.flowTable);
+            this.logger.info("right child {}", this.policyTree.rightChild.flowTable);
 			this.logger.info("plumbing {} flow table {}", this.id, this.policyTree.flowTable);
-			this.logger.info("graph flow table {}", this.graph.flowTable);
+			//this.logger.info("graph flow table {}", this.graph.flowTable);
 			
 		} else {
 			this.graph.getPhysicalSwitch().sendMsg(msg, this);

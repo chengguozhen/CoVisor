@@ -90,7 +90,7 @@ class DemoLoadBalancerApp():
 
         rule = '{"switch":"%s", ' % dpid + \
             '"name":"DemoLB1", ' + \
-            '"priority":"1", ' + \
+            '"priority":"3", ' + \
             '"ether-type":"2048", ' + \
             '"src-ip":"0.0.0.0/2", ' + \
             '"dst-ip":"3.0.0.0", ' + \
@@ -99,7 +99,7 @@ class DemoLoadBalancerApp():
 
         rule = '{"switch":"%s", ' % dpid + \
             '"name":"DemoLB2", ' + \
-            '"priority":"3", ' + \
+            '"priority":"1", ' + \
             '"ether-type":"2048", ' + \
             '"dst-ip":"3.0.0.0", ' + \
             '"active":"true", "actions":"set-dst-ip=2.0.0.2"}'
