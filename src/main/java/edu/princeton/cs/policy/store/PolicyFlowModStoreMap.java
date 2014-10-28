@@ -103,17 +103,20 @@ public class PolicyFlowModStoreMap<O> extends PolicyFlowModStore {
 	private O generateWildcardKey () {
 		O key = null;
 		switch (this.storeKey) {
+		case IN_PORT:
+			key = (O) Short.valueOf((short) 0);
+			break;
+		case DL_VLAN:
+			key = (O) Short.valueOf((short) 0);
+			break;
 		case DL_SRC:
 			key = (O) new ByteArrayWrapper(new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00});
 			break;
 		case DL_DST:
 			key = (O) new ByteArrayWrapper(new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00});
 			break;
-		case NW_SRC:
-			key = (O) Integer.valueOf(0);
-			break;
-		case NW_DST:
-			key = (O) Integer.valueOf(0);
+		case DL_TYPE:
+			key = (O) Short.valueOf((short) 0);
 			break;
 		case NW_PROTO:
 			key = (O) Byte.valueOf((byte) 0);
@@ -123,6 +126,18 @@ public class PolicyFlowModStoreMap<O> extends PolicyFlowModStore {
 			break;
 		case TP_DST:
 			key = (O) Short.valueOf((short) 0);
+			break;
+		case NW_SRC:
+			key = (O) Integer.valueOf(0);
+			break;
+		case NW_DST:
+			key = (O) Integer.valueOf(0);
+			break;
+		case DL_VLAN_PCP:
+			key = (O) Byte.valueOf((byte) 0);
+			break;
+		case NW_TOS:
+			key = (O) Byte.valueOf((byte) 0);
 			break;
 		default:
 			break;
