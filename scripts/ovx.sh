@@ -16,9 +16,9 @@ JVM_OPTS="$JVM_OPTS -XX:CompileThreshold=1500 -XX:PreBlockSpin=8"
 if [ ! -e ${OVX_JAR} ]; then
   cd ${OVXHOME}
   echo "Packaging OVX for you..."
-  mvn package > /dev/null
+  mvn package -Dmaven.test.skip=true > scripts/errors.txt
   cd -
 fi
 
-echo "Starting OpenVirteX..."
-java ${JVM_OPTS} -Dlog4j.configurationFile=${OVXHOME}/config/log4j2.xml -Djavax.net.ssl.keyStore=${OVXHOME}/config/sslStore -jar ${OVX_JAR} $@
+#echo "Starting OpenVirteX..."
+#java ${JVM_OPTS} -Dlog4j.configurationFile=${OVXHOME}/config/log4j2.xml -Djavax.net.ssl.keyStore=${OVXHOME}/config/sslStore -jar ${OVX_JAR} $@
