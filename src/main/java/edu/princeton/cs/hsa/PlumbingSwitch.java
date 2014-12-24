@@ -22,7 +22,11 @@ import org.openflow.protocol.action.OFActionDataLayerSource;
 import org.openflow.protocol.action.OFActionNetworkLayerDestination;
 import org.openflow.protocol.action.OFActionOutput;
 
+import org.openflow.protocol.statistics.OFStatistics;
 import org.openflow.protocol.OFStatisticsReply;
+import org.openflow.protocol.OFStatisticsRequest;
+import org.openflow.protocol.statistics.OFAggregateStatisticsRequest;
+import org.openflow.protocol.statistics.OFFlowStatisticsRequest;
 import org.openflow.protocol.statistics.OFStatisticsType;
 
 import edu.princeton.cs.policy.adv.PolicyCompositionUtil;
@@ -46,10 +50,16 @@ public class PlumbingSwitch implements OVXSendMsg {
     private Map<Short, PlumbingSwitch> nextHopMap;
     private Map<Short, Short> nextHopPortMap;
     private int portNumber;
-	
+
+    /* Response to query should only take into account flow mods installed by
+     * the controller issuing the query. */
+    private Map<OFFlowMod, OVXSendMsg> flowModToController = new HashMap<OFFlowMod,
+	OVXSendMsg>();
     /* Physical flow mods corresponding to flow mod from controller; aggregate
        statistics from these flow mods to respond to stats query. */
-    private Map<OFFlowMod, PolicyUpdateTable> statsQueries;
+    private Map<OFFlowMod, List<OFFlowMod>> statsQueries = new HashMap<OFFlowMod,
+	List<OFFlowMod>>();
+
 
     public PlumbingSwitch(int id, PlumbingGraph graph) {
 	this.id = id;
@@ -131,7 +141,8 @@ public class PlumbingSwitch implements OVXSendMsg {
 	    }
 
 	    // Add fmMsg and its derived rules to map for answering queries.
-	    this.statsQueries.put(fmMsg, updateTable2);
+	    this.flowModToController.put(fmMsg, from);
+	    this.statsQueries.put(fmMsg, updateTable2.addFlowMods);
 	    
             this.logger.info("left child {}", this.policyTree.leftChild.flowTable);
             this.logger.info("right child {}", this.policyTree.rightChild.flowTable);
@@ -141,6 +152,30 @@ public class PlumbingSwitch implements OVXSendMsg {
 	} 
 	else if (msg.getType() == OFType.STATS_REQUEST) {
 	    // Devirtualize stats request using statsQueries map.
+
+	    OFMatch match = null;
+	    // Figure out how to extract the match from msg.
+
+	    /*
+	     * Flow mods issued by controllers whose children flow mods need to be sent
+	     * this stats request.
+	     */
+	    List<OFFlowMod> fmKeys = new ArrayList<OFFlowMod>();
+	    for (OFFlowMod fm : this.statsQueries.keySet()) {
+		if (match.covers(fm.getMatch())) {
+		    /*
+		     * Eliminate flow mods issued by other controllers.  The ports, etc.
+		     * of these flow mods have no meaning in the context of the query
+		     * issued by this controller.
+		     */
+		    if (flowModToController.get(fm) == from) {
+			fmKeys.add(fm);
+		    }
+		}
+	    }
+	    // For each flow mod in fmKeys, get its children from statsQueries.
+	    // Make necessary changes to this stats request message.
+	    // Send message.
 	    return;
 	}
 	else if (msg.getType() == OFType.STATS_REPLY) {

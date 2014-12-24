@@ -41,6 +41,8 @@ import org.openflow.util.HexString;
 import org.openflow.util.U16;
 import org.openflow.util.U8;
 
+import edu.princeton.cs.policy.adv.PolicyCompositionUtil;
+
 /**
  * Represents an ofp_match structure
  *
@@ -671,6 +673,18 @@ public class OFMatch implements Cloneable, Serializable {
         result = prime * result + this.transportSource;
         result = prime * result + this.wildcards;
         return result;
+    }
+
+    /*
+     * (this == other) or other is more specific than this (but never conflicting)
+     * Equivalent to:  (intersection of this and other) == other.
+     */
+    public boolean covers(OFMatch other) {
+	OFMatch intersection = PolicyCompositionUtil.intersectMatch(this, other);
+	if (intersection == null) {
+	    return false;
+	}
+	return intersection.equals(other);
     }
 
     @Override
