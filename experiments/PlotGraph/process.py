@@ -24,7 +24,7 @@ def processComposition(composition = "parallel"):
         for mechanism in mechanisms:
             fileName = "res_" + composition + "_" + mechanism + "_" + str(ruleCount)
             columns = list()
-            columnCount = 4
+            columnCount = 5
             for i in range(columnCount):
                 columns.append(list())
 
@@ -34,12 +34,14 @@ def processComposition(composition = "parallel"):
                 temp = oneline.strip().split()
                 for idx,data in enumerate(temp):
                     columns[idx].append(float(data))
+                totalTimeSoftware = (columns[0][-1] + columns[1][-1] * 0.2) * 0.001
+                columns[4].append(totalTimeSoftware)
                 oneline = fin.readline()
             fin.close()
 
             for i in range(columnCount):
                 columns[i].sort()
-                if i == 3:
+                if i == 3 or i == 4:
                     fout.write("\t" + str(columns[i][9] + 0.0003))
                     fout.write("\t" + str(columns[i][49] + 0.0003))
                     fout.write("\t" + str(columns[i][89] + 0.0003))
