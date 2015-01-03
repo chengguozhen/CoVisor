@@ -53,11 +53,11 @@ public class PlumbingSwitch implements OVXSendMsg {
 
     /* Response to query should only take into account flow mods installed by
      * the controller issuing the query. */
-    private Map<OFFlowMod, OVXSendMsg> flowModToController = new HashMap<OFFlowMod,
+    private Map<OFFlowMod, OVXSendMsg> flowModToControllerMap = new HashMap<OFFlowMod,
 	OVXSendMsg>();
-    /* Physical flow mods corresponding to flow mod from controller; aggregate
+    /* Physical flow mods corresponding to flow mod from controller; combine
        statistics from these flow mods to respond to stats query. */
-    private Map<OFFlowMod, List<OFFlowMod>> statsQueries = new HashMap<OFFlowMod,
+    private Map<OFFlowMod, List<OFFlowMod>> virtualToPhysicalFMMap = new HashMap<OFFlowMod,
 	List<OFFlowMod>>();
 
 
@@ -141,8 +141,8 @@ public class PlumbingSwitch implements OVXSendMsg {
 	    }
 
 	    // Add fmMsg and its derived rules to map for answering queries.
-	    this.flowModToController.put(fmMsg, from);
-	    this.statsQueries.put(fmMsg, updateTable2.addFlowMods);
+	    this.flowModToControllerMap.put(fmMsg, from);
+	    this.virtualToPhysicalFMMap.put(fmMsg, updateTable2.addFlowMods);
 	    
             this.logger.info("left child {}", this.policyTree.leftChild.flowTable);
             this.logger.info("right child {}", this.policyTree.rightChild.flowTable);
@@ -151,36 +151,43 @@ public class PlumbingSwitch implements OVXSendMsg {
 	    
 	} 
 	else if (msg.getType() == OFType.STATS_REQUEST) {
-	    // Devirtualize stats request using statsQueries map.
+	    // Devirtualize stats request using virtualToPhysicalFMMap.
+
+	    OFStatisticsRequest req = (OFStatisticsRequest) msg;
+	    for (OFStatistics stat : req.getStatistics) {
+		logger.info("Stat:  " + stat.toString());
+	    }
+
 
 	    OFMatch match = null;
 	    // Figure out how to extract the match from msg.
+	    // Maybe use OVXFlowStatisticsRequest devirtualize method as example.
 
 	    /*
-	     * Flow mods issued by controllers whose children flow mods need to be sent
-	     * this stats request.
+	     * Flow mods issued by controllers whose translated children flow mods need
+	     * to be sent this stats request.
 	     */
 	    List<OFFlowMod> fmKeys = new ArrayList<OFFlowMod>();
-	    for (OFFlowMod fm : this.statsQueries.keySet()) {
+	    for (OFFlowMod fm : this.virtualToPhysicalFMMap.keySet()) {
 		if (match.covers(fm.getMatch())) {
 		    /*
 		     * Eliminate flow mods issued by other controllers.  The ports, etc.
 		     * of these flow mods have no meaning in the context of the query
 		     * issued by this controller.
 		     */
-		    if (flowModToController.get(fm) == from) {
+		    if (flowModToControllerMap.get(fm) == from) {
 			fmKeys.add(fm);
 		    }
 		}
 	    }
-	    // For each flow mod in fmKeys, get its children from statsQueries.
+	    // For each flow mod in fmKeys, get its children from virtualToPhysicalFMMap.
 	    // Make necessary changes to this stats request message.
 	    // Send message.
 	    return;
 	}
 	else if (msg.getType() == OFType.STATS_REPLY) {
 	    /*
-	     * Virtualize stats request using statsQueries map.
+	     * Virtualize stats request using virtualToPhysicalFMMap.
 	     * Need to aggregate counts from multiple physical rules.
 	     */
 	    OFStatisticsReply rep = (OFStatisticsReply) msg;
