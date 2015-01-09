@@ -152,10 +152,13 @@ public class PlumbingSwitch implements OVXSendMsg {
 	} 
 	else if (msg.getType() == OFType.STATS_REQUEST) {
 	    // Devirtualize stats request using virtualToPhysicalFMMap.
-
+	    this.logger.info("msg.getType() == OFType.STATS_REQUEST");
+	    System.out.println("msg.getType() == OFType.STATS_REQUEST");
 	    OFStatisticsRequest req = (OFStatisticsRequest) msg;
-	    for (OFStatistics stat : req.getStatistics) {
-		logger.info("Stat:  " + stat.toString());
+	    this.logger.info("Printing each stat in req.getStatistics().");
+	    for (OFStatistics stat : req.getStatistics()) {
+		this.logger.info("Stat:  " + stat.toString());
+		System.out.println("Stat:  " + stat.toString());
 	    }
 
 
@@ -201,6 +204,9 @@ public class PlumbingSwitch implements OVXSendMsg {
 	    }
 	}
 	else {
+	    this.logger.info("msg isn't flow mod or stats request or"
+			     + "stats reply.");
+	    this.logger.info(msg.toString());
 	    this.graph.getPhysicalSwitch().sendMsg(msg, this);
 	}
 	

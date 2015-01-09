@@ -20,5 +20,5 @@ if [ ! -e ${OVX_JAR} ]; then
   cd -
 fi
 
-#echo "Starting OpenVirteX..."
-#java ${JVM_OPTS} -Dlog4j.configurationFile=${OVXHOME}/config/log4j2.xml -Djavax.net.ssl.keyStore=${OVXHOME}/config/sslStore -jar ${OVX_JAR} $@
+echo "Starting OpenVirteX..."
+java ${JVM_OPTS} -Dlog4j.configurationFile=${OVXHOME}/config/log4j2.xml -Djavax.net.ssl.keyStore=${OVXHOME}/config/sslStore -jar ${OVX_JAR} $@

@@ -13,22 +13,27 @@ class DemoMonitorApp():
     def __init__(self, topo):
         self.graph = topo.graph
         switch = self.graph.nodes()[0]
-        dpid = self.graph.node[switch]['vdpid']
+        self.dpid = self.graph.node[switch]['vdpid']
         self.rules = []
 
-        rule = '{"switch":"%s", ' % dpid + \
+        rule = '{"switch":"%s", ' % self.dpid + \
                 '"name":"DemoMinitor0", ' + \
                 '"priority":"0", ' + \
                 '"active":"true", "actions":""}'
         self.rules.append(rule)
 
-        rule = '{"switch":"%s", ' % dpid + \
+        rule = '{"switch":"%s", ' % self.dpid + \
             '"name":"DemoMonitor1", ' + \
             '"priority":"1", ' + \
             '"ether-type":"2048", ' + \
             '"src-ip":"1.0.0.0/24", ' + \
             '"active":"true", "actions":""}'
         self.rules.append(rule)
+
+    def send_query(self, stat_type):
+        cmd = "curl http://localhost:10001/wm/core/switch/%s/%s/json" \
+              % (self.dpid, stat_type)
+        subprocess.call(cmd, shell=True)
 
     def installRules(self):
         for rule in self.rules:

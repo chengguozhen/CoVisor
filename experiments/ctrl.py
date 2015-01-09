@@ -9,7 +9,7 @@ import os.path
 
 WORKDIR = "/home/covisor"
 CONTROLLER_IP = "localhost"
-OVXCTLPY = "%s/CoVisor/utils/ovxctl.py" % WORKDIR
+OVXCTLPY = "%s/OpenVirteX/utils/ovxctl.py" % WORKDIR
 SWNUMBER = 1
 SLEEP_TIME = 20
 
@@ -35,7 +35,7 @@ def killMininet():
 #********************************************************************
 def startOVX():
     with open("covisor.log", "w") as logfile:
-        subprocess.call("sh %s/CoVisor/scripts/ovx.sh &" % WORKDIR,
+        subprocess.call("sh %s/OpenVirteX/scripts/ovx.sh &" % WORKDIR,
             shell=True, stdout=logfile, stderr=subprocess.STDOUT)
 
 def showOVX():
@@ -50,6 +50,10 @@ def killOVX():
         #"| xargs pkill -TERM -P > /dev/null 2>&1", shell=True)
     subprocess.call("ps ax | grep CoVisor | grep -v grep | awk '{print $1}' " +
         "| xargs kill -9 > /dev/null 2>&1", shell=True)
+
+def killJava():
+    print "kill java"
+    subprocess.call("killall java", shell=True)
 
 def createPlumbingGraph():
     cmd = "%s -n createPlumbingSwitch 00:00:00:00:00:00:01:00 1" % OVXCTLPY
@@ -105,7 +109,7 @@ def startOneFloodlight(index):
                           % WORKDIR
         if os.path.exists(floodlight_name):
             print floodlight_name + " exists."
-            cmd = "java -jar " + floodlight_name + " -cf %s/CoVisor" \
+            cmd = "java -jar " + floodlight_name + " -cf %s/OpenVirteX" \
                   % WORKDIR + "/experiments/ctrl/ctrl%d.floodlight" \
                   % index + " &"
             print cmd
@@ -157,9 +161,17 @@ def exprParallel():
     createACL('2 dltype:exact,dstip:prefix output')
     createPolicy('"1+2"')
     app1 = DemoMonitorApp(topo)
+    #print "Querying flow stats before adding rules."
+    #app1.send_query("flow")
+    #print "Querying aggregate stats before adding rules."
+    #app1.send_query("aggregate")
     app1.installRules()
     app2 = DemoRouterApp(topo)
     app2.installRules()
+    print "Querying flow stats after adding rules."
+    app1.send_query("flow")
+    print "Querying aggregate stats after adding rules."
+    app1.send_query("aggregate")
     CLI(net)
 
 #********************************************************************
