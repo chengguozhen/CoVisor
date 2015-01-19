@@ -31,8 +31,9 @@ class DemoMonitorApp():
         self.rules.append(rule)
 
     def send_query(self, stat_type):
-        cmd = "curl http://localhost:10001/wm/core/switch/%s/%s/json" \
-              % (self.dpid, stat_type)
+        #cmd = "curl http://localhost:10001/wm/core/switch/%s/%s/json" \
+        #      % (self.dpid, stat_type)
+        cmd = "curl http://localhost:10001/wm/topology/links/json"
         subprocess.call(cmd, shell=True)
 
     def installRules(self):

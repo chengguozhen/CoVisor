@@ -185,7 +185,9 @@ public class PlumbingSwitch implements OVXSendMsg {
 	    }
 	    // For each flow mod in fmKeys, get its children from virtualToPhysicalFMMap.
 	    // Make necessary changes to this stats request message.
-	    // Send message.
+	    // Send message. OR look into using OVX's built in stats associated with
+	       // PhysicalSwitch.  I think this would eliminate the need to wait for
+	       // asynchronous replies.
 	    return;
 	}
 	else if (msg.getType() == OFType.STATS_REPLY) {

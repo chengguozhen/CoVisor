@@ -168,11 +168,11 @@ def exprParallel():
     app1.installRules()
     app2 = DemoRouterApp(topo)
     app2.installRules()
-    print "Querying flow stats after adding rules."
+    #print "Querying flow stats after adding rules."
     app1.send_query("flow")
-    print "Querying aggregate stats after adding rules."
-    app1.send_query("aggregate")
-    CLI(net)
+    #print "Querying aggregate stats after adding rules."
+    #app1.send_query("aggregate")
+    #CLI(net)
 
 #********************************************************************
 # expr: sequential
