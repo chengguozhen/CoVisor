@@ -35,7 +35,7 @@ public class OVXStatisticsRequest extends OFStatisticsRequest implements
     @Override
     public void devirtualize(final OVXSwitch sw) {
         switch (this.statisticType) {
-        // Desc, vendor, table stats have no body. fuckers.
+        // Desc, vendor, table stats have no body.
         case DESC:
             new OVXDescriptionStatistics().devirtualizeStatistic(sw, this);
             break;
@@ -47,7 +47,21 @@ public class OVXStatisticsRequest extends OFStatisticsRequest implements
             break;
         default:
             try {
+		/*log.info("devirtualize method of OVXStatisticsRequest." +
+			 "I have type " + getType().toString() + " and  " +
+			 "statistic type " + getStatisticType().toString() +
+			 ".  Here's this.toString():  " + toString());
+		log.info("About to call this.getStatistics().get(0) " +
+			 "then call devirtualizeStatistic(sw, this) " +
+			 "on the statistic.");*/
                 final OFStatistics stat = this.getStatistics().get(0);
+		/*log.info("Here's this.getStatistics().get(0):  " +
+			 stat.toString());
+		log.info("Entire contents of getStatistics():  ");
+		for (OFStatistics staty : this.getStatistics()) {
+		    log.info(staty.toString());
+		}
+		log.info("End of getStatistics().");*/
                 ((DevirtualizableStatistic) stat).devirtualizeStatistic(sw,
                         this);
             } catch (final ClassCastException e) {

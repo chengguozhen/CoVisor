@@ -46,6 +46,7 @@ public class OVXFlowStatisticsRequest extends OFFlowStatisticsRequest implements
     @Override
     public void devirtualizeStatistic(final OVXSwitch sw,
             final OVXStatisticsRequest msg) {
+	log.info("devirtualizeStatistic method of OVXFlowStatisticsRequest.");
         List<OVXFlowStatisticsReply> replies = new LinkedList<OVXFlowStatisticsReply>();
         HashSet<Long> uniqueCookies = new HashSet<Long>();
         int tid = sw.getTenantId();
@@ -88,7 +89,6 @@ public class OVXFlowStatisticsRequest extends OFFlowStatisticsRequest implements
                     }
                 }
             }
-
             OVXStatisticsReply reply = new OVXStatisticsReply();
             reply.setXid(msg.getXid());
             reply.setStatisticType(OFStatisticsType.FLOW);
@@ -96,7 +96,13 @@ public class OVXFlowStatisticsRequest extends OFFlowStatisticsRequest implements
 
             reply.setLengthU(OVXStatisticsReply.MINIMUM_LENGTH + length);
 
+	    /******************* JANUARY 19 JG BREAKING THINGS *******************
+	     ** Uncomment sw.sendMsg and comment sw.sendSouth to restore. **
+	    log.info("About to call sw.sendMsg(reply, sw) for reply = " +
+		     reply.toString() + " and sw = " + sw.toString() + ".");
             sw.sendMsg(reply, sw);
+	    *********************************************************************/
+	    sw.sendSouth(msg, null);
 
         }
     }

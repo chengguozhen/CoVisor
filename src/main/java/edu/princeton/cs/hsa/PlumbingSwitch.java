@@ -153,12 +153,17 @@ public class PlumbingSwitch implements OVXSendMsg {
 	else if (msg.getType() == OFType.STATS_REQUEST) {
 	    // Devirtualize stats request using virtualToPhysicalFMMap.
 	    this.logger.info("msg.getType() == OFType.STATS_REQUEST");
-	    System.out.println("msg.getType() == OFType.STATS_REQUEST");
 	    OFStatisticsRequest req = (OFStatisticsRequest) msg;
-	    this.logger.info("Printing each stat in req.getStatistics().");
-	    for (OFStatistics stat : req.getStatistics()) {
-		this.logger.info("Stat:  " + stat.toString());
-		System.out.println("Stat:  " + stat.toString());
+	    if (req.getStatisticType() == OFStatisticsType.FLOW) {
+		this.logger.info("FLOW statistic.");
+		this.logger.info("Printing each stat in req.getStatistics().");
+		for (OFStatistics stat : req.getStatistics()) {
+		    OFFlowStatisticsRequest flowStatReq = (OFFlowStatisticsRequest)
+			stat;
+		    this.logger.info("Stat:  " + flowStatReq.toString());
+		    this.logger.info("match of flowStatReq:  " +
+				     flowStatReq.getMatch().toString());
+		}
 	    }
 
 
@@ -257,7 +262,7 @@ public class PlumbingSwitch implements OVXSendMsg {
 	    }
 	}
 	
-	// generate update flowmodes for edge port
+	// generate update flowmods for edge port
 	if ((pmod.getMatch().getWildcards() & OFMatch.OFPFW_IN_PORT) == 0) {
 	    Short inport = pmod.getMatch().getInputPort();
 	    Short physicalInPort = this.portMap.get(inport);

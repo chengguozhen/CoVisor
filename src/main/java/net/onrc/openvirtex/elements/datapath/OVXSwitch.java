@@ -551,8 +551,15 @@ public abstract class OVXSwitch extends Switch<OVXPort> implements Persistable {
              */
 
             if (this.roleMan.canSend(channel, msg)) {
+		/*log.info("this.roleMan.canSend(channel, msg) for " +
+			 "msg = " + msg.toString() + ".  About to " +
+			 "call ((Devirtualizable) msg).devirtualize(this).");*/
                 ((Devirtualizable) msg).devirtualize(this);
             } else {
+		/*log.info("!this.roleMan.canSend(channel, msg) for " +
+			 "msg = " + msg.toString() + ".  About to " +
+			 " call denyAccess(channel, msg, this." +
+			 "roleMan.getRole(channel)).");*/
                 denyAccess(channel, msg, this.roleMan.getRole(channel));
             }
         } catch (final ClassCastException e) {
