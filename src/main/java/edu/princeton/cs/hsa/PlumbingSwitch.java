@@ -53,8 +53,8 @@ public class PlumbingSwitch implements OVXSendMsg {
 
     /* Response to query should only take into account flow mods installed by
      * the controller issuing the query. */
-    private Map<OFFlowMod, OVXSendMsg> flowModToControllerMap = new HashMap<OFFlowMod,
-	OVXSendMsg>();
+    private Map<OFFlowMod, Integer> flowModToControllerMap = new HashMap<OFFlowMod,
+	Integer>();
     /* Physical flow mods corresponding to flow mod from controller; combine
        statistics from these flow mods to respond to stats query. */
     private Map<OFFlowMod, List<OFFlowMod>> virtualToPhysicalFMMap = new HashMap<OFFlowMod,
@@ -113,13 +113,15 @@ public class PlumbingSwitch implements OVXSendMsg {
     
     @Override
     public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
+
+	int tid = ((OVXSwitch) from).getTenantId();
 	
 	if (msg.getType() == OFType.FLOW_MOD) {
 	    
 	    //this.logger.info("{} get msg {}", this, msg);
 	    OFFlowMod fmMsg = (OFFlowMod) msg;
 	    PolicyUpdateTable updateTable1 = this.policyTree.
-		update(fmMsg, ((OVXSwitch) from).getTenantId());
+		update(fmMsg, tid);
 	    PolicyUpdateTable updateTable2 = new PolicyUpdateTable();
 			
 	    for (OFFlowMod fm : updateTable1.addFlowMods) {
@@ -141,7 +143,7 @@ public class PlumbingSwitch implements OVXSendMsg {
 	    }
 
 	    // Add fmMsg and its derived rules to map for answering queries.
-	    this.flowModToControllerMap.put(fmMsg, from);
+	    this.flowModToControllerMap.put(fmMsg, tid);
 	    this.virtualToPhysicalFMMap.put(fmMsg, updateTable2.addFlowMods);
 	    
             this.logger.info("left child {}", this.policyTree.leftChild.flowTable);
@@ -150,50 +152,24 @@ public class PlumbingSwitch implements OVXSendMsg {
 	    //this.logger.info("graph flow table {}", this.graph.flowTable);
 	    
 	} 
+
 	else if (msg.getType() == OFType.STATS_REQUEST) {
 	    // Devirtualize stats request using virtualToPhysicalFMMap.
 	    this.logger.info("msg.getType() == OFType.STATS_REQUEST");
 	    OFStatisticsRequest req = (OFStatisticsRequest) msg;
 	    if (req.getStatisticType() == OFStatisticsType.FLOW) {
 		this.logger.info("FLOW statistic.");
-		this.logger.info("Printing each stat in req.getStatistics().");
-		for (OFStatistics stat : req.getStatistics()) {
-		    OFFlowStatisticsRequest flowStatReq = (OFFlowStatisticsRequest)
-			stat;
-		    this.logger.info("Stat:  " + flowStatReq.toString());
-		    this.logger.info("match of flowStatReq:  " +
-				     flowStatReq.getMatch().toString());
+		try {
+		    OFStatistics stat = req.getFirstStatistics();
+		    OFFlowStatisticsRequest flowStatReq =
+			(OFFlowStatisticsRequest) stat;
+		    this.handleFlowStatsRequest(flowStatReq, tid);
+		}
+		catch (IllegalArgumentException e) {
+		    this.logger.warn("FLOW stats request should have " +
+				     "only one message in its body.");
 		}
 	    }
-
-
-	    OFMatch match = null;
-	    // Figure out how to extract the match from msg.
-	    // Maybe use OVXFlowStatisticsRequest devirtualize method as example.
-
-	    /*
-	     * Flow mods issued by controllers whose translated children flow mods need
-	     * to be sent this stats request.
-	     */
-	    List<OFFlowMod> fmKeys = new ArrayList<OFFlowMod>();
-	    for (OFFlowMod fm : this.virtualToPhysicalFMMap.keySet()) {
-		if (match.covers(fm.getMatch())) {
-		    /*
-		     * Eliminate flow mods issued by other controllers.  The ports, etc.
-		     * of these flow mods have no meaning in the context of the query
-		     * issued by this controller.
-		     */
-		    if (flowModToControllerMap.get(fm) == from) {
-			fmKeys.add(fm);
-		    }
-		}
-	    }
-	    // For each flow mod in fmKeys, get its children from virtualToPhysicalFMMap.
-	    // Make necessary changes to this stats request message.
-	    // Send message. OR look into using OVX's built in stats associated with
-	       // PhysicalSwitch.  I think this would eliminate the need to wait for
-	       // asynchronous replies.
-	    return;
 	}
 	else if (msg.getType() == OFType.STATS_REPLY) {
 	    /*
@@ -217,6 +193,33 @@ public class PlumbingSwitch implements OVXSendMsg {
 	    this.graph.getPhysicalSwitch().sendMsg(msg, this);
 	}
 	
+    }
+
+
+    private void handleFlowStatsRequest(OFFlowStatisticsRequest flowStatsReq,
+					int tid) {
+	OFMatch match = flowStatsReq.getMatch();
+	/*
+	 * Flow mods issued by controllers whose translated children flow mods need
+	 * to be sent this stats request.
+	 */
+	List<OFFlowMod> fmKeys = new ArrayList<OFFlowMod>();
+	for (OFFlowMod fm : this.virtualToPhysicalFMMap.keySet()) {
+	    if (match.covers(fm.getMatch())) {
+		/*
+		 * Eliminate flow mods issued by other controllers.  The ports, etc.
+		 * of these flow mods have no meaning in the context of the query
+		 * issued by this controller.
+		 */
+		if (flowModToControllerMap.get(fm) == tid) {
+		    fmKeys.add(fm);
+		}
+	    }
+	}
+	// For each flow mod in fmKeys, get its children from virtualToPhysicalFMMap.
+	// Make necessary changes to this stats request message.
+	    // Send message.
+	return;    
     }
     
     public PolicyUpdateTable update(OFFlowMod ofm) {
