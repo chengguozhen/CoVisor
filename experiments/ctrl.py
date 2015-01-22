@@ -170,6 +170,7 @@ def exprParallel():
     app2.installRules()
     #print "Querying flow stats after adding rules."
     app1.send_query("flow")
+    time.sleep(3)
     #print "Querying aggregate stats after adding rules."
     #app1.send_query("aggregate")
     #CLI(net)

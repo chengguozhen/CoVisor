@@ -126,4 +126,9 @@ public class OVXFlowStatisticsRequest extends OFFlowStatisticsRequest implements
         return sws;
     }
 
+    public String toString() {
+	String s = "OVXFlowStatisticsRequest[";
+	String m = "match=" + getMatch().toString();
+	return s + m + "]";
+    }
 }

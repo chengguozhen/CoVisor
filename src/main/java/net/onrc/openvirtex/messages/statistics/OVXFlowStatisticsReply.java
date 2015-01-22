@@ -60,4 +60,11 @@ public class OVXFlowStatisticsReply extends OFFlowStatisticsReply implements
         return (int) (cookie >> 32);
     }
 
+    public String toString() {
+	String s = "OVXFlowStatisticsReply[";
+	String m = "match=" + getMatch().toString();
+	String c = "cookie=" + String.valueOf(getCookie());
+	return s + m + c + "]";
+    }
+
 }

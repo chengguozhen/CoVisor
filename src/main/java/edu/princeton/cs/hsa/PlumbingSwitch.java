@@ -8,6 +8,7 @@ import java.util.Map;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+import net.onrc.openvirtex.messages.statistics.OVXFlowStatisticsReply;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.logging.log4j.LogManager;
@@ -163,6 +164,9 @@ public class PlumbingSwitch implements OVXSendMsg {
 		    OFStatistics stat = req.getFirstStatistics();
 		    OFFlowStatisticsRequest flowStatReq =
 			(OFFlowStatisticsRequest) stat;
+		    logger.info("Calling handleFlowStatsRequest for " +
+				"flowStatReq = " + flowStatReq.toString() +
+				" and tid = " + Integer.toString(tid));
 		    this.handleFlowStatsRequest(flowStatReq, tid);
 		}
 		catch (IllegalArgumentException e) {
@@ -171,12 +175,12 @@ public class PlumbingSwitch implements OVXSendMsg {
 		}
 	    }
 	}
-	else if (msg.getType() == OFType.STATS_REPLY) {
+	//else if (msg.getType() == OFType.STATS_REPLY) {
 	    /*
 	     * Virtualize stats request using virtualToPhysicalFMMap.
 	     * Need to aggregate counts from multiple physical rules.
 	     */
-	    OFStatisticsReply rep = (OFStatisticsReply) msg;
+	/*OFStatisticsReply rep = (OFStatisticsReply) msg;
 	    if (rep.getStatisticType() == OFStatisticsType.AGGREGATE) {
 		// Do aggregate stuff.
 		return;
@@ -185,7 +189,7 @@ public class PlumbingSwitch implements OVXSendMsg {
 		// Do flow stuff.
 		return;
 	    }
-	}
+	    }*/
 	else {
 	    this.logger.info("msg isn't flow mod or stats request or"
 			     + "stats reply.");
@@ -198,28 +202,64 @@ public class PlumbingSwitch implements OVXSendMsg {
 
     private void handleFlowStatsRequest(OFFlowStatisticsRequest flowStatsReq,
 					int tid) {
+	logger.info("inside handleFlowStatsRequest");
 	OFMatch match = flowStatsReq.getMatch();
-	/*
-	 * Flow mods issued by controllers whose translated children flow mods need
-	 * to be sent this stats request.
+	logger.info("match: " + match.toString());
+	logger.info("match is null:  " + String.valueOf(match == null));
+	/* 21 January
+	 * Get stuck here.  See covisor.log.  allReps might be null?
 	 */
-	List<OFFlowMod> fmKeys = new ArrayList<OFFlowMod>();
+	List<OVXFlowStatisticsReply> allReps =
+	    this.graph.getPhysicalSwitch().getFlowStats(tid);
+	logger.info("allReps: " + allReps.toString());
 	for (OFFlowMod fm : this.virtualToPhysicalFMMap.keySet()) {
-	    if (match.covers(fm.getMatch())) {
-		/*
-		 * Eliminate flow mods issued by other controllers.  The ports, etc.
-		 * of these flow mods have no meaning in the context of the query
-		 * issued by this controller.
-		 */
-		if (flowModToControllerMap.get(fm) == tid) {
-		    fmKeys.add(fm);
+	    logger.info("fm: ", fm);
+	    // Flow mods issued by controller sending this query.
+	    boolean thisController = (tid == flowModToControllerMap.get(fm));
+	    logger.info("fm's controller: " + String.valueOf(flowModToControllerMap.get(fm)));
+	    logger.info("tid: " + String.valueOf(tid));
+	    logger.info("thisController: " + String.valueOf(thisController));
+	    boolean coveredMatch = match.covers(fm.getMatch());
+	    logger.info("fm match: " + fm.getMatch().toString());
+	    logger.info("coveredMatch: " + String.valueOf(coveredMatch));
+	    if (thisController && coveredMatch) {
+		// Know which flow mods we want stats for.
+		List<OFFlowMod> physFlowMods = this.virtualToPhysicalFMMap.get(fm);
+		// Get those stats replies out of the big list.
+		List<OVXFlowStatisticsReply> relevantReps =
+		    getRepliesForPhysFlowMods(physFlowMods, allReps);
+		// Aggregate the counters in these replies into a single reply
+		// to send to the controller.
+	    }
+	}
+
+	return;    
+    }
+
+    /*
+     * Get stats replies for just physFlowMods out of list of replies for all
+     * flow mods on the physical switch.
+     */
+    private List<OVXFlowStatisticsReply> getRepliesForPhysFlowMods
+	(List<OFFlowMod> physFlowMods, List<OVXFlowStatisticsReply> allReps) {
+	List<OVXFlowStatisticsReply> relevantReps =
+	    new ArrayList<OVXFlowStatisticsReply>();
+	// Match flow mods to replies by cookie.
+	// 21 JANUARY:  I'm not sure this is a valid strategy.
+	for (OFFlowMod physFlowMod : physFlowMods) {
+	    logger.info("physFlowMod:  %s", physFlowMod);
+	    long fmCookie = physFlowMod.getCookie();
+	    logger.info("fmCookie: %s", fmCookie);
+	    for (OVXFlowStatisticsReply flowStatRep : allReps) {
+		logger.info("flowStatRep: %s", flowStatRep);
+		logger.info("flowStatRep.getCookie(): %s", flowStatRep.getCookie());
+		if (flowStatRep.getCookie() == fmCookie) {
+		    logger.info("Cookies match.");
+		    relevantReps.add(flowStatRep);
 		}
 	    }
 	}
-	// For each flow mod in fmKeys, get its children from virtualToPhysicalFMMap.
-	// Make necessary changes to this stats request message.
-	    // Send message.
-	return;    
+	return relevantReps;
     }
     
     public PolicyUpdateTable update(OFFlowMod ofm) {
