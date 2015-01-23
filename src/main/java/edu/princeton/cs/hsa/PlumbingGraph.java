@@ -32,7 +32,7 @@ public class PlumbingGraph {
 	}
 	
 	public PhysicalSwitch getPhysicalSwitch() {
-		return this.physicalSwitch;
+	    return this.physicalSwitch;
 	}
 	
 	public void createNodes (int count) {

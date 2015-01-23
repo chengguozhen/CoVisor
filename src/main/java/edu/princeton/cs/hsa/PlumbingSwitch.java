@@ -8,6 +8,7 @@ import java.util.Map;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
+import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 import net.onrc.openvirtex.messages.statistics.OVXFlowStatisticsReply;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -145,11 +146,15 @@ public class PlumbingSwitch implements OVXSendMsg {
 
 	    // Add fmMsg and its derived rules to map for answering queries.
 	    this.flowModToControllerMap.put(fmMsg, tid);
+	    logger.info(virtualToPhysicalFMMapString());
+	    logger.info("adding key: " + fmMsg + "\nvalue: " + updateTable2.addFlowMods
+			+ "\n");
 	    this.virtualToPhysicalFMMap.put(fmMsg, updateTable2.addFlowMods);
+	    logger.info(virtualToPhysicalFMMapString());
 	    
-            this.logger.info("left child {}", this.policyTree.leftChild.flowTable);
-            this.logger.info("right child {}", this.policyTree.rightChild.flowTable);
-	    this.logger.info("plumbing {} flow table {}", this.id, this.policyTree.flowTable);
+            //this.logger.info("left child {}", this.policyTree.leftChild.flowTable);
+            //this.logger.info("right child {}", this.policyTree.rightChild.flowTable);
+	    //this.logger.info("plumbing {} flow table {}", this.id, this.policyTree.flowTable);
 	    //this.logger.info("graph flow table {}", this.graph.flowTable);
 	    
 	} 
@@ -191,15 +196,13 @@ public class PlumbingSwitch implements OVXSendMsg {
 	    }
 	    }*/
 	else {
-	    this.logger.info("msg isn't flow mod or stats request or"
-			     + "stats reply.");
+	    this.logger.info("msg isn't flow mod or stats request.");
 	    this.logger.info(msg.toString());
 	    this.graph.getPhysicalSwitch().sendMsg(msg, this);
 	}
 	
     }
-
-
+    
     private void handleFlowStatsRequest(OFFlowStatisticsRequest flowStatsReq,
 					int tid) {
 	logger.info("inside handleFlowStatsRequest");
@@ -211,20 +214,27 @@ public class PlumbingSwitch implements OVXSendMsg {
 	 */
 	List<OVXFlowStatisticsReply> allReps =
 	    this.graph.getPhysicalSwitch().getFlowStats(tid);
-	logger.info("allReps: " + allReps.toString());
+	if (allReps != null) {
+	    logger.info("allReps: " + allReps.toString());
+	}
+	else {
+	    logger.info("allReps is null.");
+	}
 	for (OFFlowMod fm : this.virtualToPhysicalFMMap.keySet()) {
-	    logger.info("fm: ", fm);
+	    logger.info("fm: " + fm);
 	    // Flow mods issued by controller sending this query.
 	    boolean thisController = (tid == flowModToControllerMap.get(fm));
-	    logger.info("fm's controller: " + String.valueOf(flowModToControllerMap.get(fm)));
-	    logger.info("tid: " + String.valueOf(tid));
-	    logger.info("thisController: " + String.valueOf(thisController));
+	    //logger.info("fm's controller: " + String.valueOf(flowModToControllerMap.get(fm)));
+	    //logger.info("tid: " + String.valueOf(tid));
+	    //logger.info("thisController: " + String.valueOf(thisController));
 	    boolean coveredMatch = match.covers(fm.getMatch());
-	    logger.info("fm match: " + fm.getMatch().toString());
-	    logger.info("coveredMatch: " + String.valueOf(coveredMatch));
+	    //logger.info("fm match: " + fm.getMatch().toString());
+	    //logger.info("coveredMatch: " + String.valueOf(coveredMatch));
 	    if (thisController && coveredMatch) {
 		// Know which flow mods we want stats for.
+		logger.info("thisController && coveredMatch");
 		List<OFFlowMod> physFlowMods = this.virtualToPhysicalFMMap.get(fm);
+		logger.info("physFlowMods: " + physFlowMods);
 		// Get those stats replies out of the big list.
 		List<OVXFlowStatisticsReply> relevantReps =
 		    getRepliesForPhysFlowMods(physFlowMods, allReps);
@@ -232,7 +242,7 @@ public class PlumbingSwitch implements OVXSendMsg {
 		// to send to the controller.
 	    }
 	}
-
+	
 	return;    
     }
 
@@ -244,22 +254,58 @@ public class PlumbingSwitch implements OVXSendMsg {
 	(List<OFFlowMod> physFlowMods, List<OVXFlowStatisticsReply> allReps) {
 	List<OVXFlowStatisticsReply> relevantReps =
 	    new ArrayList<OVXFlowStatisticsReply>();
-	// Match flow mods to replies by cookie.
-	// 21 JANUARY:  I'm not sure this is a valid strategy.
-	for (OFFlowMod physFlowMod : physFlowMods) {
-	    logger.info("physFlowMod:  %s", physFlowMod);
-	    long fmCookie = physFlowMod.getCookie();
-	    logger.info("fmCookie: %s", fmCookie);
-	    for (OVXFlowStatisticsReply flowStatRep : allReps) {
-		logger.info("flowStatRep: %s", flowStatRep);
-		logger.info("flowStatRep.getCookie(): %s", flowStatRep.getCookie());
-		if (flowStatRep.getCookie() == fmCookie) {
-		    logger.info("Cookies match.");
-		    relevantReps.add(flowStatRep);
+	if (allReps != null) {
+	    // Match flow mods to replies by cookie.
+	    // 21 JANUARY:  I'm not sure this is a valid strategy.
+	    for (OFFlowMod physFlowMod : physFlowMods) {
+		logger.info("physFlowMod:  %s", physFlowMod);
+		long fmCookie = physFlowMod.getCookie();
+		logger.info("fmCookie: %s", fmCookie);
+		for (OVXFlowStatisticsReply flowStatRep : allReps) {
+		    logger.info("flowStatRep: %s", flowStatRep);
+		    logger.info("flowStatRep.getCookie(): %s", flowStatRep.getCookie());
+		    if (flowStatRep.getCookie() == fmCookie) {
+			logger.info("Cookies match.");
+			relevantReps.add(flowStatRep);
+		    }
 		}
 	    }
 	}
 	return relevantReps;
+    }
+
+    // Utility for debugging.
+    private String flowModToControllerMapString() {
+	String s = "flowModToControllerMap{";
+	for (OFFlowMod entry : this.flowModToControllerMap.keySet()) {
+	    s += "key: " + entry.toString();
+	    s += "value: " + String.valueOf(flowModToControllerMap.get(entry));
+	    s += "\n";
+	}
+	int size = flowModToControllerMap.size();
+	if (size > 0){
+	    s = s.substring(0, s.length() - 2);
+	}
+	s += "}\n\n";
+	s += "size = " + String.valueOf(size);
+	return s;
+    }
+
+    // Utility for debugging.
+    private String virtualToPhysicalFMMapString() {
+	String s = "virtualToPhysicalFMMap{";
+	for (OFFlowMod entry : virtualToPhysicalFMMap.keySet()) {
+	    s += "key: " + entry.toString();
+	    s += "value: " + String.valueOf(virtualToPhysicalFMMap.get(entry));
+	    s += "\n";
+	}
+	int size = virtualToPhysicalFMMap.size();
+	if (size > 0){
+	    s = s.substring(0, s.length() - 2);
+	}
+	s += "}\n\n";
+	s += "size = " + String.valueOf(size);
+	return s;
     }
     
     public PolicyUpdateTable update(OFFlowMod ofm) {

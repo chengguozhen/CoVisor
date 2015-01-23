@@ -52,7 +52,7 @@ import edu.princeton.cs.policy.adv.PolicyUpdateTable;
  */
 public class PhysicalSwitch extends Switch<PhysicalPort> {
 
-	public static Boolean IsCompositionOn = false;
+    public static Boolean IsCompositionOn = false;
     private static Logger log = LogManager.getLogger(PhysicalSwitch.class.getName());
     // The Xid mapper
     private final XidTranslator<OVXSwitch> translator;
@@ -356,10 +356,15 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     }
 
     public List<OVXFlowStatisticsReply> getFlowStats(int tid) {
+	log.info("getFlowStats(" + String.valueOf(tid) + ")");
         Map<Integer, List<OVXFlowStatisticsReply>> stats = this.flowStats.get();
+	log.info("this.flowStats.get(): " + stats);
         if (stats != null && stats.containsKey(tid)) {
+	    log.info("stats != null && stats.containsKey(" + String.valueOf(tid) + ")");
+	    log.info("returning" + Collections.unmodifiableList(stats.get(tid)).toString());
             return Collections.unmodifiableList(stats.get(tid));
         }
+	log.info("returning null");
         return null;
     }
 

@@ -161,16 +161,11 @@ def exprParallel():
     createACL('2 dltype:exact,dstip:prefix output')
     createPolicy('"1+2"')
     app1 = DemoMonitorApp(topo)
-    #print "Querying flow stats before adding rules."
-    #app1.send_query("flow")
-    #print "Querying aggregate stats before adding rules."
-    #app1.send_query("aggregate")
     app1.installRules()
     app2 = DemoRouterApp(topo)
     app2.installRules()
     #print "Querying flow stats after adding rules."
     app1.send_query("flow")
-    time.sleep(3)
     #print "Querying aggregate stats after adding rules."
     #app1.send_query("aggregate")
     #CLI(net)
