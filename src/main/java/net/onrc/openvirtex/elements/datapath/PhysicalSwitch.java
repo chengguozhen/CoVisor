@@ -246,10 +246,17 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     		}*/
     		
     	} else {
-			if ((this.channel.isOpen()) && (this.isConnected)) {
-				this.channel.write(Collections.singletonList(msg));
-			}
-		}
+	    log.info("this.channel.isOpen(): " + this.channel.isOpen());
+	    log.info("this.channel.isConnected():  " + this.channel.isConnected());
+	    if ((this.channel.isOpen()) && (this.isConnected)) {
+		log.info("this.channel.write(Collections.singletonList(msg)" +
+			 " for msg = " + msg);
+		this.channel.write(Collections.singletonList(msg));
+	    }
+	    else {
+		log.info("Channel not open or not connected.  Not sending msg.");
+	    }
+	}
     }
 
     /*public void sendMsgBak(final OFMessage msg, final OVXSendMsg from) {
@@ -352,13 +359,17 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     public void setFlowStatistics(
             Map<Integer, List<OVXFlowStatisticsReply>> stats) {
         this.flowStats.set(stats);
-
+	log.info("flowStats.get() is now " + flowStats.get());
     }
 
     public List<OVXFlowStatisticsReply> getFlowStats(int tid) {
 	log.info("getFlowStats(" + String.valueOf(tid) + ")");
         Map<Integer, List<OVXFlowStatisticsReply>> stats = this.flowStats.get();
 	log.info("this.flowStats.get(): " + stats);
+	log.info("stats is null: " + (stats == null));
+	if (stats != null) {
+	    log.info("stats contains tid: " + (stats.containsKey(tid)));
+	}
         if (stats != null && stats.containsKey(tid)) {
 	    log.info("stats != null && stats.containsKey(" + String.valueOf(tid) + ")");
 	    log.info("returning" + Collections.unmodifiableList(stats.get(tid)).toString());

@@ -53,10 +53,6 @@ public class PlumbingSwitch implements OVXSendMsg {
     private Map<Short, Short> nextHopPortMap;
     private int portNumber;
 
-    /* Response to query should only take into account flow mods installed by
-     * the controller issuing the query. */
-    private Map<OFFlowMod, Integer> flowModToControllerMap = new HashMap<OFFlowMod,
-	Integer>();
     /* Physical flow mods corresponding to flow mod from controller; combine
        statistics from these flow mods to respond to stats query. */
     private Map<OFFlowMod, List<OFFlowMod>> virtualToPhysicalFMMap = new HashMap<OFFlowMod,
@@ -144,8 +140,14 @@ public class PlumbingSwitch implements OVXSendMsg {
 		this.graph.getPhysicalSwitch().sendMsg(fm, this);
 	    }
 
+	    /* 23 January
+	     * I think (but I'm not sure) that all controllers sending messages
+	     * to this PlumbingSwitch share an identical view of the virtual
+	     * network.  If this is the case, don't need to keep track of
+	     * which controller sent which flow mod.  If not, need to do something
+	     * more complicated than just flowModToControllerMap.
+	     */
 	    // Add fmMsg and its derived rules to map for answering queries.
-	    this.flowModToControllerMap.put(fmMsg, tid);
 	    logger.info(virtualToPhysicalFMMapString());
 	    logger.info("adding key: " + fmMsg + "\nvalue: " + updateTable2.addFlowMods
 			+ "\n");
@@ -208,9 +210,8 @@ public class PlumbingSwitch implements OVXSendMsg {
 	logger.info("inside handleFlowStatsRequest");
 	OFMatch match = flowStatsReq.getMatch();
 	logger.info("match: " + match.toString());
-	logger.info("match is null:  " + String.valueOf(match == null));
 	/* 21 January
-	 * Get stuck here.  See covisor.log.  allReps might be null?
+	 * Get stuck here.  See covisor.log.  allReps is null.
 	 */
 	List<OVXFlowStatisticsReply> allReps =
 	    this.graph.getPhysicalSwitch().getFlowStats(tid);
@@ -222,17 +223,12 @@ public class PlumbingSwitch implements OVXSendMsg {
 	}
 	for (OFFlowMod fm : this.virtualToPhysicalFMMap.keySet()) {
 	    logger.info("fm: " + fm);
-	    // Flow mods issued by controller sending this query.
-	    boolean thisController = (tid == flowModToControllerMap.get(fm));
-	    //logger.info("fm's controller: " + String.valueOf(flowModToControllerMap.get(fm)));
-	    //logger.info("tid: " + String.valueOf(tid));
-	    //logger.info("thisController: " + String.valueOf(thisController));
 	    boolean coveredMatch = match.covers(fm.getMatch());
 	    //logger.info("fm match: " + fm.getMatch().toString());
 	    //logger.info("coveredMatch: " + String.valueOf(coveredMatch));
-	    if (thisController && coveredMatch) {
+	    if (coveredMatch) {
 		// Know which flow mods we want stats for.
-		logger.info("thisController && coveredMatch");
+		logger.info("coveredMatch");
 		List<OFFlowMod> physFlowMods = this.virtualToPhysicalFMMap.get(fm);
 		logger.info("physFlowMods: " + physFlowMods);
 		// Get those stats replies out of the big list.
@@ -275,6 +271,7 @@ public class PlumbingSwitch implements OVXSendMsg {
     }
 
     // Utility for debugging.
+    /*
     private String flowModToControllerMapString() {
 	String s = "flowModToControllerMap{";
 	for (OFFlowMod entry : this.flowModToControllerMap.keySet()) {
@@ -290,7 +287,7 @@ public class PlumbingSwitch implements OVXSendMsg {
 	s += "size = " + String.valueOf(size);
 	return s;
     }
-
+    */
     // Utility for debugging.
     private String virtualToPhysicalFMMapString() {
 	String s = "virtualToPhysicalFMMap{";

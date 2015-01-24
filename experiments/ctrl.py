@@ -164,7 +164,8 @@ def exprParallel():
     app1.installRules()
     app2 = DemoRouterApp(topo)
     app2.installRules()
-    #print "Querying flow stats after adding rules."
+    # Give time for CoVisor to start queries.
+    time.sleep(SLEEP_TIME)
     app1.send_query("flow")
     #print "Querying aggregate stats after adding rules."
     #app1.send_query("aggregate")
