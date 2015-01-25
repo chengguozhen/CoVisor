@@ -20,6 +20,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.LinkedList;
+import java.util.NoSuchElementException;
 
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.datapath.statistics.StatisticsManager;
@@ -61,6 +64,10 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     private AtomicReference<Map<Integer, List<OVXFlowStatisticsReply>>> flowStats;
     private PlumbingGraph plumbingGraph;
 
+    // Cookies for mapping flow mods to stats replies.
+    private AtomicInteger cookieCounter;
+    private LinkedList<Long> freeList;
+    
 
     /**
      * Unregisters OVXSwitches and associated virtual elements mapped to this
@@ -111,6 +118,9 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
         this.flowStats = new AtomicReference<Map<Integer, List<OVXFlowStatisticsReply>>>();
         this.statsMan = new StatisticsManager(this);
         this.plumbingGraph = new PlumbingGraph(this);
+
+	this.cookieCounter = new AtomicInteger(1);
+	this.freeList = new LinkedList<Long>();
     }
     
     public PlumbingGraph getPlumbingGraph() {
@@ -246,15 +256,8 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     		}*/
     		
     	} else {
-	    log.info("this.channel.isOpen(): " + this.channel.isOpen());
-	    log.info("this.channel.isConnected():  " + this.channel.isConnected());
 	    if ((this.channel.isOpen()) && (this.isConnected)) {
-		log.info("this.channel.write(Collections.singletonList(msg)" +
-			 " for msg = " + msg);
 		this.channel.write(Collections.singletonList(msg));
-	    }
-	    else {
-		log.info("Channel not open or not connected.  Not sending msg.");
 	    }
 	}
     }
@@ -359,21 +362,15 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     public void setFlowStatistics(
             Map<Integer, List<OVXFlowStatisticsReply>> stats) {
         this.flowStats.set(stats);
-	log.info("flowStats.get() is now " + flowStats.get());
     }
 
-    public List<OVXFlowStatisticsReply> getFlowStats(int tid) {
-	log.info("getFlowStats(" + String.valueOf(tid) + ")");
+    public List<OVXFlowStatisticsReply> getFlowStats(int plumbingSwitchId) {
+	log.info("getFlowStats(" + String.valueOf(plumbingSwitchId) + ")");
         Map<Integer, List<OVXFlowStatisticsReply>> stats = this.flowStats.get();
-	log.info("this.flowStats.get(): " + stats);
-	log.info("stats is null: " + (stats == null));
-	if (stats != null) {
-	    log.info("stats contains tid: " + (stats.containsKey(tid)));
-	}
-        if (stats != null && stats.containsKey(tid)) {
-	    log.info("stats != null && stats.containsKey(" + String.valueOf(tid) + ")");
-	    log.info("returning" + Collections.unmodifiableList(stats.get(tid)).toString());
-            return Collections.unmodifiableList(stats.get(tid));
+        if (stats != null && stats.containsKey(plumbingSwitchId)) {
+	    log.info("stats != null && stats.containsKey(" + String.valueOf(plumbingSwitchId) + ")");
+	    log.info("returning" + Collections.unmodifiableList(stats.get(plumbingSwitchId)).toString());
+            return Collections.unmodifiableList(stats.get(plumbingSwitchId));
         }
 	log.info("returning null");
         return null;
@@ -433,6 +430,17 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     @Override
     public void removeChannel(Channel channel) {
 
+    }
+
+    public long generateCookie(int plumbingSwitchId) {
+        try {
+            return this.freeList.remove();
+        } catch (final NoSuchElementException e) {
+            // none in queue - generate new cookie
+            // TODO double-check that there's no duplicate in flowmod map.
+            final int cookie = this.cookieCounter.getAndIncrement();
+            return (long) plumbingSwitchId << 32 | cookie;
+        }
     }
 
 }

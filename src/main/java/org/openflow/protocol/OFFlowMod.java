@@ -453,6 +453,7 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
                 + ", outPort=" + this.outPort + ", priority=" + this.priority
                 + ", length=" + this.length + ", type=" + this.type
                 + ", version=" + this.version + ", xid=" + this.xid + "]";*/
-    	return "priority=" + this.priority + ", match=" + this.match + ", actions=" + this.actions;
+    	return "priority=" + this.priority + ", match=" + this.match + ", actions=" +
+	    this.actions + ", cookie=" + this.cookie;
     }
 }

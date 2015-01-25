@@ -116,9 +116,6 @@ public class StatisticsManager implements TimerTask, OVXSendMsg {
 
     @Override
     public void sendMsg(OFMessage msg, OVXSendMsg from) {
-	log.info("sendMsg of StatisticsManager.  Calling " +
-		 "sw.sendMsg(msg, from) for sw = " + sw +
-		 ", msg = " + msg + ", from = " + from);
         sw.sendMsg(msg, from);
     }
 
