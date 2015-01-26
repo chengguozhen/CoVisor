@@ -305,12 +305,12 @@ public class OFFlowStatisticsReply implements OFStatistics,
     @Override
     public String toString() {
         String str = "match=" + this.match;
-        str += " tableId=" + this.tableId;
-        str += " durationSeconds=" + this.durationSeconds;
-        str += " durationNanoseconds=" + this.durationNanoseconds;
+        //str += " tableId=" + this.tableId;
+        //str += " durationSeconds=" + this.durationSeconds;
+        //str += " durationNanoseconds=" + this.durationNanoseconds;
         str += " priority=" + this.priority;
-        str += " idleTimeout=" + this.idleTimeout;
-        str += " hardTimeout=" + this.hardTimeout;
+        //str += " idleTimeout=" + this.idleTimeout;
+        //str += " hardTimeout=" + this.hardTimeout;
         str += " cookie=" + this.cookie;
         str += " packetCount=" + this.packetCount;
         str += " byteCount=" + this.byteCount;
@@ -391,4 +391,5 @@ public class OFFlowStatisticsReply implements OFStatistics,
         }
         return true;
     }
+
 }

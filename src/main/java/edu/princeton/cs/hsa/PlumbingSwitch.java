@@ -61,6 +61,8 @@ public class PlumbingSwitch implements OVXSendMsg {
     private Map<OFFlowMod, List<OFFlowMod>> virtualToPhysicalFMMap;
     // Most recent stats reply for each OFFlowMod, keyed by cookie.
     private Map<Long, OVXFlowStatisticsReply> cookieToStatsMap;
+    // For use with cleanCovisorLog.py.
+    private String logHeader = "INFO PlumbingSwitch - ";
 
 
     public PlumbingSwitch(int id, PlumbingGraph graph) {
@@ -146,9 +148,9 @@ public class PlumbingSwitch implements OVXSendMsg {
 		 * Store flow mods in physical flow table with cookie generated from
 		 * this PlumbingSwitch's id.  Used to match flow mods to stats replies.
 		 */
-		logger.info("fm before setting cookie: " + fm);
+		//logger.info("fm before setting cookie: " + fm);
 		fm.setCookie(physSw.generateCookie(this.id));
-		logger.info("fm after setting cookie: " + fm);
+		//logger.info("fm after setting cookie: " + fm);
 		physSw.sendMsg(fm, this);
 	    }
 	    for (OFFlowMod fm : updateTable2.deleteFlowMods) {
@@ -189,7 +191,9 @@ public class PlumbingSwitch implements OVXSendMsg {
 		    OFStatisticsReply reply =
 			handleFlowStatsRequest(flowStatReq, msg.getXid());
 		    logger.info("About to call from.sendMsg(reply, from) for " +
-				"from = " + from + "\nreply = " + reply);
+				"from = " + from + "\n" + this.logHeader +
+				"reply = " + reply);
+		    logger.info("reply's statistics: " + reply.getStatistics());
 		    from.sendMsg(reply, from);
 		}
 		catch (IllegalArgumentException e) {
@@ -208,8 +212,9 @@ public class PlumbingSwitch implements OVXSendMsg {
     
     private OFStatisticsReply handleFlowStatsRequest(OFFlowStatisticsRequest
 						     flowStatsReq, int xid) {
-	logger.info("\nBEGIN handleFlowStatsRequest\n  flowStatsReq =" +
-		    flowStatsReq + "\n  xid = " + xid);
+	logger.info("\n" + this.logHeader + "BEGIN handleFlowStatsRequest\n  " +
+		    this.logHeader + "flowStatsReq =" +
+		    flowStatsReq + "\n  " + this.logHeader + "xid = " + xid);
 	OFMatch match = flowStatsReq.getMatch();
 	List<OVXFlowStatisticsReply> allReps =
 	    this.graph.getPhysicalSwitch().getFlowStats(this.id);
@@ -246,7 +251,8 @@ public class PlumbingSwitch implements OVXSendMsg {
 	reply.setStatisticType(OFStatisticsType.FLOW);
 	reply.setStatistics(statistics);
 	reply.setLengthU(OFStatisticsReply.MINIMUM_LENGTH + length);
-	logger.info("\nEND handleFlowStatsRequest(" + flowStatsReq + ")\n");
+	logger.info("\n" + this.logHeader + "INFO PlumbingSwitch END " +
+		    "handleFlowStatsRequest(" + flowStatsReq + ")\n");
 	return reply;
     }
 
@@ -258,13 +264,15 @@ public class PlumbingSwitch implements OVXSendMsg {
     private OFFlowStatisticsReply combineCounters(OFFlowMod fmFromController,
 						  List<OVXFlowStatisticsReply>
 						  statsFromPhysSwitch) {
-	logger.info("\nBEGIN combineCounters\n" + "  fmFromController = " +
-		    fmFromController + "\n  statsFromPhysSwitch = " +
-		    statsFromPhysSwitch);
+	logger.info("\n" + this.logHeader + "BEGIN combineCounters\n  " +
+		    this.logHeader + "fmFromController = " +
+		    fmFromController + "\n  " + this.logHeader +
+		    "statsFromPhysSwitch = " + statsFromPhysSwitch);
 	OFFlowStatisticsReply stat = new OFFlowStatisticsReply();
 	int packets = 0;
 	int bytes = 0;
 	for (OVXFlowStatisticsReply statReceived : statsFromPhysSwitch) {
+	    logger.info("statReceived: " + statReceived);
 	    packets += statReceived.getPacketCount();
 	    bytes += statReceived.getByteCount();
 	}
@@ -278,13 +286,14 @@ public class PlumbingSwitch implements OVXSendMsg {
 	for (OFAction act : stat.getActions()) {
 	    stat.setLength(U16.t(stat.getLength() + act.getLength()));
 	}
+	logger.info("combined stat: " + stat);
 	return stat;
     }
 
     private void updateCookieToStatsMap(List<OVXFlowStatisticsReply>
 					allReps) {
-	logger.info("\nBEGIN updateCookieToStatsMap\n" +
-		    "  allReps = " + allReps);
+	logger.info("\n" + this.logHeader + "BEGIN updateCookieToStatsMap\n  "
+		    + this.logHeader + "allReps = " + allReps);
 	logger.info("cookieToStatsMap before update:  " + this.cookieToStatsMap);
 	for (OVXFlowStatisticsReply rep : allReps) {
 	    this.cookieToStatsMap.put(rep.getCookie(), rep);
@@ -298,7 +307,7 @@ public class PlumbingSwitch implements OVXSendMsg {
      */
     private List<OVXFlowStatisticsReply> getRepliesForPhysFlowMods
 	(List<OFFlowMod> physFlowMods) {
-	logger.info("\nBEGIN getRepliesForPhysFlowMods\n");
+	logger.info("\n" + this.logHeader + "BEGIN getRepliesForPhysFlowMods\n");
 	List<OVXFlowStatisticsReply> relevantReps =
 	    new ArrayList<OVXFlowStatisticsReply>();
 	for (OFFlowMod physFM : physFlowMods) {
@@ -307,7 +316,7 @@ public class PlumbingSwitch implements OVXSendMsg {
 	    relevantReps.add(rep);
 	}
 	logger.info("relevantReps: " + relevantReps);
-	logger.info("\nEND getRepliesForPhysFlowMods\n");
+	logger.info("\n" + this.logHeader + "END getRepliesForPhysFlowMods\n");
 	return relevantReps;
     }
 
@@ -317,13 +326,13 @@ public class PlumbingSwitch implements OVXSendMsg {
 	for (OFFlowMod entry : virtualToPhysicalFMMap.keySet()) {
 	    s += "key: " + entry.toString();
 	    s += "value: " + String.valueOf(virtualToPhysicalFMMap.get(entry));
-	    s += "\n";
+	    s += "\n" + this.logHeader;
 	}
 	int size = virtualToPhysicalFMMap.size();
 	if (size > 0){
 	    s = s.substring(0, s.length() - 2);
 	}
-	s += "}\n\n";
+	s += "}\n" + this.logHeader + "\n" + this.logHeader;
 	s += "size = " + String.valueOf(size);
 	return s;
     }

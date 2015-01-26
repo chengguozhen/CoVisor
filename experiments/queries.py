@@ -2,8 +2,9 @@
 import sys
 import time
 import subprocess
+from subprocess import Popen
 import random
-from ExprTopo.mtopo import *
+from ExprTopo.querytopo import *
 from apps import *
 import os.path
 
@@ -17,7 +18,7 @@ SLEEP_TIME = 20
 # mininet: start, kill
 #********************************************************************
 def startMininet():
-    topo = MNTopo(sw_number = SWNUMBER)
+    topo = QueryTopo(sw_number = SWNUMBER)
     net = Mininet(topo, autoSetMacs=True, xterms=False,
         controller=RemoteController)
     net.addController('c', ip="127.0.0.1")
@@ -136,6 +137,20 @@ def killFloodlight():
         "| xargs kill -9 > /dev/null 2>&1", shell=True)
 
 #********************************************************************
+# iperf
+#********************************************************************
+
+def start_iperf(net):
+    h_s1_1 = net.getNodeByName('h_s1_1')
+    print "Starting iperf server on host with IP = %s." % h_s1_1.IP()
+    server = h_s1_1.popen("iperf -s -w 16m")
+    h_s1_2 = net.getNodeByName("h_s1_2")
+    print "Starting iperf client on host with IP = %s." % h_s1_2.IP()
+    cmd = "iperf -t %s -c %s" % (4*SLEEP_TIME, h_s1_1.IP())
+    client = h_s1_2.popen(cmd)
+
+
+#********************************************************************
 # utils
 #********************************************************************
 def cleanAll():
@@ -164,172 +179,50 @@ def exprParallel():
     app1.installRules()
     app2 = DemoRouterApp(topo)
     app2.installRules()
+    start_iperf(net)
     # Give time for CoVisor to start queries.
-    time.sleep(SLEEP_TIME)
-    app1.send_query("flow")
+    for i in range(3):
+        time.sleep(SLEEP_TIME)
+        app1.send_query("flow")
+    #net.stop()
     CLI(net)
 
-#********************************************************************
-# expr: sequential
-#********************************************************************
-def exprSequential():
-    cleanAll()
-    startFloodlight(2)
-    startOVX()
-    (topo, net) = startMininet()
-    time.sleep(SLEEP_TIME)
-    createPlumbingGraph()
-    addController1(topo)
-    addController2(topo)
-    createACL('1 dltype:exact,srcip:prefix,dstip:exact mod:dstip')
-    createACL('2 dltype:exact,dstip:prefix output')
-    createPolicy('"1>2"')
-    app1 = DemoLoadBalancerApp(topo)
-    app1.installRules()
-    app2 = DemoRouterApp(topo)
-    app2.installRules()
-    CLI(net)
-
-#********************************************************************
-# expr: virtual topology
-#********************************************************************
-def virtCreatePlumbingGraph():
-    cmd = "%s -n createPlumbingSwitch 00:00:00:00:00:00:01:00 3" % OVXCTLPY
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n createPlumbingPort 00:00:00:00:00:00:01:00 0 1" % OVXCTLPY
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n createPlumbingPort 00:00:00:00:00:00:01:00 0 2" % OVXCTLPY
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n createPlumbingPort 00:00:00:00:00:00:01:00 0 0" % OVXCTLPY
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n createPlumbingPort 00:00:00:00:00:00:01:00 1 0" % OVXCTLPY
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n createPlumbingPort 00:00:00:00:00:00:01:00 1 3" % OVXCTLPY
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n createPlumbingPort 00:00:00:00:00:00:01:00 1 0" % OVXCTLPY
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n createPlumbingPort 00:00:00:00:00:00:01:00 2 0" % OVXCTLPY
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n createPlumbingPort 00:00:00:00:00:00:01:00 2 4" % OVXCTLPY
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n createPlumbingPort 00:00:00:00:00:00:01:00 2 5" % OVXCTLPY
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n createPlumbingLink 00:00:00:00:00:00:01:00 0 3 1 1" % OVXCTLPY
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n createPlumbingLink 00:00:00:00:00:00:01:00 1 3 2 1" % OVXCTLPY
-    subprocess.call(cmd, shell=True)
-
-def virtAddController1(topo):
-    print "*****************************"
-    print "******** Controller 1 *******"
-    print "*****************************"
-    cmd = "%s -n createNetwork tcp:%s:10000 10.0.0.0 16" % (OVXCTLPY,
-        CONTROLLER_IP)
-    subprocess.call(cmd, shell=True)
-
-    cmd = "%s -n createSwitch 1 00:00:00:00:00:00:01:00 0" % OVXCTLPY
-    subprocess.call(cmd, shell=True)
-
-    cmd = "%s -n startNetwork 1" % OVXCTLPY
-    subprocess.call(cmd, shell=True)
-
-def virtAddController2(topo):
-    print "*****************************"
-    print "******** Controller 2 *******"
-    print "*****************************"
-    cmd = "%s -n createNetwork tcp:%s:20000 10.0.0.0 16" % (OVXCTLPY,
-        CONTROLLER_IP)
-    subprocess.call(cmd, shell=True)
-
-    cmd = "%s -n createSwitch 2 00:00:00:00:00:00:01:00 1" % OVXCTLPY
-    subprocess.call(cmd, shell=True)
-
-    cmd = "%s -n startNetwork 2" % OVXCTLPY
-    subprocess.call(cmd, shell=True)
-
-def virtAddController3(topo):
-    print "*****************************"
-    print "******** Controller 3 *******"
-    print "*****************************"
-    cmd = "%s -n createNetwork tcp:%s:30000 10.0.0.0 16" % (OVXCTLPY,
-        CONTROLLER_IP)
-    subprocess.call(cmd, shell=True)
-
-    cmd = "%s -n createSwitch 3 00:00:00:00:00:00:01:00 2" % OVXCTLPY
-    subprocess.call(cmd, shell=True)
-
-    cmd = "%s -n startNetwork 3" % OVXCTLPY
-    subprocess.call(cmd, shell=True)
-
-def virtCreatePolicy():
-    cmd = "%s -n createPolicy 00:00:00:00:00:00:01:00 0 1" % OVXCTLPY
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n createPolicy 00:00:00:00:00:00:01:00 1 2" % OVXCTLPY
-    subprocess.call(cmd, shell=True)
-    cmd = "%s -n createPolicy 00:00:00:00:00:00:01:00 2 3" % OVXCTLPY
-    subprocess.call(cmd, shell=True)
-
-def exprVirt():
-    cleanAll()
-    startFloodlight(3)
-    startOVX()
-    (topo, net) = startMininet()
-    time.sleep(SLEEP_TIME)
-    virtCreatePlumbingGraph()
-    virtAddController1(topo)
-    virtAddController2(topo)
-    virtAddController3(topo)
-    createACL('1 dltype:exact,dstip:prefix output')
-    createACL('2 dltype:exact,dstip:prefix output,mod:dstip')
-    createACL('3 dltype:exact,dstip:prefix output')
-    virtCreatePolicy()
-    app = DemoVirtApp(topo)
-    app.installRules()
-    CLI(net)
 
 #********************************************************************
 # main
 #********************************************************************
    
 def printHelp():
-    print "\tUsage: ctrl.py"
+    print "\tUsage: queries.py"
     print "\t\tstart-mn kill-mn"
     print "\t\tstart-ovx show-ovx kill-ovx"
     print "\t\tstart-fl show-fl kill-fl"
-    print "\t\texpr-parallel expr-sequential expr-virt"
     print "\t\tclean"
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        printHelp()
-        sys.exit()
-
-    if sys.argv[1] == "start-mn":
-        startMininet()
-    elif sys.argv[1] == "kill-mn":
-        killMininet()
-    elif sys.argv[1] == "start-ovx":
-        startOVX()
-    elif sys.argv[1] == "show-ovx":
-        showOVX()
-    elif sys.argv[1] == "kill-ovx":
-        killOVX()
-    elif sys.argv[1] == "start-fl":
-        startFloodlight(1)
-    elif sys.argv[1] == "show-fl":
-        showFloodlight()
-    elif sys.argv[1] == "kill-fl":
-        killFloodlight()
-    elif sys.argv[1] == "expr-parallel":
         exprParallel()
-    elif sys.argv[1] == "expr-sequential":
-        exprSequential()
-    elif sys.argv[1] == "expr-virt":
-        exprVirt()
-    elif sys.argv[1] == "clean":
-        cleanAll()
     else:
-        printHelp()
+        if sys.argv[1] == "start-mn":
+            startMininet()
+        elif sys.argv[1] == "kill-mn":
+            killMininet()
+        elif sys.argv[1] == "start-ovx":
+            startOVX()
+        elif sys.argv[1] == "show-ovx":
+            showOVX()
+        elif sys.argv[1] == "kill-ovx":
+            killOVX()
+        elif sys.argv[1] == "start-fl":
+            startFloodlight(1)
+        elif sys.argv[1] == "show-fl":
+            showFloodlight()
+        elif sys.argv[1] == "kill-fl":
+            killFloodlight()
+        elif sys.argv[1] == "clean":
+            cleanAll()
+        else:
+            printHelp()
 
 
 
