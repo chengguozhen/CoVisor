@@ -25,12 +25,13 @@ import org.openflow.protocol.action.OFActionDataLayerDestination;
 import org.openflow.protocol.action.OFActionDataLayerSource;
 import org.openflow.protocol.action.OFActionNetworkLayerDestination;
 import org.openflow.protocol.action.OFActionOutput;
-
+import org.openflow.util.U16;
 import org.openflow.protocol.statistics.OFStatistics;
 import org.openflow.protocol.OFStatisticsReply;
 import org.openflow.protocol.OFStatisticsRequest;
 import org.openflow.protocol.statistics.OFAggregateStatisticsRequest;
 import org.openflow.protocol.statistics.OFFlowStatisticsRequest;
+import org.openflow.protocol.statistics.OFFlowStatisticsReply;
 import org.openflow.protocol.statistics.OFStatisticsType;
 
 import edu.princeton.cs.policy.adv.PolicyCompositionUtil;
@@ -58,6 +59,8 @@ public class PlumbingSwitch implements OVXSendMsg {
     /* Physical flow mods corresponding to flow mod from controller; combine
        statistics from these flow mods to respond to stats query. */
     private Map<OFFlowMod, List<OFFlowMod>> virtualToPhysicalFMMap;
+    // Most recent stats reply for each OFFlowMod, keyed by cookie.
+    private Map<Long, OVXFlowStatisticsReply> cookieToStatsMap;
 
 
     public PlumbingSwitch(int id, PlumbingGraph graph) {
@@ -72,6 +75,7 @@ public class PlumbingSwitch implements OVXSendMsg {
 	this.nextHopPortMap = new HashMap<Short, Short>();
 	this.portNumber = 0;
 	this.virtualToPhysicalFMMap = new HashMap<OFFlowMod, List<OFFlowMod>>();
+	this.cookieToStatsMap = new HashMap<Long, OVXFlowStatisticsReply>();
     }
     
     public PlumbingSwitch(int id, PlumbingGraph graph,
@@ -87,6 +91,7 @@ public class PlumbingSwitch implements OVXSendMsg {
 	this.nextHopMap = new HashMap<Short, PlumbingSwitch>();
 	this.nextHopPortMap = new HashMap<Short, Short>();
 	this.virtualToPhysicalFMMap = new HashMap<OFFlowMod, List<OFFlowMod>>();
+	this.cookieToStatsMap = new HashMap<Long, OVXFlowStatisticsReply>();
     }
     
     public void setPolicyTree (PolicyTree policyTree) {
@@ -169,7 +174,10 @@ public class PlumbingSwitch implements OVXSendMsg {
 	} 
 
 	else if (msg.getType() == OFType.STATS_REQUEST) {
-	    // Devirtualize stats request using virtualToPhysicalFMMap.
+	    /*
+	     * Devirtualize stats request using virtualToPhysicalFMMap
+	     * and cookieToStatsMap.
+	     */
 	    this.logger.info("msg.getType() == OFType.STATS_REQUEST");
 	    OFStatisticsRequest req = (OFStatisticsRequest) msg;
 	    if (req.getStatisticType() == OFStatisticsType.FLOW) {
@@ -178,9 +186,11 @@ public class PlumbingSwitch implements OVXSendMsg {
 		    OFStatistics stat = req.getFirstStatistics();
 		    OFFlowStatisticsRequest flowStatReq =
 			(OFFlowStatisticsRequest) stat;
-		    logger.info("Calling handleFlowStatsRequest for " +
-				"flowStatReq = " + flowStatReq.toString());
-		    this.handleFlowStatsRequest(flowStatReq);
+		    OFStatisticsReply reply =
+			handleFlowStatsRequest(flowStatReq, msg.getXid());
+		    logger.info("About to call from.sendMsg(reply, from) for " +
+				"from = " + from + "\nreply = " + reply);
+		    from.sendMsg(reply, from);
 		}
 		catch (IllegalArgumentException e) {
 		    this.logger.warn("FLOW stats request should have " +
@@ -188,21 +198,6 @@ public class PlumbingSwitch implements OVXSendMsg {
 		}
 	    }
 	}
-	//else if (msg.getType() == OFType.STATS_REPLY) {
-	    /*
-	     * Virtualize stats request using virtualToPhysicalFMMap.
-	     * Need to aggregate counts from multiple physical rules.
-	     */
-	/*OFStatisticsReply rep = (OFStatisticsReply) msg;
-	    if (rep.getStatisticType() == OFStatisticsType.AGGREGATE) {
-		// Do aggregate stuff.
-		return;
-	    }
-	    else if (rep.getStatisticType() == OFStatisticsType.FLOW) {
-		// Do flow stuff.
-		return;
-	    }
-	    }*/
 	else {
 	    this.logger.info("msg isn't flow mod or stats request.");
 	    this.logger.info(msg.toString());
@@ -211,29 +206,90 @@ public class PlumbingSwitch implements OVXSendMsg {
 	
     }
     
-    private void handleFlowStatsRequest(OFFlowStatisticsRequest flowStatsReq) {
-	logger.info("\nBEGIN handleFlowStatsRequest({})\n", flowStatsReq);
+    private OFStatisticsReply handleFlowStatsRequest(OFFlowStatisticsRequest
+						     flowStatsReq, int xid) {
+	logger.info("\nBEGIN handleFlowStatsRequest\n  flowStatsReq =" +
+		    flowStatsReq + "\n  xid = " + xid);
 	OFMatch match = flowStatsReq.getMatch();
 	List<OVXFlowStatisticsReply> allReps =
 	    this.graph.getPhysicalSwitch().getFlowStats(this.id);
+	updateCookieToStatsMap(allReps);
+	/*
+	 * Will be set as the statistics field of the OFStatisticsReply
+	 * sent to the controller.
+	 */
+	List<OFFlowStatisticsReply> statistics =
+	    new ArrayList<OFFlowStatisticsReply>();
+	// Length of OFStatisticsReply we'll send to the controller.
+	int length = 0;
 	for (OFFlowMod fm : this.virtualToPhysicalFMMap.keySet()) {
-	    logger.info("fm: " + fm);
 	    boolean coveredMatch = match.covers(fm.getMatch());
 	    if (coveredMatch) {
 		// Know which flow mods we want stats for.
-		logger.info("flowStatsReq match covers virtual FM match.");
 		List<OFFlowMod> physFlowMods = this.virtualToPhysicalFMMap.get(fm);
-		logger.info("Physical flow mods generated by this virtual FM: {}",
-			    physFlowMods);
 		// Get those stats replies out of the big list.
 		List<OVXFlowStatisticsReply> relevantReps =
-		    getRepliesForPhysFlowMods(physFlowMods, allReps);
-		// Aggregate the counters in these replies into a single reply
-		// to send to the controller.
+		    getRepliesForPhysFlowMods(physFlowMods);
+		/*
+		 * Aggregate the counters in these replies into a single
+		 * OFFlowStatisticsReply to be added to the statistics list
+		 * of the single OFStatisticsReply to send to the controller.
+		 */
+		OFFlowStatisticsReply stat =
+		    combineCounters(fm, relevantReps);
+		statistics.add(stat);
+		length += stat.getLength();
 	    }
 	}
-	logger.info("\nEND handleFlowStatsRequest({})\n", flowStatsReq);
-	return;    
+	OFStatisticsReply reply = new OFStatisticsReply();
+	reply.setXid(xid);
+	reply.setStatisticType(OFStatisticsType.FLOW);
+	reply.setStatistics(statistics);
+	reply.setLengthU(OFStatisticsReply.MINIMUM_LENGTH + length);
+	logger.info("\nEND handleFlowStatsRequest(" + flowStatsReq + ")\n");
+	return reply;
+    }
+
+    /*
+     * Combine counters corresponding to a single virtual flow mod.
+     * Should be represented as one OFFlowStatisticsReply in the statistics
+     * field of the OFStatisticsReply returned to the controller.
+     */
+    private OFFlowStatisticsReply combineCounters(OFFlowMod fmFromController,
+						  List<OVXFlowStatisticsReply>
+						  statsFromPhysSwitch) {
+	logger.info("\nBEGIN combineCounters\n" + "  fmFromController = " +
+		    fmFromController + "\n  statsFromPhysSwitch = " +
+		    statsFromPhysSwitch);
+	OFFlowStatisticsReply stat = new OFFlowStatisticsReply();
+	int packets = 0;
+	int bytes = 0;
+	for (OVXFlowStatisticsReply statReceived : statsFromPhysSwitch) {
+	    packets += statReceived.getPacketCount();
+	    bytes += statReceived.getByteCount();
+	}
+        stat.setPacketCount(packets);
+	stat.setByteCount(bytes);
+	stat.setActions(fmFromController.getActions());
+	stat.setCookie(fmFromController.getCookie());
+	stat.setMatch(fmFromController.getMatch());
+	// Copied from OVXFlowStatisticsRequest.  Not sure if this is correct.
+	stat.setLength(U16.t(OFFlowStatisticsReply.MINIMUM_LENGTH));
+	for (OFAction act : stat.getActions()) {
+	    stat.setLength(U16.t(stat.getLength() + act.getLength()));
+	}
+	return stat;
+    }
+
+    private void updateCookieToStatsMap(List<OVXFlowStatisticsReply>
+					allReps) {
+	logger.info("\nBEGIN updateCookieToStatsMap\n" +
+		    "  allReps = " + allReps);
+	logger.info("cookieToStatsMap before update:  " + this.cookieToStatsMap);
+	for (OVXFlowStatisticsReply rep : allReps) {
+	    this.cookieToStatsMap.put(rep.getCookie(), rep);
+	}
+	logger.info("cookieToStatsMap after update:  " + this.cookieToStatsMap);
     }
 
     /*
@@ -241,30 +297,16 @@ public class PlumbingSwitch implements OVXSendMsg {
      * flow mods on the physical switch.
      */
     private List<OVXFlowStatisticsReply> getRepliesForPhysFlowMods
-	(List<OFFlowMod> physFlowMods, List<OVXFlowStatisticsReply> allReps) {
+	(List<OFFlowMod> physFlowMods) {
 	logger.info("\nBEGIN getRepliesForPhysFlowMods\n");
 	List<OVXFlowStatisticsReply> relevantReps =
 	    new ArrayList<OVXFlowStatisticsReply>();
-	if (allReps != null) {
-	    // Match flow mods to replies by cookie.
-	    /* 24 JANUARY
-	     * I'm trying to make necessary modifications to make this strategy work.
-	     */
-	    for (OFFlowMod physFlowMod : physFlowMods) {
-		logger.info("physFlowMod:  {}", physFlowMod);
-		long fmCookie = physFlowMod.getCookie();
-		logger.info("fmCookie: {}", fmCookie);
-		for (OVXFlowStatisticsReply flowStatRep : allReps) {
-		    logger.info("flowStatRep: {}", flowStatRep);
-		    if (flowStatRep.getCookie() == fmCookie) {
-			logger.info("Cookies match.");
-			relevantReps.add(flowStatRep);
-		    }
-		}
-	    }
+	for (OFFlowMod physFM : physFlowMods) {
+	    OVXFlowStatisticsReply rep = this.cookieToStatsMap.
+		get(physFM.getCookie());
+	    relevantReps.add(rep);
 	}
-	logger.info("allReps: {}" + allReps);
-	logger.info("relevantReps: {}" + relevantReps);
+	logger.info("relevantReps: " + relevantReps);
 	logger.info("\nEND getRepliesForPhysFlowMods\n");
 	return relevantReps;
     }
