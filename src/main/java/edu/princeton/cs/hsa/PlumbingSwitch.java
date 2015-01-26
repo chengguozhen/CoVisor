@@ -167,6 +167,7 @@ public class PlumbingSwitch implements OVXSendMsg {
 	     */
 	    // Add fmMsg and its derived rules to map for answering queries.
 	    this.virtualToPhysicalFMMap.put(fmMsg, updateTable2.addFlowMods);
+	    removeDeletedFlowMods(updateTable2.deleteFlowMods);
 	    
             //this.logger.info("left child {}", this.policyTree.leftChild.flowTable);
             //this.logger.info("right child {}", this.policyTree.rightChild.flowTable);
@@ -210,6 +211,17 @@ public class PlumbingSwitch implements OVXSendMsg {
 	
     }
     
+    // Remove deleted physical flow mods from virtualToPhysicalFMMap.
+    private void removeDeletedFlowMods(List<OFFlowMod> toRemove) {
+	for (OFFlowMod physFM : toRemove) {
+	    for (OFFlowMod virtualFM : this.virtualToPhysicalFMMap.keySet()) {
+		List<OFFlowMod> generatedPhysFMs =
+		    this.virtualToPhysicalFMMap.get(virtualFM);
+		generatedPhysFMs.remove(physFM);
+	    }
+	}
+    }
+
     private OFStatisticsReply handleFlowStatsRequest(OFFlowStatisticsRequest
 						     flowStatsReq, int xid) {
 	logger.info("\n" + this.logHeader + "BEGIN handleFlowStatsRequest\n  " +
@@ -251,8 +263,8 @@ public class PlumbingSwitch implements OVXSendMsg {
 	reply.setStatisticType(OFStatisticsType.FLOW);
 	reply.setStatistics(statistics);
 	reply.setLengthU(OFStatisticsReply.MINIMUM_LENGTH + length);
-	logger.info("\n" + this.logHeader + "INFO PlumbingSwitch END " +
-		    "handleFlowStatsRequest(" + flowStatsReq + ")\n");
+	logger.info("\n" + this.logHeader + "END handleFlowStatsRequest("
+		    + flowStatsReq + ")\n");
 	return reply;
     }
 
@@ -307,7 +319,8 @@ public class PlumbingSwitch implements OVXSendMsg {
      */
     private List<OVXFlowStatisticsReply> getRepliesForPhysFlowMods
 	(List<OFFlowMod> physFlowMods) {
-	logger.info("\n" + this.logHeader + "BEGIN getRepliesForPhysFlowMods\n");
+	logger.info("\n" + this.logHeader + "BEGIN getRepliesForPhysFlowMods\n"
+		    + this.logHeader + "for physFlowMods = " + physFlowMods);
 	List<OVXFlowStatisticsReply> relevantReps =
 	    new ArrayList<OVXFlowStatisticsReply>();
 	for (OFFlowMod physFM : physFlowMods) {

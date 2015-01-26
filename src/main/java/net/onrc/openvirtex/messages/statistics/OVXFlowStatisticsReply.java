@@ -63,8 +63,8 @@ public class OVXFlowStatisticsReply extends OFFlowStatisticsReply implements
     public String toString() {
 	String s = "OVXFlowStatisticsReply[";
 	String m = "match=" + getMatch().toString();
-	String c = "cookie=" + String.valueOf(getCookie());
-	String p = "packets=" + String.valueOf(getPacketCount());
+	String c = "cookie=" + String.valueOf(getCookie()) + ", ";
+	String p = "packets=" + String.valueOf(getPacketCount()) + ", ";
 	String b = "bytes=" + String.valueOf(getByteCount());
 	return s + m + c + p + b + "]";
     }

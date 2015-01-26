@@ -143,10 +143,10 @@ def killFloodlight():
 def start_iperf(net):
     h_s1_1 = net.getNodeByName('h_s1_1')
     print "Starting iperf server on host with IP = %s." % h_s1_1.IP()
-    server = h_s1_1.popen("iperf -s -w 16m")
+    server = h_s1_1.popen("iperf -s -u")
     h_s1_2 = net.getNodeByName("h_s1_2")
     print "Starting iperf client on host with IP = %s." % h_s1_2.IP()
-    cmd = "iperf -t %s -c %s" % (4*SLEEP_TIME, h_s1_1.IP())
+    cmd = "iperf -t %s -c %s -u" % (4*SLEEP_TIME, h_s1_1.IP())
     client = h_s1_2.popen(cmd)
 
 
