@@ -61,6 +61,8 @@ public class PlumbingSwitch implements OVXSendMsg {
     private Map<OFFlowMod, List<OFFlowMod>> virtualToPhysicalFMMap;
     // Most recent stats reply for each OFFlowMod, keyed by cookie.
     private Map<Long, OVXFlowStatisticsReply> cookieToStatsMap;
+    // Tenant ID of controller responsible for each virtual flow mod.
+    private Map<OFFlowMod, Integer> fmToControllerMap;
     // For use with cleanCovisorLog.py.
     private String logHeader = "INFO PlumbingSwitch - ";
 
@@ -78,6 +80,7 @@ public class PlumbingSwitch implements OVXSendMsg {
 	this.portNumber = 0;
 	this.virtualToPhysicalFMMap = new HashMap<OFFlowMod, List<OFFlowMod>>();
 	this.cookieToStatsMap = new HashMap<Long, OVXFlowStatisticsReply>();
+	this.fmToControllerMap = new HashMap<OFFlowMod, Integer>();
     }
     
     public PlumbingSwitch(int id, PlumbingGraph graph,
@@ -94,6 +97,7 @@ public class PlumbingSwitch implements OVXSendMsg {
 	this.nextHopPortMap = new HashMap<Short, Short>();
 	this.virtualToPhysicalFMMap = new HashMap<OFFlowMod, List<OFFlowMod>>();
 	this.cookieToStatsMap = new HashMap<Long, OVXFlowStatisticsReply>();
+	this.fmToControllerMap = new HashMap<OFFlowMod, Integer>();
     }
     
     public void setPolicyTree (PolicyTree policyTree) {
@@ -148,9 +152,9 @@ public class PlumbingSwitch implements OVXSendMsg {
 		 * Store flow mods in physical flow table with cookie generated from
 		 * this PlumbingSwitch's id.  Used to match flow mods to stats replies.
 		 */
-		//logger.info("fm before setting cookie: " + fm);
+		logger.info("fm before setting cookie: " + fm);
 		fm.setCookie(physSw.generateCookie(this.id));
-		//logger.info("fm after setting cookie: " + fm);
+		logger.info("fm after setting cookie: " + fm);
 		physSw.sendMsg(fm, this);
 	    }
 	    for (OFFlowMod fm : updateTable2.deleteFlowMods) {
@@ -158,22 +162,16 @@ public class PlumbingSwitch implements OVXSendMsg {
 		physSw.sendMsg(fm, this);
 	    }
 
-	    /* 23 January
+
+	    /* 28 January
 	     * I think (but I'm not sure) that all controllers sending messages
 	     * to this PlumbingSwitch share an identical view of the virtual
-	     * network.  If this is the case, don't need to keep track of
-	     * which controller sent which flow mod.  If not, need to do something
-	     * more complicated than just flowModToControllerMap.
+	     * network. Also, I'm assuming that no flow mod in a controller's
+	     * flow table is completely shadowed by another.
 	     */
-	    // Add fmMsg and its derived rules to map for answering queries.
-	    this.virtualToPhysicalFMMap.put(fmMsg, updateTable2.addFlowMods);
-	    removeDeletedFlowMods(updateTable2.deleteFlowMods);
-	    
-            //this.logger.info("left child {}", this.policyTree.leftChild.flowTable);
-            //this.logger.info("right child {}", this.policyTree.rightChild.flowTable);
-	    //this.logger.info("plumbing {} flow table {}", this.id, this.policyTree.flowTable);
-	    //this.logger.info("graph flow table {}", this.graph.flowTable);
-	    
+	    updateVirtualToPhysicalFMMap(fmMsg, updateTable2.copy());
+	    this.fmToControllerMap.put(fmMsg, tid);
+	    logger.info("fmToControllerMap: " + fmToControllerMap);
 	} 
 
 	else if (msg.getType() == OFType.STATS_REQUEST) {
@@ -190,7 +188,7 @@ public class PlumbingSwitch implements OVXSendMsg {
 		    OFFlowStatisticsRequest flowStatReq =
 			(OFFlowStatisticsRequest) stat;
 		    OFStatisticsReply reply =
-			handleFlowStatsRequest(flowStatReq, msg.getXid());
+			handleFlowStatsRequest(flowStatReq, msg.getXid(), tid);
 		    logger.info("About to call from.sendMsg(reply, from) for " +
 				"from = " + from + "\n" + this.logHeader +
 				"reply = " + reply);
@@ -211,22 +209,70 @@ public class PlumbingSwitch implements OVXSendMsg {
 	
     }
     
+    /*
+     * Add fmMsg and its derived rules to map for answering queries.  Also
+     * remove deleted flow mods and update old virtualtoPhysicalFMMap entries
+     * with new flow mods, if applicable.
+     */
+    private void updateVirtualToPhysicalFMMap(OFFlowMod fmMsg,
+					      PolicyUpdateTable updateTable2) {
+	logger.info("BEGIN updateVirtualToPhysicalFMMap\n  " + this.logHeader +
+		    "fmMsg = " + fmMsg + "\n  " + this.logHeader +
+		    "updateTable2 = " + updateTable2);
+	logger.info("virtualToPhysicalFMMap before fmMsg = " + fmMsg + "\n"
+		    + this.logHeader + virtualToPhysicalFMMapString());
+	this.virtualToPhysicalFMMap.put(fmMsg, updateTable2.addFlowMods);
+	removeDeletedFlowMods(updateTable2);
+	updateExistingFMMapEntries(updateTable2);
+	logger.info("virtualToPhysicalFMMap after fmMsg = " + fmMsg + "\n"
+		    + this.logHeader + virtualToPhysicalFMMapString());
+	logger.info("END updateVirtualToPhysicalFMMap");
+    }
+
     // Remove deleted physical flow mods from virtualToPhysicalFMMap.
-    private void removeDeletedFlowMods(List<OFFlowMod> toRemove) {
-	for (OFFlowMod physFM : toRemove) {
+    private void removeDeletedFlowMods(PolicyUpdateTable updateTable2) {
+	logger.info("BEGIN removeDeletedFlowMods\n  " + this.logHeader +
+		    "updateTable2 = " + updateTable2);
+	for (OFFlowMod physFM :updateTable2.deleteFlowMods) {
 	    for (OFFlowMod virtualFM : this.virtualToPhysicalFMMap.keySet()) {
-		List<OFFlowMod> generatedPhysFMs =
+		List<OFFlowMod> existingPhysFMs =
 		    this.virtualToPhysicalFMMap.get(virtualFM);
-		generatedPhysFMs.remove(physFM);
+		existingPhysFMs.remove(physFM);
 	    }
 	}
+	logger.info("END removeDeletedFlowMods");
+    }
+
+    /*
+     * New flow mod may change the list of physical flow mods corresponding
+     * to an existing virtual flow mod.  Update virtualToPhysicalFMMap
+     * accordingly.
+     */
+    private void updateExistingFMMapEntries(PolicyUpdateTable updateTable2) {
+	/*
+	 * New physical flow mod maps to existing virtual flow mod if virtual
+	 * match covers physical match.
+	 */
+	logger.info("BEGIN updateExistingFMMapEntries");
+	for (OFFlowMod physFM : updateTable2.addFlowMods) {
+	    for (OFFlowMod virtualFM : this.virtualToPhysicalFMMap.keySet()) {
+		if (virtualFM.getMatch().covers(physFM.getMatch())) {
+		    List<OFFlowMod> existingPhysFMs =
+			this.virtualToPhysicalFMMap.get(virtualFM);
+		    existingPhysFMs.add(physFM);
+		}
+	    }
+	}
+	logger.info("END updateExistingFMMapEntries");
     }
 
     private OFStatisticsReply handleFlowStatsRequest(OFFlowStatisticsRequest
-						     flowStatsReq, int xid) {
+						     flowStatsReq, int xid,
+						     int tid) {
 	logger.info("\n" + this.logHeader + "BEGIN handleFlowStatsRequest\n  " +
 		    this.logHeader + "flowStatsReq =" +
-		    flowStatsReq + "\n  " + this.logHeader + "xid = " + xid);
+		    flowStatsReq + "\n  " + this.logHeader + "xid = " + xid +
+		    "\n  " + this.logHeader + "tid = " + tid);
 	OFMatch match = flowStatsReq.getMatch();
 	List<OVXFlowStatisticsReply> allReps =
 	    this.graph.getPhysicalSwitch().getFlowStats(this.id);
@@ -241,7 +287,10 @@ public class PlumbingSwitch implements OVXSendMsg {
 	int length = 0;
 	for (OFFlowMod fm : this.virtualToPhysicalFMMap.keySet()) {
 	    boolean coveredMatch = match.covers(fm.getMatch());
-	    if (coveredMatch) {
+	    boolean thisController = (this.fmToControllerMap.get(fm) == tid);
+	    logger.info("coveredMatch: " + coveredMatch);
+	    logger.info("thisController: " + thisController);
+	    if (coveredMatch && thisController) {
 		// Know which flow mods we want stats for.
 		List<OFFlowMod> physFlowMods = this.virtualToPhysicalFMMap.get(fm);
 		// Get those stats replies out of the big list.
@@ -306,11 +355,11 @@ public class PlumbingSwitch implements OVXSendMsg {
 					allReps) {
 	logger.info("\n" + this.logHeader + "BEGIN updateCookieToStatsMap\n  "
 		    + this.logHeader + "allReps = " + allReps);
-	logger.info("cookieToStatsMap before update:  " + this.cookieToStatsMap);
+	// logger.info("cookieToStatsMap before update:  " + this.cookieToStatsMap);
 	for (OVXFlowStatisticsReply rep : allReps) {
 	    this.cookieToStatsMap.put(rep.getCookie(), rep);
 	}
-	logger.info("cookieToStatsMap after update:  " + this.cookieToStatsMap);
+	// logger.info("cookieToStatsMap after update:  " + this.cookieToStatsMap);
     }
 
     /*

@@ -19,4 +19,20 @@ public class PolicyUpdateTable {
 		this.addFlowMods.addAll(partialUpdateTable.addFlowMods);
 		this.deleteFlowMods.addAll(partialUpdateTable.deleteFlowMods);
 	}
+
+    public PolicyUpdateTable copy() {
+	PolicyUpdateTable copied = new PolicyUpdateTable();
+	try {
+	    for (OFFlowMod fm : addFlowMods) {
+		copied.addFlowMods.add(fm.clone());
+	    }
+	    for (OFFlowMod fm : deleteFlowMods) {
+		copied.deleteFlowMods.add(fm.clone());
+	    }
+	}
+	catch (CloneNotSupportedException e) {
+	    return null;
+	}
+	return copied;
+    }
 }
