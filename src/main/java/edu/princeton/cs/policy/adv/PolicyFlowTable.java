@@ -6,6 +6,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.commons.lang.NotImplementedException;
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFMatch;
@@ -30,30 +33,38 @@ import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreType;
 
 
 public class PolicyFlowTable {
-
-	private ConcurrentHashMap<OFFlowMod, List<OFFlowMod>> generatedParentFlowModsDictionary;
-	private PolicyFlowModStore flowModStore;
-	
-	public PolicyFlowTable() {
-		this.generatedParentFlowModsDictionary = new ConcurrentHashMap<OFFlowMod, List<OFFlowMod>>();
-		
-		List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
-		storeTypes.add(PolicyFlowModStoreType.WILDCARD);
+    private Logger logger = LogManager.getLogger(PolicyFlowTable.class.getName());
+    private ConcurrentHashMap<OFFlowMod, List<OFFlowMod>> generatedParentFlowModsDictionary;
+    private PolicyFlowModStore flowModStore;
+    // (fm in this flow table, flow mods from controller responsible for generating this fm)
+    private ConcurrentHashMap<OFFlowMod, List<OFFlowMod>> fmFromControllerDictionary;
+    
+    public PolicyFlowTable() {
+	this.generatedParentFlowModsDictionary = new ConcurrentHashMap<OFFlowMod,
+	    List<OFFlowMod>>();
+	this.fmFromControllerDictionary = new ConcurrentHashMap<OFFlowMod, List<OFFlowMod>>();
+	List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
+	storeTypes.add(PolicyFlowModStoreType.WILDCARD);
     	List<PolicyFlowModStoreKey> storeKeys = new ArrayList<PolicyFlowModStoreKey>();
     	storeKeys.add(PolicyFlowModStoreKey.ALL);
     	this.flowModStore = PolicyFlowModStore.createFlowModStore(storeTypes, storeKeys, false);
-	}
-
-	public PolicyFlowTable(List<PolicyFlowModStoreType> storeTypes,
-			List<PolicyFlowModStoreKey> storeKeys,
+    }
+    
+    public PolicyFlowTable(List<PolicyFlowModStoreType> storeTypes,
+			   List<PolicyFlowModStoreKey> storeKeys,
 			boolean isLeftInSequentialComposition) {
-		this.generatedParentFlowModsDictionary = new ConcurrentHashMap<OFFlowMod, List<OFFlowMod>>();
-		this.flowModStore = PolicyFlowModStore.createFlowModStore(storeTypes, storeKeys, isLeftInSequentialComposition);
-	}
+	this.generatedParentFlowModsDictionary = new ConcurrentHashMap<OFFlowMod,
+	    List<OFFlowMod>>();
+	this.fmFromControllerDictionary = new ConcurrentHashMap<OFFlowMod, List<OFFlowMod>>();
+	this.flowModStore = PolicyFlowModStore.createFlowModStore(storeTypes,
+								  storeKeys,
+								  isLeftInSequentialComposition);
+    }
 	
 	public void addFlowMod(OFFlowMod fm) {
 		this.flowModStore.add(fm);
 		this.generatedParentFlowModsDictionary.put(fm, new ArrayList<OFFlowMod>());
+		this.fmFromControllerDictionary.put(fm, new ArrayList<OFFlowMod>());
 	}
 	
 	public void setTable(List<OFFlowMod> flowMods) {
@@ -128,34 +139,72 @@ public class PolicyFlowTable {
 	
 	@Override
     public String toString() {
-		String str = "Flow Table\t" + this.flowModStore + "\n";
-		for (OFFlowMod fm : this.flowModStore.getFlowMods()) {
-			str = str + fm.toString() + "\n";
-		}
-		return str;
+	    String str = "Flow Table\t" + this.flowModStore + "\n";
+	    for (OFFlowMod fm : this.flowModStore.getFlowMods()) {
+		str = str + fm.toString() + "\n";
+	    }
+	    return str;
 	}
 
-	public List<OFFlowMod> getGenerateParentFlowMods(OFFlowMod fm) {
-		return this.generatedParentFlowModsDictionary.get(fm);
+    public String fmFromControllerDictionaryString() {
+	String logHeader = "INFO PolicyFlowTable - ";
+	String s = logHeader + "fmFromControllerDictionaryString\n";
+	for (OFFlowMod fm : this.fmFromControllerDictionary.keySet()) {
+	    s += logHeader + fm + ":  " + getFlowModsFromController(fm) + "\n";
 	}
+	return s;
+    }
 
-	public List<OFFlowMod> deleteFlowMods(List<OFFlowMod> flowMods) {
-		return this.flowModStore.removaAll(flowMods);
-	}
+    public List<OFFlowMod> getGenerateParentFlowMods(OFFlowMod fm) {
+	return this.generatedParentFlowModsDictionary.get(fm);
+    }
+
+    /*
+     * fm is flow mod in this flow table.  Get list of original virtual flow
+     * mods responsible for generating it.
+     */
+    public List<OFFlowMod> getFlowModsFromController(OFFlowMod fm) {
+	//logger.info("fmFromControllerDictionary.get(" + fm + "):  " +
+	//	    this.fmFromControllerDictionary.get(fm));
+	return this.fmFromControllerDictionary.get(fm);
+    }
+
+    public List<OFFlowMod> deleteFlowMods(List<OFFlowMod> flowMods) {
+	deleteFMFromControllerKeys(flowMods);
+	return this.flowModStore.removaAll(flowMods);
+    }
 	
-	public void addGeneratedParentFlowMod (OFFlowMod fm, OFFlowMod generateParentFlowMod) {
-		this.generatedParentFlowModsDictionary.get(fm).add(generateParentFlowMod);
-	}
+    public void addGeneratedParentFlowMod (OFFlowMod fm, OFFlowMod generateParentFlowMod) {
+	this.generatedParentFlowModsDictionary.get(fm).add(generateParentFlowMod);
+    }
+
+    public void addFlowModFromController (OFFlowMod fm, OFFlowMod fmFromController) {
+	this.fmFromControllerDictionary.get(fm).add(fmFromController);
+    }
+
+    public void addFlowModsFromController (OFFlowMod fm, List<OFFlowMod> fmsFromController) {
+	this.fmFromControllerDictionary.get(fm).addAll(fmsFromController);
+    }
 	
-	public void deleteGenerateParentFlowModKey (OFFlowMod fm) {
-		this.generatedParentFlowModsDictionary.remove(fm);
-	}
+    public void deleteGenerateParentFlowModKey (OFFlowMod fm) {
+	this.generatedParentFlowModsDictionary.remove(fm);
+    }
+
+    public void deleteFMFromControllerKey (OFFlowMod fm) {
+	this.fmFromControllerDictionary.remove(fm);
+    }
 	
-	public void deleteGenerateParentFlowModKeys (List<OFFlowMod> fms) {
-		for (OFFlowMod fm : fms) {
-			this.deleteGenerateParentFlowModKey(fm);
-		}
+    public void deleteGenerateParentFlowModKeys (List<OFFlowMod> fms) {
+	for (OFFlowMod fm : fms) {
+	    this.deleteGenerateParentFlowModKey(fm);
 	}
+    }
+
+    public void deleteFMFromControllerKeys (List<OFFlowMod> fms) {
+	for (OFFlowMod fm : fms) {
+	    this.deleteFMFromControllerKey(fm);
+	}
+    }
 	
 	public List<OFFlowMod> getPotentialFlowMods (OFFlowMod fm) {
 		return this.flowModStore.getPotentialFlowMods(fm);

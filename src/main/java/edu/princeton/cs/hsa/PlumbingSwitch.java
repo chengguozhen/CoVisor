@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import java.lang.CloneNotSupportedException;
+
 import net.onrc.openvirtex.core.io.OVXSendMsg;
 import net.onrc.openvirtex.elements.datapath.OVXSwitch;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
@@ -102,6 +104,8 @@ public class PlumbingSwitch implements OVXSendMsg {
     
     public void setPolicyTree (PolicyTree policyTree) {
 	this.policyTree = policyTree;
+	// For policyTree to assign unique cookies.
+	this.policyTree.setPlumbingSwitch(this);
     }
     
     public short getNextPortNumber() {
@@ -134,6 +138,10 @@ public class PlumbingSwitch implements OVXSendMsg {
 	    OFFlowMod fmMsg = (OFFlowMod) msg;
 	    PolicyUpdateTable updateTable1 = this.policyTree.
 		update(fmMsg, tid);
+	    String fmFromControllerDictionaryString = this.policyTree.
+		flowTable.fmFromControllerDictionaryString();
+	    logger.info("fmFromControllerDictionary.  After composition and before hsa.\n" +
+			fmFromControllerDictionaryString);
 	    PolicyUpdateTable updateTable2 = new PolicyUpdateTable();
 			
 	    for (OFFlowMod fm : updateTable1.addFlowMods) {
@@ -148,13 +156,6 @@ public class PlumbingSwitch implements OVXSendMsg {
 	    
 	    PhysicalSwitch physSw = this.graph.getPhysicalSwitch();
 	    for (OFFlowMod fm : updateTable2.addFlowMods) {
-		/*
-		 * Store flow mods in physical flow table with cookie generated from
-		 * this PlumbingSwitch's id.  Used to match flow mods to stats replies.
-		 */
-		logger.info("fm before setting cookie: " + fm);
-		fm.setCookie(physSw.generateCookie(this.id));
-		logger.info("fm after setting cookie: " + fm);
 		physSw.sendMsg(fm, this);
 	    }
 	    for (OFFlowMod fm : updateTable2.deleteFlowMods) {
@@ -169,9 +170,9 @@ public class PlumbingSwitch implements OVXSendMsg {
 	     * network. Also, I'm assuming that no flow mod in a controller's
 	     * flow table is completely shadowed by another.
 	     */
-	    updateVirtualToPhysicalFMMap(fmMsg, updateTable2.copy());
+	    //updateVirtualToPhysicalFMMap(fmMsg, updateTable2);
 	    this.fmToControllerMap.put(fmMsg, tid);
-	    logger.info("fmToControllerMap: " + fmToControllerMap);
+	    //logger.info("fmToControllerMap: " + fmToControllerMap);
 	} 
 
 	else if (msg.getType() == OFType.STATS_REQUEST) {
@@ -209,63 +210,6 @@ public class PlumbingSwitch implements OVXSendMsg {
 	
     }
     
-    /*
-     * Add fmMsg and its derived rules to map for answering queries.  Also
-     * remove deleted flow mods and update old virtualtoPhysicalFMMap entries
-     * with new flow mods, if applicable.
-     */
-    private void updateVirtualToPhysicalFMMap(OFFlowMod fmMsg,
-					      PolicyUpdateTable updateTable2) {
-	logger.info("BEGIN updateVirtualToPhysicalFMMap\n  " + this.logHeader +
-		    "fmMsg = " + fmMsg + "\n  " + this.logHeader +
-		    "updateTable2 = " + updateTable2);
-	logger.info("virtualToPhysicalFMMap before fmMsg = " + fmMsg + "\n"
-		    + this.logHeader + virtualToPhysicalFMMapString());
-	this.virtualToPhysicalFMMap.put(fmMsg, updateTable2.addFlowMods);
-	removeDeletedFlowMods(updateTable2);
-	updateExistingFMMapEntries(updateTable2);
-	logger.info("virtualToPhysicalFMMap after fmMsg = " + fmMsg + "\n"
-		    + this.logHeader + virtualToPhysicalFMMapString());
-	logger.info("END updateVirtualToPhysicalFMMap");
-    }
-
-    // Remove deleted physical flow mods from virtualToPhysicalFMMap.
-    private void removeDeletedFlowMods(PolicyUpdateTable updateTable2) {
-	logger.info("BEGIN removeDeletedFlowMods\n  " + this.logHeader +
-		    "updateTable2 = " + updateTable2);
-	for (OFFlowMod physFM :updateTable2.deleteFlowMods) {
-	    for (OFFlowMod virtualFM : this.virtualToPhysicalFMMap.keySet()) {
-		List<OFFlowMod> existingPhysFMs =
-		    this.virtualToPhysicalFMMap.get(virtualFM);
-		existingPhysFMs.remove(physFM);
-	    }
-	}
-	logger.info("END removeDeletedFlowMods");
-    }
-
-    /*
-     * New flow mod may change the list of physical flow mods corresponding
-     * to an existing virtual flow mod.  Update virtualToPhysicalFMMap
-     * accordingly.
-     */
-    private void updateExistingFMMapEntries(PolicyUpdateTable updateTable2) {
-	/*
-	 * New physical flow mod maps to existing virtual flow mod if virtual
-	 * match covers physical match.
-	 */
-	logger.info("BEGIN updateExistingFMMapEntries");
-	for (OFFlowMod physFM : updateTable2.addFlowMods) {
-	    for (OFFlowMod virtualFM : this.virtualToPhysicalFMMap.keySet()) {
-		if (virtualFM.getMatch().covers(physFM.getMatch())) {
-		    List<OFFlowMod> existingPhysFMs =
-			this.virtualToPhysicalFMMap.get(virtualFM);
-		    existingPhysFMs.add(physFM);
-		}
-	    }
-	}
-	logger.info("END updateExistingFMMapEntries");
-    }
-
     private OFStatisticsReply handleFlowStatsRequest(OFFlowStatisticsRequest
 						     flowStatsReq, int xid,
 						     int tid) {
@@ -815,4 +759,51 @@ public class PlumbingSwitch implements OVXSendMsg {
     public String getName() {
 	return this.graph.getPhysicalSwitch().getName() + ":" + this.id;
     }
+
+    /* 30 January NOT WORKING / OUTDATED
+     * Add fmMsg and its derived rules to map for answering queries.  Also
+     * remove deleted flow mods and update old virtualtoPhysicalFMMap entries
+     * with new flow mods, if applicable.
+     */
+    /*
+    private void updateVirtualToPhysicalFMMap(OFFlowMod fmMsg,
+					      PolicyUpdateTable updateTable2) {
+	logger.info("BEGIN updateVirtualToPhysicalFMMap\n  " + this.logHeader +
+		    "fmMsg = " + fmMsg + "\n  " + this.logHeader +
+		    "updateTable2 = " + updateTable2);
+	logger.info("virtualToPhysicalFMMap before fmMsg = " + fmMsg + "\n"
+		    + this.logHeader + virtualToPhysicalFMMapString());
+	this.virtualToPhysicalFMMap.put(fmMsg, updateTable2.addFlowMods);
+	removeDeletedFlowMods(updateTable2);
+	updateExistingFMMapEntries(updateTable2);
+	logger.info("virtualToPhysicalFMMap after fmMsg = " + fmMsg + "\n"
+		    + this.logHeader + virtualToPhysicalFMMapString());
+	logger.info("END updateVirtualToPhysicalFMMap");
+    }
+
+    // Remove deleted physical flow mods from virtualToPhysicalFMMap.
+    private void removeDeletedFlowMods(PolicyUpdateTable updateTable2) {
+	logger.info("BEGIN removeDeletedFlowMods\n  " + this.logHeader +
+		    "updateTable2 = " + updateTable2);
+	for (OFFlowMod physFM :updateTable2.deleteFlowMods) {
+	    for (OFFlowMod virtualFM : this.virtualToPhysicalFMMap.keySet()) {
+		List<OFFlowMod> existingPhysFMs =
+		    this.virtualToPhysicalFMMap.get(virtualFM);
+		existingPhysFMs.remove(physFM);
+	    }
+	}
+	logger.info("END removeDeletedFlowMods");
+    }
+    */
+    /*
+     * New flow mod may change the list of physical flow mods corresponding
+     * to an existing virtual flow mod.  Update virtualToPhysicalFMMap
+     * accordingly.
+     */
+    /*
+    private void updateExistingFMMapEntries(PolicyUpdateTable updateTable2) {
+	logger.info("Still figuring out updateExistingFMMapEntries logic.");
+    }
+    */
+
 }

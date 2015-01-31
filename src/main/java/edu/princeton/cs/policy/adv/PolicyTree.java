@@ -1,9 +1,11 @@
 package edu.princeton.cs.policy.adv;
 
 import java.util.List;
+import java.util.ArrayList;
 
 import net.onrc.openvirtex.elements.OVXMap;
 import net.onrc.openvirtex.exceptions.NetworkMappingException;
+import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,22 +19,24 @@ import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreType;
 
 public class PolicyTree {
 	
-	public enum PolicyOperator {
-		Parallel,
-		Sequential,
-		Override,
-		Tenant
-	}
+    public enum PolicyOperator {
+	Parallel,
+	Sequential,
+	Override,
+	Tenant
+    }
 	
-	public static boolean ActionOutputAsPass = true; // set true for firewall app
-	private static Logger logger = LogManager.getLogger(PlumbingSwitch.class.getName());
+    public static boolean ActionOutputAsPass = true; // set true for firewall app
+    private static Logger logger = LogManager.getLogger(PolicyTree.class.getName());
 	
-	public PolicyOperator operator;
-	public PolicyTree leftChild;
-	public PolicyTree rightChild;
-	public PolicyACL policyACL;
-	public PolicyFlowTable flowTable;
-	public Integer tenantId; // only meaningful when operator is Invalid
+    public PolicyOperator operator;
+    public PolicyTree leftChild;
+    public PolicyTree rightChild;
+    public PolicyACL policyACL;
+    public PolicyFlowTable flowTable;
+    public Integer tenantId; // only meaningful when operator is Invalid
+    // Used to assign unique cookies to generated flow mods.
+    private PlumbingSwitch plumbingSwitch;
 	
 	public PolicyTree() {
 		this.operator = PolicyOperator.Tenant;
@@ -41,6 +45,7 @@ public class PolicyTree {
 		this.policyACL = null;
 		this.flowTable = null;
 		this.tenantId = -1;
+		this.plumbingSwitch = null;
 	}
 	
 	public PolicyTree(Character ch) {
@@ -62,6 +67,7 @@ public class PolicyTree {
 		this.rightChild = null;
 		this.flowTable = null;
 		this.tenantId = -1;
+		this.plumbingSwitch = null;
 	}
 	
 	public void initializeFlowTable() throws NetworkMappingException {
@@ -80,194 +86,231 @@ public class PolicyTree {
 		}
 
 	}
-	
-	public PolicyUpdateTable update(OFFlowMod fm, Integer tenantId) {
-		
-		PolicyUpdateTable updateTable = null;
-		
-		switch(this.operator) {
-		case Parallel:
-		case Sequential:
-		case Override:
-			updateTable = updateIncremental(fm, tenantId);
-			break;
-		case Tenant: // this is leaf, directly add to flow table
-			if (tenantId == this.tenantId) {
-				if (this.policyACL.checkACL(fm)) {
-					// TODO: special case: 1+(1+2), process by 1 with two times
-					updateTable = this.flowTable.update(fm);
-				} else {
-					logger.info("acl violation controller:{} flowmod:{} acl:{}", tenantId, fm, this.policyACL);
-				}
-			} else {
-				updateTable = new PolicyUpdateTable();
-			}
-			break;
-		default:
-			break;
-		}
-		
-		return updateTable;
-	}
-	
-	private PolicyUpdateTable updateIncremental(OFFlowMod newFm, Integer tenantId) {
-		
-		// update children
-		PolicyUpdateTable leftUpdateTable = this.leftChild.update(newFm, tenantId);
-		PolicyUpdateTable rightUpdateTable = this.rightChild.update(newFm, tenantId);
-		
-		PolicyUpdateTable updateTable = new PolicyUpdateTable();
-		if (this.operator == PolicyOperator.Parallel || this.operator == PolicyOperator.Sequential) {
-			
-			// add
-			for (OFFlowMod fm1 : leftUpdateTable.addFlowMods) {
-				
-				if (this.operator == PolicyOperator.Sequential) {
-					boolean flag = false;
-					if (fm1.getActions().isEmpty()) {
-						flag = true;
-					}
-					if (!ActionOutputAsPass) {
-						for (OFAction action : fm1.getActions()) {
-							if (action instanceof OFActionOutput) {
-								flag = true;
-								break;
-							}
-						}
-					}
-					if (flag) {
-						OFFlowMod composedFm = null;
-						try {
-							composedFm = fm1.clone();
-							composedFm.setPriority(
-									(short) (fm1.getPriority() * PolicyCompositionUtil.SEQUENTIAL_SHIFT));
-						} catch (CloneNotSupportedException e) {
-							e.printStackTrace();
-						}
-						this.flowTable.addFlowMod(composedFm);
-						leftChild.flowTable.addGeneratedParentFlowMod(fm1, composedFm);
-						updateTable.addFlowMods.add(composedFm);
-						continue;
-					}
-				}
-				
-				List<OFFlowMod> potentialFlowMods = rightChild.flowTable.getPotentialFlowMods(fm1);
-				for (OFFlowMod fm2: potentialFlowMods) {
-					
-					OFFlowMod composedFm = null;
-					if (this.operator == PolicyOperator.Parallel) {
-						composedFm = PolicyCompositionUtil.parallelComposition(fm1, fm2);
-					} else {
-						composedFm = PolicyCompositionUtil.sequentialComposition(fm1, fm2);
-					}
 
-					if (composedFm != null) {
-						this.flowTable.addFlowMod(composedFm);
-						leftChild.flowTable.addGeneratedParentFlowMod(fm1, composedFm);
-						rightChild.flowTable.addGeneratedParentFlowMod(fm2, composedFm);
-						updateTable.addFlowMods.add(composedFm);
-					}
-				}
+    public void setPlumbingSwitch(PlumbingSwitch plumbingSwitch) {
+	this.plumbingSwitch = plumbingSwitch;
+    }
+	
+    public PolicyUpdateTable update(OFFlowMod fm, Integer tenantId) {
+		
+	PolicyUpdateTable updateTable = null;
+		
+	switch(this.operator) {
+	case Parallel:
+	case Sequential:
+	case Override:
+	    updateTable = updateIncremental(fm, tenantId);
+	    break;
+	case Tenant: // this is leaf, directly add to flow table
+	    if (tenantId == this.tenantId) {
+		if (this.policyACL.checkACL(fm)) {
+		    // TODO: special case: 1+(1+2), process by 1 with two times
+		    updateTable = this.flowTable.update(fm);
+		    // Base case.  fm is directly from controller.
+		    this.flowTable.addFlowModFromController(fm, fm);
+		} else {
+		    logger.info("acl violation controller:{} flowmod:{} acl:{}", tenantId, fm, this.policyACL);
+		}
+	    } else {
+		updateTable = new PolicyUpdateTable();
+	    }
+	    break;
+	default:
+	    break;
+	}
+		
+	return updateTable;
+    }
+	
+    private PolicyUpdateTable updateIncremental(OFFlowMod newFm, Integer tenantId) {
+		
+	// update children
+	PolicyUpdateTable leftUpdateTable = this.leftChild.update(newFm, tenantId);
+	PolicyUpdateTable rightUpdateTable = this.rightChild.update(newFm, tenantId);
+	
+	PolicyUpdateTable updateTable = new PolicyUpdateTable();
+	if (this.operator == PolicyOperator.Parallel || this.operator == PolicyOperator.Sequential) {
+	    
+	    // add
+	    for (OFFlowMod fm1 : leftUpdateTable.addFlowMods) {
+		
+		if (this.operator == PolicyOperator.Sequential) {
+		    boolean flag = false;
+		    if (fm1.getActions().isEmpty()) {
+			flag = true;
+		    }
+		    if (!ActionOutputAsPass) {
+			for (OFAction action : fm1.getActions()) {
+			    if (action instanceof OFActionOutput) {
+				flag = true;
+				break;
+			    }
 			}
-			
-			for (OFFlowMod fm2 : rightUpdateTable.addFlowMods) {
-				
-				List<OFFlowMod> leftTableWithoutAdd = PolicyCompositionUtil
-						.diffFlowMods(leftChild.flowTable.getPotentialFlowMods(fm2),
-								leftUpdateTable.addFlowMods);
-				for (OFFlowMod fm1 : leftTableWithoutAdd) {
-					
-					if (this.operator == PolicyOperator.Sequential) {
-						boolean flag = false;
-						if (fm1.getActions().isEmpty()) {
-							flag = true;
-						}
-						if (!ActionOutputAsPass) {
-							for (OFAction action : fm1.getActions()) {
-								if (action instanceof OFActionOutput) {
-									flag = true;
-									break;
-								}
-							}
-						}
-						if (flag) {
-							continue;
-						}
-					}
-					
-					OFFlowMod composedFm = null;
-					if (this.operator == PolicyOperator.Parallel) {
-						composedFm = PolicyCompositionUtil.parallelComposition(fm1, fm2);
-					} else {
-						composedFm = PolicyCompositionUtil.sequentialComposition(fm1, fm2);
-					}
-					if (composedFm != null) {
-						this.flowTable.addFlowMod(composedFm);
-						leftChild.flowTable.addGeneratedParentFlowMod(fm1, composedFm);
-						rightChild.flowTable.addGeneratedParentFlowMod(fm2, composedFm);
-						updateTable.addFlowMods.add(composedFm);
-					}
-				}
+		    }
+		    if (flag) {
+			OFFlowMod composedFm = null;
+			try {
+			    composedFm = fm1.clone();
+			    composedFm.setPriority((short)
+						   (fm1.getPriority() *
+						    PolicyCompositionUtil.SEQUENTIAL_SHIFT));
+			} catch (CloneNotSupportedException e) {
+			    e.printStackTrace();
 			}
-			
-			// delete
-			for (OFFlowMod fm : leftUpdateTable.deleteFlowMods) {
-				List<OFFlowMod> generatedParentFlowMods = leftChild.flowTable.getGenerateParentFlowMods(fm);
-				List<OFFlowMod> deletedFlowMods = this.flowTable.deleteFlowMods(generatedParentFlowMods);
-				updateTable.deleteFlowMods.addAll(deletedFlowMods);
-			}
-			for (OFFlowMod fm : rightUpdateTable.deleteFlowMods) {
-				List<OFFlowMod> generatedParentFlowMods = rightChild.flowTable.getGenerateParentFlowMods(fm);
-				List<OFFlowMod> deletedFlowMods = this.flowTable.deleteFlowMods(generatedParentFlowMods);
-				updateTable.deleteFlowMods.addAll(deletedFlowMods);
-			}
-			leftChild.flowTable.deleteGenerateParentFlowModKeys(leftUpdateTable.deleteFlowMods);
-			rightChild.flowTable.deleteGenerateParentFlowModKeys(rightUpdateTable.deleteFlowMods);
-		} else if (this.operator == PolicyOperator.Override) {
-			
-			// add
-			for (OFFlowMod fm : leftUpdateTable.addFlowMods) {
-				OFFlowMod addFm = null;
-				try {
-					addFm = fm.clone();
-				} catch (CloneNotSupportedException e) {
-					e.printStackTrace();
-				}
-				addFm.setPriority((short) (addFm.getPriority() * PolicyCompositionUtil.OVERRIDE_SHIFT));
-				this.flowTable.addFlowMod(addFm);
-				leftChild.flowTable.addGeneratedParentFlowMod(fm, addFm);
-				updateTable.addFlowMods.add(addFm);
-			}
-			
-			for (OFFlowMod fm : rightUpdateTable.addFlowMods) {
-				OFFlowMod addFm = null;
-				try {
-					addFm = fm.clone();
-				} catch (CloneNotSupportedException e) {
-					e.printStackTrace();
-				}
-				this.flowTable.addFlowMod(addFm);
-				rightChild.flowTable.addGeneratedParentFlowMod(fm, addFm);
-				updateTable.addFlowMods.add(addFm);
-			}
-			
-			// delete
-			for (OFFlowMod fm : leftUpdateTable.deleteFlowMods) {
-				List<OFFlowMod> generatedParentFlowMods = leftChild.flowTable.getGenerateParentFlowMods(fm);
-				List<OFFlowMod> deletedFlowMods = this.flowTable.deleteFlowMods(generatedParentFlowMods);
-				updateTable.deleteFlowMods.addAll(deletedFlowMods);
-			}
-			for (OFFlowMod fm : rightUpdateTable.deleteFlowMods) {
-				List<OFFlowMod> generatedParentFlowMods = rightChild.flowTable.getGenerateParentFlowMods(fm);
-				List<OFFlowMod> deletedFlowMods = this.flowTable.deleteFlowMods(generatedParentFlowMods);
-				updateTable.deleteFlowMods.addAll(deletedFlowMods);
-			}
-			leftChild.flowTable.deleteGenerateParentFlowModKeys(leftUpdateTable.deleteFlowMods);
-			rightChild.flowTable.deleteGenerateParentFlowModKeys(rightUpdateTable.deleteFlowMods);
+			this.flowTable.addFlowMod(composedFm);
+			this.flowTable.addFlowModsFromController(composedFm,
+								 leftChild.flowTable.
+								 getFlowModsFromController(fm1));
+			leftChild.flowTable.addGeneratedParentFlowMod(fm1, composedFm);
+			updateTable.addFlowMods.add(composedFm);
+			continue;
+		    }
 		}
 		
-		return updateTable;
+		List<OFFlowMod> potentialFlowMods = rightChild.flowTable.getPotentialFlowMods(fm1);
+		for (OFFlowMod fm2: potentialFlowMods) {
+					
+		    OFFlowMod composedFm = null;
+		    if (this.operator == PolicyOperator.Parallel) {
+			composedFm = PolicyCompositionUtil.parallelComposition(fm1, fm2);
+		    } else {
+			composedFm = PolicyCompositionUtil.sequentialComposition(fm1, fm2);
+		    }
+
+		    if (composedFm != null) {
+			setCookieForComposedFm(composedFm);
+			this.flowTable.addFlowMod(composedFm);
+			List<OFFlowMod> fmsFromController = new ArrayList<OFFlowMod>();
+			fmsFromController.addAll(leftChild.flowTable.getFlowModsFromController(fm1));
+			fmsFromController.addAll(rightChild.flowTable.getFlowModsFromController(fm2));
+			this.flowTable.addFlowModsFromController(composedFm, fmsFromController);
+			leftChild.flowTable.addGeneratedParentFlowMod(fm1, composedFm);
+			rightChild.flowTable.addGeneratedParentFlowMod(fm2, composedFm);
+			updateTable.addFlowMods.add(composedFm);
+		    }
+		}
+	    }
+			
+	    for (OFFlowMod fm2 : rightUpdateTable.addFlowMods) {
+				
+		List<OFFlowMod> leftTableWithoutAdd = PolicyCompositionUtil
+		    .diffFlowMods(leftChild.flowTable.getPotentialFlowMods(fm2),
+				  leftUpdateTable.addFlowMods);
+		for (OFFlowMod fm1 : leftTableWithoutAdd) {
+					
+		    if (this.operator == PolicyOperator.Sequential) {
+			boolean flag = false;
+			if (fm1.getActions().isEmpty()) {
+			    flag = true;
+			}
+			if (!ActionOutputAsPass) {
+			    for (OFAction action : fm1.getActions()) {
+				if (action instanceof OFActionOutput) {
+				    flag = true;
+				    break;
+				}
+			    }
+			}
+			if (flag) {
+			    continue;
+			}
+		    }
+					
+		    OFFlowMod composedFm = null;
+		    if (this.operator == PolicyOperator.Parallel) {
+			composedFm = PolicyCompositionUtil.parallelComposition(fm1, fm2);
+		    } else {
+			composedFm = PolicyCompositionUtil.sequentialComposition(fm1, fm2);
+		    }
+		    if (composedFm != null) {
+			setCookieForComposedFm(composedFm);
+			this.flowTable.addFlowMod(composedFm);
+			List<OFFlowMod> fmsFromController = new ArrayList<OFFlowMod>();
+			fmsFromController.addAll(leftChild.flowTable.getFlowModsFromController(fm1));
+			fmsFromController.addAll(rightChild.flowTable.getFlowModsFromController(fm2));
+			this.flowTable.addFlowModsFromController(composedFm, fmsFromController);
+			leftChild.flowTable.addGeneratedParentFlowMod(fm1, composedFm);
+			rightChild.flowTable.addGeneratedParentFlowMod(fm2, composedFm);
+			updateTable.addFlowMods.add(composedFm);
+		    }
+		}
+	    }
+			
+	    // delete
+	    for (OFFlowMod fm : leftUpdateTable.deleteFlowMods) {
+		List<OFFlowMod> generatedParentFlowMods = leftChild.flowTable.getGenerateParentFlowMods(fm);
+		List<OFFlowMod> deletedFlowMods = this.flowTable.deleteFlowMods(generatedParentFlowMods);
+		updateTable.deleteFlowMods.addAll(deletedFlowMods);
+	    }
+	    for (OFFlowMod fm : rightUpdateTable.deleteFlowMods) {
+		List<OFFlowMod> generatedParentFlowMods = rightChild.flowTable.getGenerateParentFlowMods(fm);
+		List<OFFlowMod> deletedFlowMods = this.flowTable.deleteFlowMods(generatedParentFlowMods);
+		updateTable.deleteFlowMods.addAll(deletedFlowMods);
+	    }
+	    leftChild.flowTable.deleteGenerateParentFlowModKeys(leftUpdateTable.deleteFlowMods);
+	    rightChild.flowTable.deleteGenerateParentFlowModKeys(rightUpdateTable.deleteFlowMods);
+	} else if (this.operator == PolicyOperator.Override) {
+			
+	    // add
+	    for (OFFlowMod fm : leftUpdateTable.addFlowMods) {
+		OFFlowMod addFm = null;
+		try {
+		    addFm = fm.clone();
+		} catch (CloneNotSupportedException e) {
+		    e.printStackTrace();
+		}
+		addFm.setPriority((short) (addFm.getPriority() * PolicyCompositionUtil.OVERRIDE_SHIFT));
+		this.flowTable.addFlowMod(addFm);
+		this.flowTable.addFlowModFromController(fm, addFm);
+		leftChild.flowTable.addGeneratedParentFlowMod(fm, addFm);
+		updateTable.addFlowMods.add(addFm);
+	    }
+			
+	    for (OFFlowMod fm : rightUpdateTable.addFlowMods) {
+		OFFlowMod addFm = null;
+		try {
+		    addFm = fm.clone();
+		} catch (CloneNotSupportedException e) {
+		    e.printStackTrace();
+		}
+		this.flowTable.addFlowMod(addFm);
+		this.flowTable.addFlowModFromController(fm, addFm);
+		rightChild.flowTable.addGeneratedParentFlowMod(fm, addFm);
+		updateTable.addFlowMods.add(addFm);
+	    }
+			
+	    // delete
+	    for (OFFlowMod fm : leftUpdateTable.deleteFlowMods) {
+		List<OFFlowMod> generatedParentFlowMods = leftChild.flowTable.getGenerateParentFlowMods(fm);
+		List<OFFlowMod> deletedFlowMods = this.flowTable.deleteFlowMods(generatedParentFlowMods);
+		updateTable.deleteFlowMods.addAll(deletedFlowMods);
+	    }
+	    for (OFFlowMod fm : rightUpdateTable.deleteFlowMods) {
+		List<OFFlowMod> generatedParentFlowMods = rightChild.flowTable.getGenerateParentFlowMods(fm);
+		List<OFFlowMod> deletedFlowMods = this.flowTable.deleteFlowMods(generatedParentFlowMods);
+		updateTable.deleteFlowMods.addAll(deletedFlowMods);
+	    }
+	    leftChild.flowTable.deleteGenerateParentFlowModKeys(leftUpdateTable.deleteFlowMods);
+	    rightChild.flowTable.deleteGenerateParentFlowModKeys(rightUpdateTable.deleteFlowMods);
+	    /*
+	     * deleteFlowMods method of PolicyFlowTable removes necessary keys from
+	     * fmFromControllerDictionary.
+	     */
 	}
+		
+	return updateTable;
+	}
+
+    /*
+     * composedFm needs cookie globally unique within the physical switch it will be
+     * sent to.  Get necessary information from the PlumbingSwitch that "owns" this
+     * PolicyTree.
+     */
+    private void setCookieForComposedFm(OFFlowMod composedFm) {
+	int plswId = this.plumbingSwitch.id;
+	PhysicalSwitch physicalSwitch = this.plumbingSwitch.graph.getPhysicalSwitch();
+	composedFm.setCookie(physicalSwitch.generateCookie(plswId));
+    }
 	
 	@Override
 	public String toString() {
