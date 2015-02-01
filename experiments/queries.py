@@ -93,6 +93,21 @@ def addController2(topo):
     cmd = "%s -n startNetwork 2" % OVXCTLPY
     subprocess.call(cmd, shell=True)
 
+def addController3(topo):
+    print "*****************************"
+    print "******** Controller 3 *******"
+    print "*****************************"
+    cmd = "%s -n createNetwork tcp:%s:30000 10.0.0.0 16" % (OVXCTLPY,
+        CONTROLLER_IP)
+    print cmd
+    subprocess.call(cmd, shell=True)
+
+    cmd = "%s -n createSwitch 3 00:00:00:00:00:00:01:00 0" % OVXCTLPY
+    subprocess.call(cmd, shell=True)
+
+    cmd = "%s -n startNetwork 3" % OVXCTLPY
+    subprocess.call(cmd, shell=True)
+
 def createPolicy(policy):
     cmd = "%s -n createPolicy 00:00:00:00:00:00:01:00 0 %s" % (OVXCTLPY, policy)
     subprocess.call(cmd, shell=True)
@@ -149,7 +164,6 @@ def start_iperf(net):
     cmd = "iperf -t %s -c %s -u" % (4*SLEEP_TIME, h_s1_1.IP())
     client = h_s1_2.popen(cmd)
 
-
 #********************************************************************
 # utils
 #********************************************************************
@@ -187,6 +201,26 @@ def exprParallel():
     #net.stop()
     CLI(net)
 
+#********************************************************************
+# expr: sequential
+#********************************************************************
+def exprSequential():
+    cleanAll()
+    startFloodlight(2)
+    startOVX()
+    (topo, net) = startMininet()
+    time.sleep(SLEEP_TIME)
+    createPlumbingGraph()
+    addController1(topo)
+    addController2(topo)
+    createACL('1 dltype:exact,srcip:prefix,dstip:exact mod:dstip')
+    createACL('2 dltype:exact,dstip:prefix output')
+    createPolicy('"1>2"')
+    app1 = DemoLoadBalancerApp(topo)
+    app1.installRules()
+    app2 = DemoRouterApp(topo)
+    app2.installRules()
+    CLI(net)
 
 #********************************************************************
 # main
@@ -221,6 +255,10 @@ if __name__ == '__main__':
             killFloodlight()
         elif sys.argv[1] == "clean":
             cleanAll()
+        elif sys.argv[1] == "expr-sequential":
+            exprSequential()
+        #elif sys.argv[1] == "expr-sequential-parallel":
+        #    exprSequentialParallel()
         else:
             printHelp()
 

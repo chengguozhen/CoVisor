@@ -127,6 +127,9 @@ public class PolicyTree {
 	// update children
 	PolicyUpdateTable leftUpdateTable = this.leftChild.update(newFm, tenantId);
 	PolicyUpdateTable rightUpdateTable = this.rightChild.update(newFm, tenantId);
+	logger.info("this.plumbingSwitch:  " + this.plumbingSwitch);
+	this.leftChild.setPlumbingSwitch(this.plumbingSwitch);
+	this.rightChild.setPlumbingSwitch(this.plumbingSwitch);
 	
 	PolicyUpdateTable updateTable = new PolicyUpdateTable();
 	if (this.operator == PolicyOperator.Parallel || this.operator == PolicyOperator.Sequential) {
@@ -307,8 +310,11 @@ public class PolicyTree {
      * PolicyTree.
      */
     private void setCookieForComposedFm(OFFlowMod composedFm) {
+	logger.info("setCookieForComposedFm(" + composedFm + ")");
 	int plswId = this.plumbingSwitch.id;
+	logger.info("plswId:  " + plswId);
 	PhysicalSwitch physicalSwitch = this.plumbingSwitch.graph.getPhysicalSwitch();
+	logger.info("physicalSwitch:  " + physicalSwitch);
 	composedFm.setCookie(physicalSwitch.generateCookie(plswId));
     }
 	
