@@ -37,12 +37,12 @@ public class PolicyFlowTable {
     private ConcurrentHashMap<OFFlowMod, List<OFFlowMod>> generatedParentFlowModsDictionary;
     private PolicyFlowModStore flowModStore;
     // (fm in this flow table, flow mods from controller responsible for generating this fm)
-    private ConcurrentHashMap<OFFlowMod, List<OFFlowMod>> fmFromControllerDictionary;
+    private ConcurrentHashMap<OFFlowMod, List<OFFlowMod>> physicalToVirtualFlowModsMap;
     
     public PolicyFlowTable() {
 	this.generatedParentFlowModsDictionary = new ConcurrentHashMap<OFFlowMod,
 	    List<OFFlowMod>>();
-	this.fmFromControllerDictionary = new ConcurrentHashMap<OFFlowMod, List<OFFlowMod>>();
+	this.physicalToVirtualFlowModsMap = new ConcurrentHashMap<OFFlowMod, List<OFFlowMod>>();
 	List<PolicyFlowModStoreType> storeTypes = new ArrayList<PolicyFlowModStoreType>();
 	storeTypes.add(PolicyFlowModStoreType.WILDCARD);
     	List<PolicyFlowModStoreKey> storeKeys = new ArrayList<PolicyFlowModStoreKey>();
@@ -55,7 +55,7 @@ public class PolicyFlowTable {
 			boolean isLeftInSequentialComposition) {
 	this.generatedParentFlowModsDictionary = new ConcurrentHashMap<OFFlowMod,
 	    List<OFFlowMod>>();
-	this.fmFromControllerDictionary = new ConcurrentHashMap<OFFlowMod, List<OFFlowMod>>();
+	this.physicalToVirtualFlowModsMap = new ConcurrentHashMap<OFFlowMod, List<OFFlowMod>>();
 	this.flowModStore = PolicyFlowModStore.createFlowModStore(storeTypes,
 								  storeKeys,
 								  isLeftInSequentialComposition);
@@ -64,7 +64,7 @@ public class PolicyFlowTable {
 	public void addFlowMod(OFFlowMod fm) {
 		this.flowModStore.add(fm);
 		this.generatedParentFlowModsDictionary.put(fm, new ArrayList<OFFlowMod>());
-		this.fmFromControllerDictionary.put(fm, new ArrayList<OFFlowMod>());
+		this.physicalToVirtualFlowModsMap.put(fm, new ArrayList<OFFlowMod>());
 	}
 	
 	public void setTable(List<OFFlowMod> flowMods) {
@@ -146,11 +146,11 @@ public class PolicyFlowTable {
 	    return str;
 	}
 
-    public String fmFromControllerDictionaryString() {
+    public String physicalToVirtualFlowModsMapString() {
 	String logHeader = "INFO PolicyFlowTable - ";
-	String s = logHeader + "fmFromControllerDictionaryString\n";
-	for (OFFlowMod fm : this.fmFromControllerDictionary.keySet()) {
-	    s += logHeader + fm + ":  " + getFlowModsFromController(fm) + "\n";
+	String s = logHeader + "physicalToVirtualFlowModsMapString\n";
+	for (OFFlowMod fm : this.physicalToVirtualFlowModsMap.keySet()) {
+	    s += logHeader + fm + ":  " + getVirtualFlowMods(fm) + "\n";
 	}
 	return s;
     }
@@ -163,14 +163,14 @@ public class PolicyFlowTable {
      * fm is flow mod in this flow table.  Get list of original virtual flow
      * mods responsible for generating it.
      */
-    public List<OFFlowMod> getFlowModsFromController(OFFlowMod fm) {
-	//logger.info("fmFromControllerDictionary.get(" + fm + "):  " +
-	//	    this.fmFromControllerDictionary.get(fm));
-	return this.fmFromControllerDictionary.get(fm);
+    public List<OFFlowMod> getVirtualFlowMods(OFFlowMod physicalFm) {
+	//logger.info("physicalToVirtualFlowModsMap.get(" + physicalFm + "):  " +
+	//	    this.physicalToVirtualFlowModsMap.get(physicalFm));
+	return this.physicalToVirtualFlowModsMap.get(physicalFm);
     }
 
     public List<OFFlowMod> deleteFlowMods(List<OFFlowMod> flowMods) {
-	deleteFMFromControllerKeys(flowMods);
+	deletePhysicalToVirtualFlowModsKeys(flowMods);
 	return this.flowModStore.removaAll(flowMods);
     }
 	
@@ -178,20 +178,34 @@ public class PolicyFlowTable {
 	this.generatedParentFlowModsDictionary.get(fm).add(generateParentFlowMod);
     }
 
-    public void addFlowModFromController (OFFlowMod fm, OFFlowMod fmFromController) {
-	this.fmFromControllerDictionary.get(fm).add(fmFromController);
+    public void addPhysicalToVirtualFm(OFFlowMod physicalFm,
+					     OFFlowMod virtualFm) {
+	if (this.physicalToVirtualFlowModsMap.containsKey(physicalFm)) {
+	    this.physicalToVirtualFlowModsMap.get(physicalFm).add(virtualFm);
+	}
+	else {
+	    List<OFFlowMod> virtualFms = new ArrayList<OFFlowMod>();
+	    virtualFms.add(virtualFm);
+	    this.physicalToVirtualFlowModsMap.put(physicalFm, virtualFms);
+	}
     }
 
-    public void addFlowModsFromController (OFFlowMod fm, List<OFFlowMod> fmsFromController) {
-	this.fmFromControllerDictionary.get(fm).addAll(fmsFromController);
+    public void addPhysicalToVirtualFms(OFFlowMod physicalFm,
+					      List<OFFlowMod> virtualFms) {
+	if (this.physicalToVirtualFlowModsMap.containsKey(physicalFm)) {
+	    this.physicalToVirtualFlowModsMap.get(physicalFm).addAll(virtualFms);
+	}
+	else {
+	    this.physicalToVirtualFlowModsMap.put(physicalFm, virtualFms);
+	}
     }
 	
     public void deleteGenerateParentFlowModKey (OFFlowMod fm) {
 	this.generatedParentFlowModsDictionary.remove(fm);
     }
 
-    public void deleteFMFromControllerKey (OFFlowMod fm) {
-	this.fmFromControllerDictionary.remove(fm);
+    public void deletePhysicalToVirtualFlowModsKey (OFFlowMod physicalFm) {
+	this.physicalToVirtualFlowModsMap.remove(physicalFm);
     }
 	
     public void deleteGenerateParentFlowModKeys (List<OFFlowMod> fms) {
@@ -200,9 +214,9 @@ public class PolicyFlowTable {
 	}
     }
 
-    public void deleteFMFromControllerKeys (List<OFFlowMod> fms) {
-	for (OFFlowMod fm : fms) {
-	    this.deleteFMFromControllerKey(fm);
+    public void deletePhysicalToVirtualFlowModsKeys (List<OFFlowMod> physicalFms) {
+	for (OFFlowMod fm : physicalFms) {
+	    this.deletePhysicalToVirtualFlowModsKey(fm);
 	}
     }
 	

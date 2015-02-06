@@ -172,8 +172,14 @@ public class PlumbingSwitch implements OVXSendMsg {
 		updateTable2.addUpdateTable(partialUpdateTable);
 	    }
 	    
+	    logger.info("***************************************************");
+	    logger.info("Plumbing Switch " + this.id);
 	    logger.info(mapString(virtualToBeforePlumbingFMMap));
-	    logger.info(this.graph.flowTable.fmFromControllerDictionaryString());
+	    logger.info("***************************************************");
+	    logger.info(this.flowTable.physicalToVirtualFlowModsMapString());
+	    logger.info("***************************************************");
+	    logger.info("End Plumbing Switch " + this.id);
+	    logger.info("***************************************************\n");
 
 	    PhysicalSwitch physSw = this.graph.getPhysicalSwitch();
 	    for (OFFlowMod fm : updateTable2.addFlowMods) {
@@ -235,7 +241,7 @@ public class PlumbingSwitch implements OVXSendMsg {
 						    int op) {
 	// Virtual flow mods that generated this flow mod.
 	List<OFFlowMod> virtualFMs = this.policyTree.flowTable.
-	    getFlowModsFromController(composedFm);
+	    getVirtualFlowMods(composedFm);
 	for (OFFlowMod virtualFM : virtualFMs) {
 	    List<OFFlowMod> siblingFMs =
 		this.virtualToBeforePlumbingFMMap.get(virtualFM);
@@ -455,7 +461,11 @@ public class PlumbingSwitch implements OVXSendMsg {
 		    updateTable.addFlowMods.add(flowMod);
 		    //System.out.println("checkpoint 1:" + flowMod);
 		    for (PlumbingFlowMod pFlowMod : fmTuple.first.second) {
-			pFlowMod.getPlumbingNode().flowTable.addGeneratedParentFlowMod(pFlowMod, flowMod);
+			PolicyFlowTable pFlowModNodeTable = pFlowMod.getPlumbingNode().
+			    flowTable;
+			pFlowModNodeTable.addGeneratedParentFlowMod(pFlowMod, flowMod);
+			pFlowModNodeTable.addPhysicalToVirtualFm(flowMod,
+								 pFlowMod.getOriginalOfm());
 		    }
 		}
 	    }
@@ -467,14 +477,20 @@ public class PlumbingSwitch implements OVXSendMsg {
 		    match.setWildcards(wcards);
 		    match.setInputPort(portPair.getValue());
 		    PlumbingFlow pflow = new PlumbingFlow(match, null, pmod, null);
-		    List<Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer>> fmTuples = fwdPropagateFlow(pflow);
+		    List<Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer>>
+			fmTuples = fwdPropagateFlow(pflow);
 		    fmTuples = backPropagateFlow(fmTuples, pflow);
-		    for (Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer> fmTuple : fmTuples) {
+		    for (Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer>
+			     fmTuple : fmTuples) {
 			OFFlowMod flowMod = fmTuple.first.first;
 			updateTable.addFlowMods.add(flowMod);
 			//System.out.println("checkpoint 2:" + flowMod);
 			for (PlumbingFlowMod pFlowMod : fmTuple.first.second) {
-			    pFlowMod.getPlumbingNode().flowTable.addGeneratedParentFlowMod(pFlowMod, flowMod);
+			PolicyFlowTable pFlowModNodeTable = pFlowMod.getPlumbingNode().
+			    flowTable;
+			    pFlowModNodeTable.addGeneratedParentFlowMod(pFlowMod, flowMod);
+			    pFlowModNodeTable.addPhysicalToVirtualFm(flowMod,
+								     pFlowMod.getOriginalOfm());
 			}
 		    }
 		}
@@ -485,7 +501,8 @@ public class PlumbingSwitch implements OVXSendMsg {
 	for (PlumbingFlowMod prevPmod : pmod.getPrevPMods()) {
 	    for (PlumbingFlow prevPflow : prevPmod.getPrevPFlows()) {
 		try {
-		    if (prevPflow.getPrevPFlow().getPrevPMod().getPlumbingNode() == prevPflow.getNextPMod().getPlumbingNode()) {
+		    if (prevPflow.getPrevPFlow().getPrevPMod().
+			getPlumbingNode() == prevPflow.getNextPMod().getPlumbingNode()) {
 			continue;
 		    }
 		} catch (NullPointerException e) {
@@ -505,14 +522,20 @@ public class PlumbingSwitch implements OVXSendMsg {
 		      }
 		      printX(prevPflow);*/
 		    PlumbingFlow pflow = new PlumbingFlow(match, prevPmod, pmod, prevPflow);
-		    List<Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer>> fmTuples = fwdPropagateFlow(pflow);
+		    List<Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>,
+			Integer>> fmTuples = fwdPropagateFlow(pflow);
 		    fmTuples = backPropagateFlow(fmTuples, pflow);
-		    for (Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer> fmTuple : fmTuples) {
+		    for (Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer>
+			     fmTuple : fmTuples) {
 			OFFlowMod flowMod = fmTuple.first.first;
 			updateTable.addFlowMods.add(flowMod);
 			//System.out.println("checkpoint 3:" + flowMod);
 			for (PlumbingFlowMod pFlowMod : fmTuple.first.second) {
-			    pFlowMod.getPlumbingNode().flowTable.addGeneratedParentFlowMod(pFlowMod, flowMod);
+			    PolicyFlowTable pFlowModNodeTable = pFlowMod.getPlumbingNode().
+				flowTable;
+			    pFlowModNodeTable.addGeneratedParentFlowMod(pFlowMod, flowMod);
+			    pFlowModNodeTable.addPhysicalToVirtualFm(flowMod,
+								     pFlowMod.getOriginalOfm());
 			}
 		    }
 		}

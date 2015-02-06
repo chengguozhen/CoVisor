@@ -89,6 +89,8 @@ public class PlumbingGraph {
 		for (OFFlowMod fm : this.flowTable.getFlowModsSortByInport()) {
 			str = str + fm.toString() + "\n";
 		}
+
+		str += this.flowTable.fmFromControllerDictionaryString();
 		
 		/*for (PlumbingNode node : this.nodes.values()) {
 			str = str + node.dpid + "\n" + node.getFlowModString();

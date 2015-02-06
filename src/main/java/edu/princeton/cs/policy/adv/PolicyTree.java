@@ -107,7 +107,7 @@ public class PolicyTree {
 		    // TODO: special case: 1+(1+2), process by 1 with two times
 		    updateTable = this.flowTable.update(fm);
 		    // Base case.  fm is directly from controller.
-		    this.flowTable.addFlowModFromController(fm, fm);
+		    this.flowTable.addPhysicalToVirtualFm(fm, fm);
 		} else {
 		    logger.info("acl violation controller:{} flowmod:{} acl:{}", tenantId, fm, this.policyACL);
 		}
@@ -161,9 +161,9 @@ public class PolicyTree {
 			    e.printStackTrace();
 			}
 			this.flowTable.addFlowMod(composedFm);
-			this.flowTable.addFlowModsFromController(composedFm,
-								 leftChild.flowTable.
-								 getFlowModsFromController(fm1));
+			this.flowTable.addPhysicalToVirtualFms(composedFm,
+							       leftChild.flowTable.
+							       getVirtualFlowMods(fm1));
 			leftChild.flowTable.addGeneratedParentFlowMod(fm1, composedFm);
 			updateTable.addFlowMods.add(composedFm);
 			continue;
@@ -183,10 +183,10 @@ public class PolicyTree {
 		    if (composedFm != null) {
 			setCookieForComposedFm(composedFm);
 			this.flowTable.addFlowMod(composedFm);
-			List<OFFlowMod> fmsFromController = new ArrayList<OFFlowMod>();
-			fmsFromController.addAll(leftChild.flowTable.getFlowModsFromController(fm1));
-			fmsFromController.addAll(rightChild.flowTable.getFlowModsFromController(fm2));
-			this.flowTable.addFlowModsFromController(composedFm, fmsFromController);
+			List<OFFlowMod> virtualFms = new ArrayList<OFFlowMod>();
+			virtualFms.addAll(leftChild.flowTable.getVirtualFlowMods(fm1));
+			virtualFms.addAll(rightChild.flowTable.getVirtualFlowMods(fm2));
+			this.flowTable.addPhysicalToVirtualFms(composedFm, virtualFms);
 			leftChild.flowTable.addGeneratedParentFlowMod(fm1, composedFm);
 			rightChild.flowTable.addGeneratedParentFlowMod(fm2, composedFm);
 			updateTable.addFlowMods.add(composedFm);
@@ -228,10 +228,10 @@ public class PolicyTree {
 		    if (composedFm != null) {
 			setCookieForComposedFm(composedFm);
 			this.flowTable.addFlowMod(composedFm);
-			List<OFFlowMod> fmsFromController = new ArrayList<OFFlowMod>();
-			fmsFromController.addAll(leftChild.flowTable.getFlowModsFromController(fm1));
-			fmsFromController.addAll(rightChild.flowTable.getFlowModsFromController(fm2));
-			this.flowTable.addFlowModsFromController(composedFm, fmsFromController);
+			List<OFFlowMod> virtualFms = new ArrayList<OFFlowMod>();
+			virtualFms.addAll(leftChild.flowTable.getVirtualFlowMods(fm1));
+			virtualFms.addAll(rightChild.flowTable.getVirtualFlowMods(fm2));
+			this.flowTable.addPhysicalToVirtualFms(composedFm, virtualFms);
 			leftChild.flowTable.addGeneratedParentFlowMod(fm1, composedFm);
 			rightChild.flowTable.addGeneratedParentFlowMod(fm2, composedFm);
 			updateTable.addFlowMods.add(composedFm);
@@ -263,8 +263,9 @@ public class PolicyTree {
 		    e.printStackTrace();
 		}
 		addFm.setPriority((short) (addFm.getPriority() * PolicyCompositionUtil.OVERRIDE_SHIFT));
+
 		this.flowTable.addFlowMod(addFm);
-		this.flowTable.addFlowModFromController(fm, addFm);
+		this.flowTable.addPhysicalToVirtualFm(addFm, fm);
 		leftChild.flowTable.addGeneratedParentFlowMod(fm, addFm);
 		updateTable.addFlowMods.add(addFm);
 	    }
@@ -277,7 +278,7 @@ public class PolicyTree {
 		    e.printStackTrace();
 		}
 		this.flowTable.addFlowMod(addFm);
-		this.flowTable.addFlowModFromController(fm, addFm);
+		this.flowTable.addPhysicalToVirtualFm(addFm, fm);
 		rightChild.flowTable.addGeneratedParentFlowMod(fm, addFm);
 		updateTable.addFlowMods.add(addFm);
 	    }
@@ -297,7 +298,7 @@ public class PolicyTree {
 	    rightChild.flowTable.deleteGenerateParentFlowModKeys(rightUpdateTable.deleteFlowMods);
 	    /*
 	     * deleteFlowMods method of PolicyFlowTable removes necessary keys from
-	     * fmFromControllerDictionary.
+	     * physicalToVirtualFlowModsMap.
 	     */
 	}
 		
