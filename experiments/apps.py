@@ -123,16 +123,16 @@ class DemoVirtApp():
     def __init__(self, topo):
         self.graph = topo.graph
 
-        dpid = "00:a4:23:05:00:00:00:01"
+        self.dpid = "00:a4:23:05:00:00:00:01"
         self.rules1 = []
-        rule = '{"switch":"%s", ' % dpid + \
+        rule = '{"switch":"%s", ' % self.dpid + \
             '"name":"DemoVirt1R1", ' + \
             '"priority":"1", ' + \
             '"ether-type":"2048", ' + \
             '"dst-ip":"1.0.0.0/8", ' + \
             '"active":"true", "actions":"output=3"}'
         self.rules1.append(rule)
-        rule = '{"switch":"%s", ' % dpid + \
+        rule = '{"switch":"%s", ' % self.dpid + \
             '"name":"DemoVirt1R2", ' + \
             '"priority":"4", ' + \
             '"ether-type":"2048", ' + \
@@ -142,14 +142,14 @@ class DemoVirtApp():
 
         dpid = "00:a4:23:05:00:00:00:01"
         self.rules2 = []
-        rule = '{"switch":"%s", ' % dpid + \
+        rule = '{"switch":"%s", ' % self.dpid + \
             '"name":"DemoVirt2R1", ' + \
             '"priority":"1", ' + \
             '"ether-type":"2048", ' + \
-            '"dst-ip":"1.0.0.0/4", ' + \
+            '"dst-ip":"1.1.1.1/4", ' + \
             '"active":"true", "actions":"set-dst-ip=2.0.0.0,output=3"}'
         self.rules2.append(rule)
-        rule = '{"switch":"%s", ' % dpid + \
+        rule = '{"switch":"%s", ' % self.dpid + \
             '"name":"DemoVirt2R2", ' + \
             '"priority":"6", ' + \
             '"ether-type":"2048", ' + \
@@ -159,14 +159,14 @@ class DemoVirtApp():
 
         dpid = "00:a4:23:05:00:00:00:01"
         self.rules3 = []
-        rule = '{"switch":"%s", ' % dpid + \
+        rule = '{"switch":"%s", ' % self.dpid + \
             '"name":"DemoVirt3R1", ' + \
             '"priority":"1", ' + \
             '"ether-type":"2048", ' + \
             '"dst-ip":"1.0.0.0/8", ' + \
             '"active":"true", "actions":"output=3"}'
         self.rules3.append(rule)
-        rule = '{"switch":"%s", ' % dpid + \
+        rule = '{"switch":"%s", ' % self.dpid + \
             '"name":"DemoVirt3R2", ' + \
             '"priority":"4", ' + \
             '"ether-type":"2048", ' + \
@@ -190,4 +190,10 @@ class DemoVirtApp():
             cmd = "curl -d '%s' http://localhost:30001/wm/staticflowentrypusher/json" % rule
             subprocess.call(cmd, shell=True)
             print ""
+
+    def send_query(self):
+        cmd = "curl http://localhost:10001/wm/core/switch/%s/aggregate/json" \
+              % self.dpid
+        #cmd = "curl http://localhost:10001/wm/topology/links/json"
+        subprocess.call(cmd, shell=True)
 

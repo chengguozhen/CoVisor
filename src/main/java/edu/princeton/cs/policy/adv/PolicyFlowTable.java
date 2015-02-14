@@ -147,7 +147,7 @@ public class PolicyFlowTable {
 	}
 
     public String physicalToVirtualFlowModsMapString() {
-	String logHeader = "INFO PolicyFlowTable - ";
+	String logHeader = "";
 	String s = logHeader + "physicalToVirtualFlowModsMapString\n";
 	for (OFFlowMod fm : this.physicalToVirtualFlowModsMap.keySet()) {
 	    s += logHeader + fm + ":  " + getVirtualFlowMods(fm) + "\n";
@@ -216,6 +216,7 @@ public class PolicyFlowTable {
 
     public void deletePhysicalToVirtualFlowModsKeys (List<OFFlowMod> physicalFms) {
 	for (OFFlowMod fm : physicalFms) {
+	    logger.info("Deleting key " + fm + " from physicalToVirtualFlowModsMap.");
 	    this.deletePhysicalToVirtualFlowModsKey(fm);
 	}
     }

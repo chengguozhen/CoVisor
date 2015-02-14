@@ -72,7 +72,7 @@ public class PlumbingSwitch implements OVXSendMsg {
     // Tenant ID of controller responsible for each virtual flow mod.
     private Map<OFFlowMod, Integer> fmToControllerMap;
     // For use with cleanCovisorLog.py.
-    private String logHeader = "INFO PlumbingSwitch - ";
+    private String logHeader = "";
 
 
     public PlumbingSwitch(int id, PlumbingGraph graph) {
@@ -139,7 +139,8 @@ public class PlumbingSwitch implements OVXSendMsg {
     
     @Override
     public void sendMsg(final OFMessage msg, final OVXSendMsg from) {
-
+	logger.info("***************************************************");
+	logger.info("Plumbing Switch " + this.id);
 	int tid = ((OVXSwitch) from).getTenantId();
 	
 	if (msg.getType() == OFType.FLOW_MOD) {
@@ -147,17 +148,18 @@ public class PlumbingSwitch implements OVXSendMsg {
 	    OFFlowMod fmMsg = (OFFlowMod) msg;
 	    PolicyUpdateTable updateTable1 = this.policyTree.
 		update(fmMsg, tid);
-	    List<OFFlowMod> fmMsgGeneratedFlowMods = new ArrayList<OFFlowMod>();
+	    List<OFFlowMod> fmMsgComposedFlowMods = new ArrayList<OFFlowMod>();
 	    try {
 		for (OFFlowMod fm : updateTable1.addFlowMods) {
-		    fmMsgGeneratedFlowMods.add(fm.clone());
+		    fmMsgComposedFlowMods.add(fm.clone());
 		}
 	    }
 	    catch (CloneNotSupportedException e) {
 		e.printStackTrace();
 	    }
 	    this.virtualToBeforePlumbingFMMap.put(fmMsg,
-						  fmMsgGeneratedFlowMods);
+						  fmMsgComposedFlowMods);
+
 	    PolicyUpdateTable updateTable2 = new PolicyUpdateTable();
 			
 	    for (OFFlowMod fm : updateTable1.addFlowMods) {
@@ -172,24 +174,27 @@ public class PlumbingSwitch implements OVXSendMsg {
 		updateTable2.addUpdateTable(partialUpdateTable);
 	    }
 	    
-	    logger.info("***************************************************");
-	    logger.info("Plumbing Switch " + this.id);
-	    logger.info(mapString(virtualToBeforePlumbingFMMap));
-	    logger.info("***************************************************");
-	    logger.info(this.flowTable.physicalToVirtualFlowModsMapString());
-	    logger.info("***************************************************");
-	    logger.info("End Plumbing Switch " + this.id);
-	    logger.info("***************************************************\n");
+	    List<OFFlowMod> fmMsgPhysicalFlowMods = new ArrayList<OFFlowMod>();
+	    try {
+		for (OFFlowMod fm : updateTable2.addFlowMods) {
+		    fmMsgPhysicalFlowMods.add(fm.clone());
+		}
+	    }
+	    catch (CloneNotSupportedException e) {
+		e.printStackTrace();
+	    }
+	    this.virtualToPhysicalFMMap.put(fmMsg,fmMsgPhysicalFlowMods);
 
 	    PhysicalSwitch physSw = this.graph.getPhysicalSwitch();
 	    for (OFFlowMod fm : updateTable2.addFlowMods) {
+		updateVirtualToPhysicalFMMap(fm, this.ADD);
 		physSw.sendMsg(fm, this);
 	    }
 	    for (OFFlowMod fm : updateTable2.deleteFlowMods) {
+		updateVirtualToPhysicalFMMap(fm, this.DELETE);
 		fm.setCommand(OFFlowMod.OFPFC_DELETE);
 		physSw.sendMsg(fm, this);
 	    }
-
 
 	    /* 28 January
 	     * I think (but I'm not sure) that all controllers sending messages
@@ -200,6 +205,10 @@ public class PlumbingSwitch implements OVXSendMsg {
 	    //updateVirtualToPhysicalFMMap(fmMsg, updateTable2);
 	    this.fmToControllerMap.put(fmMsg, tid);
 	    // logger.info("fmToControllerMap: " + fmToControllerMap);
+
+	    for (PlumbingSwitch node : this.graph.getNodes()) {
+		//node.printStuff();
+	    }
 	} 
 
 	else if (msg.getType() == OFType.STATS_REQUEST) {
@@ -231,10 +240,25 @@ public class PlumbingSwitch implements OVXSendMsg {
 	}
 	else {
 	    this.logger.info("msg isn't flow mod or stats request.");
-	    this.logger.info(msg.toString());
+	    this.logger.info(msg);
 	    this.graph.getPhysicalSwitch().sendMsg(msg, this);
 	}
-	
+	logger.info("***************************************************");
+    }
+
+    public void printStuff() {
+	logger.info("***************************************************");
+	logger.info("Plumbing Switch " + this.id);
+	//logger.info("virtualToPhysicalFMMap\n");
+	//logger.info(mapString(this.virtualToPhysicalFMMap));
+	//logger.info("***************************************************");
+	//logger.info("virtualToBeforePlumbingFMMap\n");
+	//logger.info(mapString(virtualToBeforePlumbingFMMap));
+	//logger.info("***************************************************");
+	//logger.info(this.flowTable.physicalToVirtualFlowModsMapString());
+	//logger.info("***************************************************");
+	//logger.info("End Plumbing Switch " + this.id);
+	//logger.info("***************************************************\n");
     }
 
     private void updateVirtualToBeforePlumbingFMMap(OFFlowMod composedFm,
@@ -262,6 +286,70 @@ public class PlumbingSwitch implements OVXSendMsg {
 	    else {
 		logger.info("Failed to updateVirtualToBeforePlumbing" +
 			    "FMMap.  Need to specify add or delete.");
+	    }
+	}
+    }
+
+    private void updateVirtualToPhysicalFMMap(OFFlowMod physicalFm,
+					    int op) {
+	// Flow mods from after composition that generated this physicalFm.
+	List<OFFlowMod> composedFms = this.flowTable.getVirtualFlowMods(physicalFm);
+	logger.info("updateVirtualToPhysicalFMMap(" + physicalFm + ", " + op);
+	for (OFFlowMod composedFm : composedFms) {
+	    logger.info("composedFm that generated this physicalFm: " + composedFm);
+	    /*
+	     * Get all virtual flow mods from controller that generated this
+	     * composedFm.
+	     */
+	    for (OFFlowMod virtualFm : this.virtualToBeforePlumbingFMMap.keySet()) {
+		logger.info("Did virtualFm " + virtualFm + " generate composedFm?");
+		List<OFFlowMod> maybeSiblingComposedFms =
+		    this.virtualToBeforePlumbingFMMap.get(virtualFm);
+		logger.info("maybeSiblingComposedFms = " +
+			    fmListString(maybeSiblingComposedFms));
+		/*
+		 * composedFm responsible for generating this physicalFm was generated
+		 * by this virtualFm.
+		 */
+		for (OFFlowMod maybeSiblingComposedFm : maybeSiblingComposedFms) {
+		    logger.info("maybeSiblingComposedFm = " + maybeSiblingComposedFm);
+		    logger.info("composedFm = " + composedFm);
+		    logger.info("maybeSiblingComposedFm.plumbingEquals(composedFm) = " +
+				maybeSiblingComposedFm.plumbingEquals(composedFm));
+		    logger.info("maybeSiblingComposedFm.equals(composedFm) = " +
+				maybeSiblingComposedFm.equals(composedFm));
+		    logger.info("maybeSiblingComposedFms.contains(composedFm) = " +
+				maybeSiblingComposedFms.contains(composedFm));
+		}
+		if (maybeSiblingComposedFms.contains(composedFm)) {
+		    logger.info("maybeSiblingComposedFms contains composedFm.");
+		    List<OFFlowMod> siblingPhysicalFms =
+			this.virtualToPhysicalFMMap.get(virtualFm);
+		    logger.info("siblingPhysicalFms = " + fmListString(siblingPhysicalFms));
+		    if (op == this.ADD) {
+			try {
+			    OFFlowMod clone = physicalFm.clone();
+			    if (!siblingPhysicalFms.contains(physicalFm)) {
+				siblingPhysicalFms.add(clone);
+				logger.info("Adding " + clone + " to siblingPhysicalFms.");
+			    }
+			}
+			catch (CloneNotSupportedException e) {
+			    e.printStackTrace();
+			}
+		    }
+		    else if (op == this.DELETE) {
+			siblingPhysicalFms.remove(composedFm);
+			logger.info("Removing " + composedFm + " from siblingPhysicalFms.");
+		    }
+		    else {
+			logger.info("Failed to updateVirtualToPhysicalFMMap." +
+				    "Need to specify add or delete.");
+		    }
+		}
+		else {
+		    logger.info("not found");
+		}
 	    }
 	}
     }
@@ -387,15 +475,27 @@ public class PlumbingSwitch implements OVXSendMsg {
 	String s = "";
 	for (OFFlowMod entry : m.keySet()) {
 	    s += "key: " + entry.toString();
-	    s += "value: " + String.valueOf(m.get(entry));
+	    s += "value: ";
+	    for (OFFlowMod value : m.get(entry)) {
+		s += value;
+	    }
 	    s += "\n" + this.logHeader;
 	}
 	int size = m.size();
 	if (size > 0){
 	    s = s.substring(0, s.length() - 2);
 	}
-	s += "}\n" + this.logHeader + "\n" + this.logHeader;
-	s += "size = " + String.valueOf(size);
+	//s += "}\n" + this.logHeader + "\n" + this.logHeader;
+	//s += "size = " + size;
+	return s;
+    }
+
+    private String fmListString(List<OFFlowMod> l) {
+	String s = "[";
+	for (OFFlowMod fm : l) {
+	    s += fm;
+	}
+	s += "]";
 	return s;
     }
     
@@ -458,14 +558,20 @@ public class PlumbingSwitch implements OVXSendMsg {
 		for (Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer>
 			 fmTuple : fmTuples) {
 		    OFFlowMod flowMod = fmTuple.first.first;
+		    flowMod.setCookie(this.graph.getPhysicalSwitch().
+				      generateCookie(this.id));
 		    updateTable.addFlowMods.add(flowMod);
 		    //System.out.println("checkpoint 1:" + flowMod);
+		    this.flowTable.addPhysicalToVirtualFm(flowMod, pmod);
+		    logger.info("Adding physical = " + flowMod + ", virtual = " +
+				pmod + " to this.flowTable of PlumbingSwitch " +
+				this.id + ".");
 		    for (PlumbingFlowMod pFlowMod : fmTuple.first.second) {
 			PolicyFlowTable pFlowModNodeTable = pFlowMod.getPlumbingNode().
 			    flowTable;
 			pFlowModNodeTable.addGeneratedParentFlowMod(pFlowMod, flowMod);
-			pFlowModNodeTable.addPhysicalToVirtualFm(flowMod,
-								 pFlowMod.getOriginalOfm());
+			pFlowModNodeTable.addPhysicalToVirtualFm(flowMod, pFlowMod);
+			//					 pFlowMod.getOriginalOfm());
 		    }
 		}
 	    }
@@ -483,14 +589,20 @@ public class PlumbingSwitch implements OVXSendMsg {
 		    for (Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer>
 			     fmTuple : fmTuples) {
 			OFFlowMod flowMod = fmTuple.first.first;
+			flowMod.setCookie(this.graph.getPhysicalSwitch().
+					  generateCookie(this.id));
 			updateTable.addFlowMods.add(flowMod);
 			//System.out.println("checkpoint 2:" + flowMod);
+			this.flowTable.addPhysicalToVirtualFm(flowMod, pmod);
+			logger.info("Adding physical = " + flowMod + ", virtual = " +
+				    pmod + " to this.flowTable of PlumbingSwitch " +
+				    this.id + ".");
 			for (PlumbingFlowMod pFlowMod : fmTuple.first.second) {
 			PolicyFlowTable pFlowModNodeTable = pFlowMod.getPlumbingNode().
 			    flowTable;
 			    pFlowModNodeTable.addGeneratedParentFlowMod(pFlowMod, flowMod);
-			    pFlowModNodeTable.addPhysicalToVirtualFm(flowMod,
-								     pFlowMod.getOriginalOfm());
+			    pFlowModNodeTable.addPhysicalToVirtualFm(flowMod, pFlowMod);
+			    //     pFlowMod.getOriginalOfm());
 			}
 		    }
 		}
@@ -528,14 +640,20 @@ public class PlumbingSwitch implements OVXSendMsg {
 		    for (Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer>
 			     fmTuple : fmTuples) {
 			OFFlowMod flowMod = fmTuple.first.first;
+			flowMod.setCookie(this.graph.getPhysicalSwitch().
+					  generateCookie(this.id));
 			updateTable.addFlowMods.add(flowMod);
 			//System.out.println("checkpoint 3:" + flowMod);
+			this.flowTable.addPhysicalToVirtualFm(flowMod, pmod);
+			logger.info("Adding physical = " + flowMod + ", virtual = " +
+				    pmod + " to this.flowTable of PlumbingSwitch " +
+				    this.id + ".");
 			for (PlumbingFlowMod pFlowMod : fmTuple.first.second) {
 			    PolicyFlowTable pFlowModNodeTable = pFlowMod.getPlumbingNode().
 				flowTable;
 			    pFlowModNodeTable.addGeneratedParentFlowMod(pFlowMod, flowMod);
-			    pFlowModNodeTable.addPhysicalToVirtualFm(flowMod,
-								     pFlowMod.getOriginalOfm());
+			    pFlowModNodeTable.addPhysicalToVirtualFm(flowMod, pFlowMod);
+			    //				     pFlowMod.getOriginalOfm());
 			}
 		    }
 		}
@@ -561,8 +679,11 @@ public class PlumbingSwitch implements OVXSendMsg {
 	Integer hop = fmTuple.second;
 	
 	// match
-	OFMatch newMatch = PolicyCompositionUtil.intersectMatchIgnoreInport(pmod.getMatch(),
-									    PolicyCompositionUtil.actRevertMatch(ofm.getMatch(), pmod.getActions()));
+	OFMatch newMatch = PolicyCompositionUtil.
+	    intersectMatchIgnoreInport(pmod.getMatch(),
+				       PolicyCompositionUtil.
+				       actRevertMatch(ofm.getMatch(),
+						      pmod.getActions()));
 	ofm.setMatch(newMatch);
 	
 	// action
@@ -575,55 +696,71 @@ public class PlumbingSwitch implements OVXSendMsg {
 	}
 	
 	// priority
-	ofm.setPriority(
-	    (short) (pmod.getPriority() * vanillaPow(PolicyCompositionUtil.SEQUENTIAL_SHIFT, hop)
-		     + ofm.getPriority()));
+	ofm.setPriority((short) (pmod.getPriority() *
+				 vanillaPow(PolicyCompositionUtil.SEQUENTIAL_SHIFT,
+					    hop)
+				 + ofm.getPriority()));
 	
-	return new Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer>(fmTuple.first, hop + 1);
+	return new Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>,
+	    Integer>(fmTuple.first, hop + 1);
     }
     
-    private List<Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer>> fwdPropagateFlow (PlumbingFlow pflow) {
-	List<Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer>>  fmTuples = new ArrayList<Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer>>();
+    private List<Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>,
+	Integer>> fwdPropagateFlow (PlumbingFlow pflow) {
+	List<Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>,
+	    Integer>>  fmTuples = new ArrayList<Tuple<Tuple<OFFlowMod,
+	    List<PlumbingFlowMod>>, Integer>>();
 	
 	OFMatch match = pflow.getMatch();
-		PlumbingFlowMod pmod = pflow.getNextPMod();
+	PlumbingFlowMod pmod = pflow.getNextPMod();
 		
-		if (this.isEdgePFlowMod(pmod)) {
-		    Tuple<OFFlowMod, List<PlumbingFlowMod>> fm = null;
-		    try { 
-			fm = new Tuple<OFFlowMod, List<PlumbingFlowMod>>(pmod.getOriginalOfm().clone(), new ArrayList<PlumbingFlowMod>());
-			this.updateActionOutputPort(fm.first);
-			fm.second.add(pmod);
-		    } catch (CloneNotSupportedException e) {
-			e.printStackTrace();
+	if (this.isEdgePFlowMod(pmod)) {
+	    Tuple<OFFlowMod, List<PlumbingFlowMod>> fm = null;
+	    try { 
+		fm = new Tuple<OFFlowMod, List<PlumbingFlowMod>>(pmod.
+								 getOriginalOfm().
+								 clone(),
+								 new ArrayList
+								 <PlumbingFlowMod>());
+		this.updateActionOutputPort(fm.first);
+		fm.second.add(pmod);
+	    } catch (CloneNotSupportedException e) {
+		e.printStackTrace();
+	    }
+	    fmTuples.add(new Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>,
+			 Integer>(fm, 1));
+	    return fmTuples;
+	}
+	
+	OFMatch nextMatch = this.
+	    actApplyMatchWithInportChange(PolicyCompositionUtil.
+					  intersectMatchIgnoreInport(match,
+								     pmod.getMatch()),
+					  pmod.getActions());
+	for (PlumbingFlowMod nextPmod : pmod.getNextPMods()) {
+	    
+	    if (PolicyCompositionUtil.intersectMatch(nextMatch,
+						     nextPmod.getMatch()) != null) {
+		
+		PlumbingFlow nextPflow = new PlumbingFlow(nextMatch, pmod,
+							  nextPmod, pflow);
+		pflow.addNextPFlow(nextPflow);
+		
+		List<Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer>>
+		    nextFmTuples = nextPmod.getPlumbingNode().fwdPropagateFlow(nextPflow);
+		for (Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer>
+			 nextFmTuple : nextFmTuples) {
+		    if (nextFmTuple.second == PlumbingGraph.PRIORITY_HOPS) {
+			continue;
 		    }
-		    fmTuples.add(new Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer>(fm, 1));
-		    return fmTuples;
+		    fmTuples.add(this.revertApplyFm(nextFmTuple, pmod));
+		    nextFmTuple.first.second.add(pmod);
 		}
-		
-		OFMatch nextMatch = this.actApplyMatchWithInportChange(
-		    PolicyCompositionUtil.intersectMatchIgnoreInport(match, pmod.getMatch()),
-		    pmod.getActions());
-		for (PlumbingFlowMod nextPmod : pmod.getNextPMods()) {
-		    
-		    if (PolicyCompositionUtil.intersectMatch(nextMatch, nextPmod.getMatch()) != null) {
-			
-			PlumbingFlow nextPflow = new PlumbingFlow(nextMatch, pmod, nextPmod, pflow);
-			pflow.addNextPFlow(nextPflow);
-			
-			List<Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer>> nextFmTuples = nextPmod.getPlumbingNode().fwdPropagateFlow(nextPflow);
-			for (Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer> nextFmTuple : nextFmTuples) {
-			    if (nextFmTuple.second == PlumbingGraph.PRIORITY_HOPS) {
-				continue;
-			    }
-			    fmTuples.add(this.revertApplyFm(nextFmTuple, pmod));
-			    nextFmTuple.first.second.add(pmod);
-			}
-		    }
-		    
-		}
-		
-		return fmTuples;
+	    }
+	    
+	}
+	
+	return fmTuples;
     }
     
     private void updateActionOutputPort(OFFlowMod fm) {
@@ -774,7 +911,8 @@ public class PlumbingSwitch implements OVXSendMsg {
 	}
     }
     
-    public PolicyUpdateTable doFlowModDelete(PlumbingFlowMod pmod, PolicyUpdateTable nodeUpdateTable) {
+    public PolicyUpdateTable doFlowModDelete(PlumbingFlowMod pmod,
+					     PolicyUpdateTable nodeUpdateTable) {
 	
 	PolicyUpdateTable updateTable = new PolicyUpdateTable();
 	
@@ -782,8 +920,12 @@ public class PlumbingSwitch implements OVXSendMsg {
 	    return updateTable;
 	}
 	
+	this.flowTable.deleteFlowMods(nodeUpdateTable.deleteFlowMods);
+
 	// TODO: clean delete, better index
-	List<OFFlowMod> generatedParentFlowMods = this.flowTable.getGenerateParentFlowMods(nodeUpdateTable.deleteFlowMods.get(0));
+	List<OFFlowMod> generatedParentFlowMods =
+	    this.flowTable.getGenerateParentFlowMods(nodeUpdateTable.
+						     deleteFlowMods.get(0));
 	//List<OFFlowMod> deletedFlowMods = this.graph.flowTable.deleteFlowMods(generatedParentFlowMods);
 	updateTable.deleteFlowMods.addAll(generatedParentFlowMods);
 	

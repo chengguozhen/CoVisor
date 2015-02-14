@@ -13,11 +13,9 @@ JVM_OPTS="$JVM_OPTS -XX:+UseConcMarkSweepGC -XX:+AggressiveOpts -XX:+UseFastAcce
 JVM_OPTS="$JVM_OPTS -XX:MaxInlineSize=8192 -XX:FreqInlineSize=8192" 
 JVM_OPTS="$JVM_OPTS -XX:CompileThreshold=1500 -XX:PreBlockSpin=8" 
 
-if [ -e ${OVX_JAR} ]; then
-  rm -rf ${OVX_JAR}
-fi
 cd ${OVXHOME}
 echo "Packaging OVX for you..."
+rm -rf "target"
 mvn package -Dmaven.test.skip=true > scripts/errors.txt
 cd -
 

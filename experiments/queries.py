@@ -7,6 +7,7 @@ import random
 from ExprTopo.querytopo import *
 from apps import *
 import os.path
+from ctrl import *
 
 WORKDIR = "/home/covisor"
 CONTROLLER_IP = "localhost"
@@ -223,6 +224,28 @@ def exprSequential():
     CLI(net)
 
 #********************************************************************
+# expr: virt
+#********************************************************************
+
+def exprVirt():
+    cleanAll()
+    startFloodlight(3)
+    startOVX()
+    (topo, net) = startMininet()
+    time.sleep(SLEEP_TIME)
+    virtCreatePlumbingGraph()
+    virtAddController1(topo)
+    virtAddController2(topo)
+    virtAddController3(topo)
+    createACL('1 dltype:exact,dstip:prefix output')
+    createACL('2 dltype:exact,dstip:prefix output,mod:dstip')
+    createACL('3 dltype:exact,dstip:prefix output')
+    virtCreatePolicy()
+    app = DemoVirtApp(topo)
+    app.installRules()
+    # CLI(net)
+
+#********************************************************************
 # main
 #********************************************************************
    
@@ -231,7 +254,7 @@ def printHelp():
     print "\t\tstart-mn kill-mn"
     print "\t\tstart-ovx show-ovx kill-ovx"
     print "\t\tstart-fl show-fl kill-fl"
-    print "\t\tclean"
+    print "\t\texpr-sequential expr-virt clean"
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
@@ -257,6 +280,8 @@ if __name__ == '__main__':
             cleanAll()
         elif sys.argv[1] == "expr-sequential":
             exprSequential()
+        elif sys.argv[1] == "expr-virt":
+            exprVirt()
         #elif sys.argv[1] == "expr-sequential-parallel":
         #    exprSequentialParallel()
         else:

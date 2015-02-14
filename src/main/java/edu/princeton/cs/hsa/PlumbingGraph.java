@@ -3,6 +3,7 @@ package edu.princeton.cs.hsa;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 
@@ -34,6 +35,12 @@ public class PlumbingGraph {
 	public PhysicalSwitch getPhysicalSwitch() {
 	    return this.physicalSwitch;
 	}
+
+    public List<PlumbingSwitch> getNodes() {
+	List<PlumbingSwitch> nodesList = new ArrayList<PlumbingSwitch>();
+	nodesList.addAll(this.nodes.values());
+	return nodesList;
+    }
 	
 	public void createNodes (int count) {
 		for (int i = 0; i < count; i++) {
@@ -90,7 +97,7 @@ public class PlumbingGraph {
 			str = str + fm.toString() + "\n";
 		}
 
-		str += this.flowTable.fmFromControllerDictionaryString();
+		str += this.flowTable.physicalToVirtualFlowModsMapString();
 		
 		/*for (PlumbingNode node : this.nodes.values()) {
 			str = str + node.dpid + "\n" + node.getFlowModString();

@@ -48,8 +48,8 @@ public class OVXSingleSwitch extends OVXSwitch {
     @Override
     public void sendSouth(final OFMessage msg, final OVXPort inPort) {
         PlumbingSwitch plumbingSwitch = getPlumbingSwitch();
-	this.log.info("Received a msg.  About to call plumbingSwitch.send" +
-			 "Msg(msg, this) where msg = " + msg.toString() + ".");
+	//this.log.info("Received a msg.  About to call plumbingSwitch.send" +
+	//		 "Msg(msg, this) where msg = " + msg.toString() + ".");
         plumbingSwitch.sendMsg(msg, this);
     }
 
