@@ -42,6 +42,7 @@ import edu.princeton.cs.policy.adv.PolicyTree;
 import edu.princeton.cs.policy.adv.PolicyUpdateTable;
 import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreKey;
 import edu.princeton.cs.policy.store.PolicyFlowModStore.PolicyFlowModStoreType;
+import edu.princeton.cs.QueryManager;
 
 public class PlumbingSwitch implements OVXSendMsg {
     
@@ -67,12 +68,11 @@ public class PlumbingSwitch implements OVXSendMsg {
     /* Physical flow mods corresponding to flow mod from controller; combine
        statistics from these flow mods to respond to stats query. */
     private Map<OFFlowMod, List<OFFlowMod>> virtualToPhysicalFMMap;
-    // Most recent stats reply for each OFFlowMod, keyed by cookie.
-    private Map<Long, OVXFlowStatisticsReply> cookieToStatsMap;
     // Tenant ID of controller responsible for each virtual flow mod.
     private Map<OFFlowMod, Integer> fmToControllerMap;
     // For use with cleanCovisorLog.py.
     private String logHeader = "";
+    private QueryManager queryManager;
 
 
     public PlumbingSwitch(int id, PlumbingGraph graph) {
@@ -89,8 +89,9 @@ public class PlumbingSwitch implements OVXSendMsg {
 	this.virtualToBeforePlumbingFMMap = new HashMap<OFFlowMod,
 	    List<OFFlowMod>>();
 	this.virtualToPhysicalFMMap = new HashMap<OFFlowMod, List<OFFlowMod>>();
-	this.cookieToStatsMap = new HashMap<Long, OVXFlowStatisticsReply>();
+	//this.cookieToStatsMap = new HashMap<Long, OVXFlowStatisticsReply>();
 	this.fmToControllerMap = new HashMap<OFFlowMod, Integer>();
+	this.queryManager = new QueryManager(this);
     }
     
     public PlumbingSwitch(int id, PlumbingGraph graph,
@@ -108,8 +109,9 @@ public class PlumbingSwitch implements OVXSendMsg {
 	this.virtualToBeforePlumbingFMMap = new HashMap<OFFlowMod,
 	    List<OFFlowMod>>();
 	this.virtualToPhysicalFMMap = new HashMap<OFFlowMod, List<OFFlowMod>>();
-	this.cookieToStatsMap = new HashMap<Long, OVXFlowStatisticsReply>();
+	//this.cookieToStatsMap = new HashMap<Long, OVXFlowStatisticsReply>();
 	this.fmToControllerMap = new HashMap<OFFlowMod, Integer>();
+	this.queryManager = new QueryManager(this);
     }
     
     public void setPolicyTree (PolicyTree policyTree) {
@@ -146,6 +148,7 @@ public class PlumbingSwitch implements OVXSendMsg {
 	if (msg.getType() == OFType.FLOW_MOD) {
 	    
 	    OFFlowMod fmMsg = (OFFlowMod) msg;
+
 	    PolicyUpdateTable updateTable1 = this.policyTree.
 		update(fmMsg, tid);
 	    List<OFFlowMod> fmMsgComposedFlowMods = new ArrayList<OFFlowMod>();
@@ -159,6 +162,7 @@ public class PlumbingSwitch implements OVXSendMsg {
 	    }
 	    this.virtualToBeforePlumbingFMMap.put(fmMsg,
 						  fmMsgComposedFlowMods);
+	    this.virtualToPhysicalFMMap.put(fmMsg, new ArrayList<OFFlowMod>());
 
 	    PolicyUpdateTable updateTable2 = new PolicyUpdateTable();
 			
@@ -173,17 +177,6 @@ public class PlumbingSwitch implements OVXSendMsg {
 		PolicyUpdateTable partialUpdateTable = this.graph.update(fm, this);
 		updateTable2.addUpdateTable(partialUpdateTable);
 	    }
-	    
-	    List<OFFlowMod> fmMsgPhysicalFlowMods = new ArrayList<OFFlowMod>();
-	    try {
-		for (OFFlowMod fm : updateTable2.addFlowMods) {
-		    fmMsgPhysicalFlowMods.add(fm.clone());
-		}
-	    }
-	    catch (CloneNotSupportedException e) {
-		e.printStackTrace();
-	    }
-	    this.virtualToPhysicalFMMap.put(fmMsg,fmMsgPhysicalFlowMods);
 
 	    PhysicalSwitch physSw = this.graph.getPhysicalSwitch();
 	    for (OFFlowMod fm : updateTable2.addFlowMods) {
@@ -196,19 +189,17 @@ public class PlumbingSwitch implements OVXSendMsg {
 		physSw.sendMsg(fm, this);
 	    }
 
+	    for (PlumbingSwitch node : this.graph.getNodes()) {
+	    	node.printStuff();
+	    }
+
 	    /* 28 January
 	     * I think (but I'm not sure) that all controllers sending messages
 	     * to this PlumbingSwitch share an identical view of the virtual
 	     * network. Also, I'm assuming that no flow mod in a controller's
 	     * flow table is completely shadowed by another.
 	     */
-	    //updateVirtualToPhysicalFMMap(fmMsg, updateTable2);
 	    this.fmToControllerMap.put(fmMsg, tid);
-	    // logger.info("fmToControllerMap: " + fmToControllerMap);
-
-	    for (PlumbingSwitch node : this.graph.getNodes()) {
-		//node.printStuff();
-	    }
 	} 
 
 	else if (msg.getType() == OFType.STATS_REQUEST) {
@@ -218,25 +209,7 @@ public class PlumbingSwitch implements OVXSendMsg {
 	     */
 	    this.logger.info("msg.getType() == OFType.STATS_REQUEST");
 	    OFStatisticsRequest req = (OFStatisticsRequest) msg;
-	    if (req.getStatisticType() == OFStatisticsType.FLOW) {
-		this.logger.info("FLOW statistic.");
-		try {
-		    OFStatistics stat = req.getFirstStatistics();
-		    OFFlowStatisticsRequest flowStatReq =
-			(OFFlowStatisticsRequest) stat;
-		    OFStatisticsReply reply =
-			handleFlowStatsRequest(flowStatReq, msg.getXid(), tid);
-		    logger.info("About to call from.sendMsg(reply, from) for " +
-				"from = " + from + "\n" + this.logHeader +
-				"reply = " + reply);
-		    logger.info("reply's statistics: " + reply.getStatistics());
-		    from.sendMsg(reply, from);
-		}
-		catch (IllegalArgumentException e) {
-		    this.logger.warn("FLOW stats request should have " +
-				     "only one message in its body.");
-		}
-	    }
+	    this.queryManager.handleStatsRequest(req, from);
 	}
 	else {
 	    this.logger.info("msg isn't flow mod or stats request.");
@@ -249,16 +222,16 @@ public class PlumbingSwitch implements OVXSendMsg {
     public void printStuff() {
 	logger.info("***************************************************");
 	logger.info("Plumbing Switch " + this.id);
-	//logger.info("virtualToPhysicalFMMap\n");
-	//logger.info(mapString(this.virtualToPhysicalFMMap));
+	logger.info("virtualToPhysicalFMMap\n");
+	logger.info(mapString(this.virtualToPhysicalFMMap));
 	//logger.info("***************************************************");
 	//logger.info("virtualToBeforePlumbingFMMap\n");
 	//logger.info(mapString(virtualToBeforePlumbingFMMap));
 	//logger.info("***************************************************");
 	//logger.info(this.flowTable.physicalToVirtualFlowModsMapString());
 	//logger.info("***************************************************");
-	//logger.info("End Plumbing Switch " + this.id);
-	//logger.info("***************************************************\n");
+	logger.info("End Plumbing Switch " + this.id);
+	logger.info("***************************************************\n");
     }
 
     private void updateVirtualToBeforePlumbingFMMap(OFFlowMod composedFm,
@@ -290,48 +263,56 @@ public class PlumbingSwitch implements OVXSendMsg {
 	}
     }
 
-    private void updateVirtualToPhysicalFMMap(OFFlowMod physicalFm,
+    public void updateVirtualToPhysicalFMMap(OFFlowMod physicalFm,
 					    int op) {
+	logger.info("***************************************************");
+	logger.info("PlumbingSwitch " + this.id);
+	logger.info("updateVirtualToPhysicalFMMap(" + physicalFm + ", " +
+		    op);
+	logger.info("***************************************************");
+
 	// Flow mods from after composition that generated this physicalFm.
 	List<OFFlowMod> composedFms = this.flowTable.getVirtualFlowMods(physicalFm);
-	logger.info("updateVirtualToPhysicalFMMap(" + physicalFm + ", " + op);
 	for (OFFlowMod composedFm : composedFms) {
-	    logger.info("composedFm that generated this physicalFm: " + composedFm);
 	    /*
 	     * Get all virtual flow mods from controller that generated this
 	     * composedFm.
 	     */
 	    for (OFFlowMod virtualFm : this.virtualToBeforePlumbingFMMap.keySet()) {
-		logger.info("Did virtualFm " + virtualFm + " generate composedFm?");
 		List<OFFlowMod> maybeSiblingComposedFms =
 		    this.virtualToBeforePlumbingFMMap.get(virtualFm);
-		logger.info("maybeSiblingComposedFms = " +
-			    fmListString(maybeSiblingComposedFms));
 		/*
 		 * composedFm responsible for generating this physicalFm was generated
 		 * by this virtualFm.
+		 */		
+	       
+		/*
+		 * composedFm has xid = 0 and length = 72, so regular .equals
+		 * method of OFFlowMod doesn't work to determine if composedFm
+		 * is in maybeSiblingComposedFms.
 		 */
-		for (OFFlowMod maybeSiblingComposedFm : maybeSiblingComposedFms) {
-		    logger.info("maybeSiblingComposedFm = " + maybeSiblingComposedFm);
-		    logger.info("composedFm = " + composedFm);
-		    logger.info("maybeSiblingComposedFm.plumbingEquals(composedFm) = " +
-				maybeSiblingComposedFm.plumbingEquals(composedFm));
-		    logger.info("maybeSiblingComposedFm.equals(composedFm) = " +
-				maybeSiblingComposedFm.equals(composedFm));
-		    logger.info("maybeSiblingComposedFms.contains(composedFm) = " +
-				maybeSiblingComposedFms.contains(composedFm));
-		}
-		if (maybeSiblingComposedFms.contains(composedFm)) {
-		    logger.info("maybeSiblingComposedFms contains composedFm.");
-		    List<OFFlowMod> siblingPhysicalFms =
-			this.virtualToPhysicalFMMap.get(virtualFm);
-		    logger.info("siblingPhysicalFms = " + fmListString(siblingPhysicalFms));
+		if (this.queryManager.fmListContains(composedFm,
+						     maybeSiblingComposedFms)) {
+		    List<OFFlowMod> siblingPhysicalFms = new ArrayList<OFFlowMod>();
+		    if (this.virtualToPhysicalFMMap.keySet().contains(virtualFm)) {
+			siblingPhysicalFms = this.virtualToPhysicalFMMap.get(virtualFm);
+		    }
+		    else {
+			logger.info("virtualFm not in virtualToPhysicalFMMap.keySet()." +
+				    "  siblingPhysicalFms is still empty list");
+		    }
+	     
 		    if (op == this.ADD) {
 			try {
 			    OFFlowMod clone = physicalFm.clone();
 			    if (!siblingPhysicalFms.contains(physicalFm)) {
 				siblingPhysicalFms.add(clone);
 				logger.info("Adding " + clone + " to siblingPhysicalFms.");
+			    }
+			    else {
+				logger.info("siblingPhysicalFms = " +
+					    fmListString(siblingPhysicalFms));
+				logger.info("contains physicalFm " + physicalFm);
 			    }
 			}
 			catch (CloneNotSupportedException e) {
@@ -342,132 +323,15 @@ public class PlumbingSwitch implements OVXSendMsg {
 			siblingPhysicalFms.remove(composedFm);
 			logger.info("Removing " + composedFm + " from siblingPhysicalFms.");
 		    }
-		    else {
-			logger.info("Failed to updateVirtualToPhysicalFMMap." +
-				    "Need to specify add or delete.");
-		    }
-		}
-		else {
-		    logger.info("not found");
 		}
 	    }
 	}
-    }
-    
-    private OFStatisticsReply handleFlowStatsRequest(OFFlowStatisticsRequest
-						     flowStatsReq, int xid,
-						     int tid) {
-	logger.info("\n" + this.logHeader + "BEGIN handleFlowStatsRequest\n  " +
-		    this.logHeader + "flowStatsReq =" +
-		    flowStatsReq + "\n  " + this.logHeader + "xid = " + xid +
-		    "\n  " + this.logHeader + "tid = " + tid);
-	OFMatch match = flowStatsReq.getMatch();
-	List<OVXFlowStatisticsReply> allReps =
-	    this.graph.getPhysicalSwitch().getFlowStats(this.id);
-	updateCookieToStatsMap(allReps);
-	/*
-	 * Will be set as the statistics field of the OFStatisticsReply
-	 * sent to the controller.
-	 */
-	List<OFFlowStatisticsReply> statistics =
-	    new ArrayList<OFFlowStatisticsReply>();
-	// Length of OFStatisticsReply we'll send to the controller.
-	int length = 0;
-	for (OFFlowMod fm : this.virtualToPhysicalFMMap.keySet()) {
-	    boolean coveredMatch = match.covers(fm.getMatch());
-	    boolean thisController = (this.fmToControllerMap.get(fm) == tid);
-	    logger.info("coveredMatch: " + coveredMatch);
-	    logger.info("thisController: " + thisController);
-	    if (coveredMatch && thisController) {
-		// Know which flow mods we want stats for.
-		List<OFFlowMod> physFlowMods = this.virtualToPhysicalFMMap.get(fm);
-		// Get those stats replies out of the big list.
-		List<OVXFlowStatisticsReply> relevantReps =
-		    getRepliesForPhysFlowMods(physFlowMods);
-		/*
-		 * Aggregate the counters in these replies into a single
-		 * OFFlowStatisticsReply to be added to the statistics list
-		 * of the single OFStatisticsReply to send to the controller.
-		 */
-		OFFlowStatisticsReply stat =
-		    combineCounters(fm, relevantReps);
-		statistics.add(stat);
-		length += stat.getLength();
-	    }
-	}
-	OFStatisticsReply reply = new OFStatisticsReply();
-	reply.setXid(xid);
-	reply.setStatisticType(OFStatisticsType.FLOW);
-	reply.setStatistics(statistics);
-	reply.setLengthU(OFStatisticsReply.MINIMUM_LENGTH + length);
-	logger.info("\n" + this.logHeader + "END handleFlowStatsRequest("
-		    + flowStatsReq + ")\n");
-	return reply;
-    }
+	
+	logger.info("END updateVirtualToPhysicalFMMap(" + physicalFm + ", " +
+		    op);
+	logger.info("PlumbingSwitch " + this.id);
+	logger.info("***************************************************");
 
-    /*
-     * Combine counters corresponding to a single virtual flow mod.
-     * Should be represented as one OFFlowStatisticsReply in the statistics
-     * field of the OFStatisticsReply returned to the controller.
-     */
-    private OFFlowStatisticsReply combineCounters(OFFlowMod fmFromController,
-						  List<OVXFlowStatisticsReply>
-						  statsFromPhysSwitch) {
-	logger.info("\n" + this.logHeader + "BEGIN combineCounters\n  " +
-		    this.logHeader + "fmFromController = " +
-		    fmFromController + "\n  " + this.logHeader +
-		    "statsFromPhysSwitch = " + statsFromPhysSwitch);
-	OFFlowStatisticsReply stat = new OFFlowStatisticsReply();
-	int packets = 0;
-	int bytes = 0;
-	for (OVXFlowStatisticsReply statReceived : statsFromPhysSwitch) {
-	    logger.info("statReceived: " + statReceived);
-	    packets += statReceived.getPacketCount();
-	    bytes += statReceived.getByteCount();
-	}
-        stat.setPacketCount(packets);
-	stat.setByteCount(bytes);
-	stat.setActions(fmFromController.getActions());
-	stat.setCookie(fmFromController.getCookie());
-	stat.setMatch(fmFromController.getMatch());
-	// Copied from OVXFlowStatisticsRequest.  Not sure if this is correct.
-	stat.setLength(U16.t(OFFlowStatisticsReply.MINIMUM_LENGTH));
-	for (OFAction act : stat.getActions()) {
-	    stat.setLength(U16.t(stat.getLength() + act.getLength()));
-	}
-	logger.info("combined stat: " + stat);
-	return stat;
-    }
-
-    private void updateCookieToStatsMap(List<OVXFlowStatisticsReply>
-					allReps) {
-	//logger.info("\n" + this.logHeader + "BEGIN updateCookieToStatsMap\n  "
-	//	    + this.logHeader + "allReps = " + allReps);
-	// logger.info("cookieToStatsMap before update:  " + this.cookieToStatsMap);
-	for (OVXFlowStatisticsReply rep : allReps) {
-	    this.cookieToStatsMap.put(rep.getCookie(), rep);
-	}
-	// logger.info("cookieToStatsMap after update:  " + this.cookieToStatsMap);
-    }
-
-    /*
-     * Get stats replies for just physFlowMods out of list of replies for all
-     * flow mods on the physical switch.
-     */
-    private List<OVXFlowStatisticsReply> getRepliesForPhysFlowMods
-	(List<OFFlowMod> physFlowMods) {
-	//logger.info("\n" + this.logHeader + "BEGIN getRepliesForPhysFlowMods\n"
-	//	    + this.logHeader + "for physFlowMods = " + physFlowMods);
-	List<OVXFlowStatisticsReply> relevantReps =
-	    new ArrayList<OVXFlowStatisticsReply>();
-	for (OFFlowMod physFM : physFlowMods) {
-	    OVXFlowStatisticsReply rep = this.cookieToStatsMap.
-		get(physFM.getCookie());
-	    relevantReps.add(rep);
-	}
-	//logger.info("relevantReps: " + relevantReps);
-	//logger.info("\n" + this.logHeader + "END getRepliesForPhysFlowMods\n");
-	return relevantReps;
     }
 
     // Utility for debugging.
@@ -563,15 +427,17 @@ public class PlumbingSwitch implements OVXSendMsg {
 		    updateTable.addFlowMods.add(flowMod);
 		    //System.out.println("checkpoint 1:" + flowMod);
 		    this.flowTable.addPhysicalToVirtualFm(flowMod, pmod);
+		    updateVirtualToPhysicalFMMap(flowMod, this.ADD);
 		    logger.info("Adding physical = " + flowMod + ", virtual = " +
-				pmod + " to this.flowTable of PlumbingSwitch " +
-				this.id + ".");
+				pmod + " to physicalToVirtualFlowModsMap of " +
+				"this.flowTable of PlumbingSwitch " + this.id + ".");
 		    for (PlumbingFlowMod pFlowMod : fmTuple.first.second) {
-			PolicyFlowTable pFlowModNodeTable = pFlowMod.getPlumbingNode().
-			    flowTable;
+			PlumbingSwitch pFlowModNode = pFlowMod.getPlumbingNode();
+			PolicyFlowTable pFlowModNodeTable = pFlowModNode.flowTable;
 			pFlowModNodeTable.addGeneratedParentFlowMod(pFlowMod, flowMod);
 			pFlowModNodeTable.addPhysicalToVirtualFm(flowMod, pFlowMod);
-			//					 pFlowMod.getOriginalOfm());
+			//pFlowMod.getOriginalOfm());
+			pFlowModNode.updateVirtualToPhysicalFMMap(flowMod, this.ADD);
 		    }
 		}
 	    }
@@ -594,15 +460,17 @@ public class PlumbingSwitch implements OVXSendMsg {
 			updateTable.addFlowMods.add(flowMod);
 			//System.out.println("checkpoint 2:" + flowMod);
 			this.flowTable.addPhysicalToVirtualFm(flowMod, pmod);
+			updateVirtualToPhysicalFMMap(flowMod, this.ADD);
 			logger.info("Adding physical = " + flowMod + ", virtual = " +
-				    pmod + " to this.flowTable of PlumbingSwitch " +
-				    this.id + ".");
+				    pmod + " to physicalToVirtualFlowModsMap of " +
+				    "this.flowTable of PlumbingSwitch " + this.id + ".");
 			for (PlumbingFlowMod pFlowMod : fmTuple.first.second) {
-			PolicyFlowTable pFlowModNodeTable = pFlowMod.getPlumbingNode().
-			    flowTable;
-			    pFlowModNodeTable.addGeneratedParentFlowMod(pFlowMod, flowMod);
-			    pFlowModNodeTable.addPhysicalToVirtualFm(flowMod, pFlowMod);
-			    //     pFlowMod.getOriginalOfm());
+			PlumbingSwitch pFlowModNode = pFlowMod.getPlumbingNode();
+			PolicyFlowTable pFlowModNodeTable = pFlowModNode.flowTable;
+			pFlowModNodeTable.addGeneratedParentFlowMod(pFlowMod, flowMod);
+			pFlowModNodeTable.addPhysicalToVirtualFm(flowMod, pFlowMod);
+			//pFlowMod.getOriginalOfm());
+			pFlowModNode.updateVirtualToPhysicalFMMap(flowMod, this.ADD);
 			}
 		    }
 		}
@@ -645,15 +513,17 @@ public class PlumbingSwitch implements OVXSendMsg {
 			updateTable.addFlowMods.add(flowMod);
 			//System.out.println("checkpoint 3:" + flowMod);
 			this.flowTable.addPhysicalToVirtualFm(flowMod, pmod);
+			updateVirtualToPhysicalFMMap(flowMod, this.ADD);
 			logger.info("Adding physical = " + flowMod + ", virtual = " +
-				    pmod + " to this.flowTable of PlumbingSwitch " +
-				    this.id + ".");
+				    pmod + " to physicalToVirtualFlowModsMap of " +
+				    "this.flowTable of PlumbingSwitch " + this.id + ".");
 			for (PlumbingFlowMod pFlowMod : fmTuple.first.second) {
-			    PolicyFlowTable pFlowModNodeTable = pFlowMod.getPlumbingNode().
-				flowTable;
+			    PlumbingSwitch pFlowModNode = pFlowMod.getPlumbingNode();
+			    PolicyFlowTable pFlowModNodeTable = pFlowModNode.flowTable;
 			    pFlowModNodeTable.addGeneratedParentFlowMod(pFlowMod, flowMod);
 			    pFlowModNodeTable.addPhysicalToVirtualFm(flowMod, pFlowMod);
-			    //				     pFlowMod.getOriginalOfm());
+								     //pFlowMod.getOriginalOfm());
+			    pFlowModNode.updateVirtualToPhysicalFMMap(flowMod, this.ADD);
 			}
 		    }
 		}
@@ -975,6 +845,26 @@ public class PlumbingSwitch implements OVXSendMsg {
     @Override
     public String getName() {
 	return this.graph.getPhysicalSwitch().getName() + ":" + this.id;
+    }
+
+    public PolicyTree getPolicyTree() {
+	return this.policyTree;
+    }
+
+    public PolicyFlowTable getFlowTable() {
+	return this.flowTable;
+    }
+
+    public PlumbingGraph getPlumbingGraph() {
+	return this.graph;
+    }
+
+    public Map<OFFlowMod, Integer> getFmToControllerMap() {
+	return this.fmToControllerMap;
+    }
+
+    public Map<OFFlowMod, List<OFFlowMod>> getVirtualToPhysicalFMMap() {
+	return this.virtualToPhysicalFMMap;
     }
 
     /* 30 January NOT WORKING / OUTDATED

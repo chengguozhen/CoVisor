@@ -420,43 +420,6 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
         return true;
     }
 
-    public boolean plumbingEquals(final Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!super.equals(obj)) {
-            return false;
-        }
-        if (!(obj instanceof OFFlowMod)) {
-            return false;
-        }
-        final OFFlowMod other = (OFFlowMod) obj;
-        if (this.actions == null) {
-            if (other.actions != null) {
-                return false;
-            }
-        } else if (!this.actions.equals(other.actions)) {
-            return false;
-        }
-        if (this.cookie != other.cookie) {
-            return false;
-        }
-        if (this.match == null) {
-            if (other.match != null) {
-                return false;
-            }
-        } else if (!this.match.equals(other.match)) {
-            return false;
-        }
-        if (this.outPort != other.outPort) {
-            return false;
-        }
-        if (this.priority != other.priority) {
-            return false;
-        }
-        return true;
-    }
-
     /*
      * (non-Javadoc)
      *
