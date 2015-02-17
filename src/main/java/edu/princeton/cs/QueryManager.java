@@ -287,14 +287,12 @@ public class QueryManager {
 	    reasons += "fm1.getPriority() != fm2.getPriority()\n";
             result = false;
         }
-	//logger.info("fm1: " + fm1);
-	//logger.info("fm2: " + fm2);
-	//logger.info("fm1.equals(fm2) = " + fm1.equals(fm2));
-	if (result != fm1.equals(fm2)) {
+
+	/*if (result != fm1.equals(fm2)) {
 	    logger.info("fmEquals(" + fm1 + ", " + fm2 + ") = " + result);
 	    logger.info("fm1.equals(fm2) = " + fm1.equals(fm2));
 	    logger.info(reasons);
-	}
+	    }*/
         return result;
     }
 

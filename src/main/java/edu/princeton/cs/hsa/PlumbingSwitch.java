@@ -189,9 +189,10 @@ public class PlumbingSwitch implements OVXSendMsg {
 		physSw.sendMsg(fm, this);
 	    }
 
+	    /*
 	    for (PlumbingSwitch node : this.graph.getNodes()) {
 	    	node.printStuff();
-	    }
+		}*/
 
 	    /* 28 January
 	     * I think (but I'm not sure) that all controllers sending messages
@@ -265,11 +266,11 @@ public class PlumbingSwitch implements OVXSendMsg {
 
     public void updateVirtualToPhysicalFMMap(OFFlowMod physicalFm,
 					    int op) {
-	logger.info("***************************************************");
-	logger.info("PlumbingSwitch " + this.id);
-	logger.info("updateVirtualToPhysicalFMMap(" + physicalFm + ", " +
-		    op);
-	logger.info("***************************************************");
+	//logger.info("***************************************************");
+	//logger.info("PlumbingSwitch " + this.id);
+	//logger.info("updateVirtualToPhysicalFMMap(" + physicalFm + ", " +
+	//	    op);
+	//logger.info("***************************************************");
 
 	// Flow mods from after composition that generated this physicalFm.
 	List<OFFlowMod> composedFms = this.flowTable.getVirtualFlowMods(physicalFm);
@@ -297,23 +298,23 @@ public class PlumbingSwitch implements OVXSendMsg {
 		    if (this.virtualToPhysicalFMMap.keySet().contains(virtualFm)) {
 			siblingPhysicalFms = this.virtualToPhysicalFMMap.get(virtualFm);
 		    }
-		    else {
-			logger.info("virtualFm not in virtualToPhysicalFMMap.keySet()." +
-				    "  siblingPhysicalFms is still empty list");
-		    }
+		    /*else {
+		    //	logger.info("virtualFm not in virtualToPhysicalFMMap.keySet()." +
+		    //		    "  siblingPhysicalFms is still empty list");
+		    }*/
 	     
 		    if (op == this.ADD) {
 			try {
 			    OFFlowMod clone = physicalFm.clone();
 			    if (!siblingPhysicalFms.contains(physicalFm)) {
 				siblingPhysicalFms.add(clone);
-				logger.info("Adding " + clone + " to siblingPhysicalFms.");
+				//logger.info("Adding " + clone + " to siblingPhysicalFms.");
 			    }
-			    else {
+			    /*else {
 				logger.info("siblingPhysicalFms = " +
 					    fmListString(siblingPhysicalFms));
 				logger.info("contains physicalFm " + physicalFm);
-			    }
+				}*/
 			}
 			catch (CloneNotSupportedException e) {
 			    e.printStackTrace();
@@ -327,10 +328,10 @@ public class PlumbingSwitch implements OVXSendMsg {
 	    }
 	}
 	
-	logger.info("END updateVirtualToPhysicalFMMap(" + physicalFm + ", " +
+	/*logger.info("END updateVirtualToPhysicalFMMap(" + physicalFm + ", " +
 		    op);
 	logger.info("PlumbingSwitch " + this.id);
-	logger.info("***************************************************");
+	logger.info("***************************************************");*/
 
     }
 
@@ -428,9 +429,6 @@ public class PlumbingSwitch implements OVXSendMsg {
 		    //System.out.println("checkpoint 1:" + flowMod);
 		    this.flowTable.addPhysicalToVirtualFm(flowMod, pmod);
 		    updateVirtualToPhysicalFMMap(flowMod, this.ADD);
-		    logger.info("Adding physical = " + flowMod + ", virtual = " +
-				pmod + " to physicalToVirtualFlowModsMap of " +
-				"this.flowTable of PlumbingSwitch " + this.id + ".");
 		    for (PlumbingFlowMod pFlowMod : fmTuple.first.second) {
 			PlumbingSwitch pFlowModNode = pFlowMod.getPlumbingNode();
 			PolicyFlowTable pFlowModNodeTable = pFlowModNode.flowTable;
@@ -461,9 +459,6 @@ public class PlumbingSwitch implements OVXSendMsg {
 			//System.out.println("checkpoint 2:" + flowMod);
 			this.flowTable.addPhysicalToVirtualFm(flowMod, pmod);
 			updateVirtualToPhysicalFMMap(flowMod, this.ADD);
-			logger.info("Adding physical = " + flowMod + ", virtual = " +
-				    pmod + " to physicalToVirtualFlowModsMap of " +
-				    "this.flowTable of PlumbingSwitch " + this.id + ".");
 			for (PlumbingFlowMod pFlowMod : fmTuple.first.second) {
 			PlumbingSwitch pFlowModNode = pFlowMod.getPlumbingNode();
 			PolicyFlowTable pFlowModNodeTable = pFlowModNode.flowTable;
@@ -492,15 +487,6 @@ public class PlumbingSwitch implements OVXSendMsg {
 		    PolicyCompositionUtil.intersectMatch(prevPmod.getMatch(), prevPflow.getMatch()),
 		    prevPmod.getActions());
 		if (PolicyCompositionUtil.intersectMatch(match, pmod.getMatch()) != null) {
-		    /*System.out.println("\t" + prevPmod);
-		      System.out.println("\t" + prevPflow.getMatch());
-		      try {
-		      System.out.println("\t" + prevPflow.getPrevPFlow().getPrevPMod().getPlumbingNode().dpid);
-		      System.out.println("\t" + prevPflow.getNextPMod().getPlumbingNode().dpid);
-		      } catch (NullPointerException e) {
-		      ;
-		      }
-		      printX(prevPflow);*/
 		    PlumbingFlow pflow = new PlumbingFlow(match, prevPmod, pmod, prevPflow);
 		    List<Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>,
 			Integer>> fmTuples = fwdPropagateFlow(pflow);
@@ -514,9 +500,6 @@ public class PlumbingSwitch implements OVXSendMsg {
 			//System.out.println("checkpoint 3:" + flowMod);
 			this.flowTable.addPhysicalToVirtualFm(flowMod, pmod);
 			updateVirtualToPhysicalFMMap(flowMod, this.ADD);
-			logger.info("Adding physical = " + flowMod + ", virtual = " +
-				    pmod + " to physicalToVirtualFlowModsMap of " +
-				    "this.flowTable of PlumbingSwitch " + this.id + ".");
 			for (PlumbingFlowMod pFlowMod : fmTuple.first.second) {
 			    PlumbingSwitch pFlowModNode = pFlowMod.getPlumbingNode();
 			    PolicyFlowTable pFlowModNodeTable = pFlowModNode.flowTable;

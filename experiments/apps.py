@@ -126,6 +126,11 @@ class DemoVirtApp():
         self.dpid = "00:a4:23:05:00:00:00:01"
         self.rules1 = []
         rule = '{"switch":"%s", ' % self.dpid + \
+                '"name":"DemoVirt1R0", ' + \
+                '"priority":"0", ' + \
+                '"active":"true", "actions":""}'
+        self.rules1.append(rule)
+        rule = '{"switch":"%s", ' % self.dpid + \
             '"name":"DemoVirt1R1", ' + \
             '"priority":"1", ' + \
             '"ether-type":"2048", ' + \
@@ -140,7 +145,7 @@ class DemoVirtApp():
             '"active":"true", "actions":"output=2"}'
         self.rules1.append(rule)
 
-        dpid = "00:a4:23:05:00:00:00:01"
+        #dpid = "00:a4:23:05:00:00:00:01"
         self.rules2 = []
         rule = '{"switch":"%s", ' % self.dpid + \
             '"name":"DemoVirt2R1", ' + \
@@ -157,7 +162,7 @@ class DemoVirtApp():
             '"active":"true", "actions":"output=2"}'
         self.rules2.append(rule)
 
-        dpid = "00:a4:23:05:00:00:00:01"
+        #dpid = "00:a4:23:05:00:00:00:01"
         self.rules3 = []
         rule = '{"switch":"%s", ' % self.dpid + \
             '"name":"DemoVirt3R1", ' + \
@@ -191,9 +196,9 @@ class DemoVirtApp():
             subprocess.call(cmd, shell=True)
             print ""
 
-    def send_query(self):
-        cmd = "curl http://localhost:10001/wm/core/switch/%s/aggregate/json" \
-              % self.dpid
+    def send_query(self, stat_type):
+        cmd = "curl http://localhost:10001/wm/core/switch/%s/%s/json" \
+              % (self.dpid, stat_type)
         #cmd = "curl http://localhost:10001/wm/topology/links/json"
         subprocess.call(cmd, shell=True)
 

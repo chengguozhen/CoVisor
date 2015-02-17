@@ -367,6 +367,14 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     public List<OVXFlowStatisticsReply> getFlowStats(int plumbingSwitchId) {
 	log.info("getFlowStats(" + String.valueOf(plumbingSwitchId) + ")");
         Map<Integer, List<OVXFlowStatisticsReply>> stats = this.flowStats.get();
+	if (stats == null) {
+	    log.info("stats = null");
+	}
+	else {
+	    log.info("stats = " + stats);
+	    log.info("stats.containsKey(" + plumbingSwitchId + ") = " +
+		     stats.containsKey(plumbingSwitchId));
+	}
         if (stats != null && stats.containsKey(plumbingSwitchId)) {
 	    log.info("stats != null && stats.containsKey(" + String.valueOf(plumbingSwitchId) + ")");
 	    log.info("returning" + Collections.unmodifiableList(stats.get(plumbingSwitchId)).toString());

@@ -243,7 +243,10 @@ def exprVirt():
     virtCreatePolicy()
     app = DemoVirtApp(topo)
     app.installRules()
-    # CLI(net)
+    start_iperf(net)
+    time.sleep(SLEEP_TIME)
+    app.send_query("flow")
+    CLI(net)
 
 #********************************************************************
 # main
