@@ -204,10 +204,6 @@ public class PlumbingSwitch implements OVXSendMsg {
 	} 
 
 	else if (msg.getType() == OFType.STATS_REQUEST) {
-	    /*
-	     * Devirtualize stats request using virtualToPhysicalFMMap
-	     * and cookieToStatsMap.
-	     */
 	    this.logger.info("msg.getType() == OFType.STATS_REQUEST");
 	    OFStatisticsRequest req = (OFStatisticsRequest) msg;
 	    this.queryManager.handleStatsRequest(req, from);
@@ -384,7 +380,7 @@ public class PlumbingSwitch implements OVXSendMsg {
             return null;
 	}
     }
-	
+
     public PolicyUpdateTable doFlowModAdd(PlumbingFlowMod pmod) {
 	PolicyUpdateTable updateTable = new PolicyUpdateTable();
 	
@@ -425,6 +421,8 @@ public class PlumbingSwitch implements OVXSendMsg {
 		    OFFlowMod flowMod = fmTuple.first.first;
 		    flowMod.setCookie(this.graph.getPhysicalSwitch().
 				      generateCookie(this.id));
+		    logger.info("PlumbingSwitch " + this.id + ".  Just set " +
+				"cookie for " + flowMod);
 		    updateTable.addFlowMods.add(flowMod);
 		    //System.out.println("checkpoint 1:" + flowMod);
 		    this.flowTable.addPhysicalToVirtualFm(flowMod, pmod);
@@ -455,17 +453,19 @@ public class PlumbingSwitch implements OVXSendMsg {
 			OFFlowMod flowMod = fmTuple.first.first;
 			flowMod.setCookie(this.graph.getPhysicalSwitch().
 					  generateCookie(this.id));
+			logger.info("PlumbingSwitch " + this.id + ".  Just set " +
+				    "cookie for " + flowMod);
 			updateTable.addFlowMods.add(flowMod);
 			//System.out.println("checkpoint 2:" + flowMod);
 			this.flowTable.addPhysicalToVirtualFm(flowMod, pmod);
 			updateVirtualToPhysicalFMMap(flowMod, this.ADD);
 			for (PlumbingFlowMod pFlowMod : fmTuple.first.second) {
-			PlumbingSwitch pFlowModNode = pFlowMod.getPlumbingNode();
-			PolicyFlowTable pFlowModNodeTable = pFlowModNode.flowTable;
-			pFlowModNodeTable.addGeneratedParentFlowMod(pFlowMod, flowMod);
-			pFlowModNodeTable.addPhysicalToVirtualFm(flowMod, pFlowMod);
-			//pFlowMod.getOriginalOfm());
-			pFlowModNode.updateVirtualToPhysicalFMMap(flowMod, this.ADD);
+			    PlumbingSwitch pFlowModNode = pFlowMod.getPlumbingNode();
+			    PolicyFlowTable pFlowModNodeTable = pFlowModNode.flowTable;
+			    pFlowModNodeTable.addGeneratedParentFlowMod(pFlowMod, flowMod);
+			    pFlowModNodeTable.addPhysicalToVirtualFm(flowMod, pFlowMod);
+			    //pFlowMod.getOriginalOfm());
+			    pFlowModNode.updateVirtualToPhysicalFMMap(flowMod, this.ADD);
 			}
 		    }
 		}
@@ -496,6 +496,8 @@ public class PlumbingSwitch implements OVXSendMsg {
 			OFFlowMod flowMod = fmTuple.first.first;
 			flowMod.setCookie(this.graph.getPhysicalSwitch().
 					  generateCookie(this.id));
+			logger.info("PlumbingSwitch " + this.id + ".  Just set " +
+				    "cookie for " + flowMod);
 			updateTable.addFlowMods.add(flowMod);
 			//System.out.println("checkpoint 3:" + flowMod);
 			this.flowTable.addPhysicalToVirtualFm(flowMod, pmod);
@@ -850,50 +852,8 @@ public class PlumbingSwitch implements OVXSendMsg {
 	return this.virtualToPhysicalFMMap;
     }
 
-    /* 30 January NOT WORKING / OUTDATED
-     * Add fmMsg and its derived rules to map for answering queries.  Also
-     * remove deleted flow mods and update old virtualtoPhysicalFMMap entries
-     * with new flow mods, if applicable.
-     */
-    /*
-    private void updateVirtualToPhysicalFMMap(OFFlowMod fmMsg,
-					      PolicyUpdateTable updateTable2) {
-	logger.info("BEGIN updateVirtualToPhysicalFMMap\n  " + this.logHeader +
-		    "fmMsg = " + fmMsg + "\n  " + this.logHeader +
-		    "updateTable2 = " + updateTable2);
-	logger.info("virtualToPhysicalFMMap before fmMsg = " + fmMsg + "\n"
-		    + this.logHeader + mapString(this.virtualToPhysicalFMMap);
-	this.virtualToPhysicalFMMap.put(fmMsg, updateTable2.addFlowMods);
-	removeDeletedFlowMods(updateTable2);
-	updateExistingFMMapEntries(updateTable2);
-	logger.info("virtualToPhysicalFMMap after fmMsg = " + fmMsg + "\n"
-		    + this.logHeader + mapString(this.virtualToPhysicalFMMap));
-	logger.info("END updateVirtualToPhysicalFMMap");
+    public QueryManager getQueryManager() {
+	return this.queryManager;
     }
-
-    // Remove deleted physical flow mods from virtualToPhysicalFMMap.
-    private void removeDeletedFlowMods(PolicyUpdateTable updateTable2) {
-	logger.info("BEGIN removeDeletedFlowMods\n  " + this.logHeader +
-		    "updateTable2 = " + updateTable2);
-	for (OFFlowMod physFM :updateTable2.deleteFlowMods) {
-	    for (OFFlowMod virtualFM : this.virtualToPhysicalFMMap.keySet()) {
-		List<OFFlowMod> existingPhysFMs =
-		    this.virtualToPhysicalFMMap.get(virtualFM);
-		existingPhysFMs.remove(physFM);
-	    }
-	}
-	logger.info("END removeDeletedFlowMods");
-    }
-    */
-    /*
-     * New flow mod may change the list of physical flow mods corresponding
-     * to an existing virtual flow mod.  Update virtualToPhysicalFMMap
-     * accordingly.
-     */
-    /*
-    private void updateExistingFMMapEntries(PolicyUpdateTable updateTable2) {
-	logger.info("Still figuring out updateExistingFMMapEntries logic.");
-    }
-    */
 
 }

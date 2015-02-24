@@ -14,6 +14,7 @@ CONTROLLER_IP = "localhost"
 OVXCTLPY = "%s/OpenVirteX/utils/ovxctl.py" % WORKDIR
 SWNUMBER = 1
 SLEEP_TIME = 20
+STATS_TIME = 32
 
 #********************************************************************
 # mininet: start, kill
@@ -244,9 +245,9 @@ def exprVirt():
     app = DemoVirtApp(topo)
     app.installRules()
     start_iperf(net)
-    time.sleep(SLEEP_TIME)
+    time.sleep(STATS_TIME)
     app.send_query("flow")
-    CLI(net)
+    #CLI(net)
 
 #********************************************************************
 # main

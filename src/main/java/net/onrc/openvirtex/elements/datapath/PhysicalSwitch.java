@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.LinkedList;
@@ -382,6 +384,40 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
         }
 	log.info("returning null");
         return null;
+    }
+
+    private String cookieSetString(Set<Long> cookies) {
+	String s = "{";
+	for (Long cookie : cookies) {
+	    s += cookie + ", ";
+	}
+	if (cookies.size() > 0) {
+	    s = s.substring(0, s.length() - 2);
+	}
+	s += "}";
+	return s;
+    }
+
+    // Flow stats for set of specific cookies of physical flow mods.
+    public List<OVXFlowStatisticsReply> getFlowStats(Set<Long> cookies) {
+	log.info("getFlowStats(" + cookieSetString(cookies) + ")");
+	Map<Integer, List<OVXFlowStatisticsReply>> stats = this.flowStats.get();
+	log.info("stats = " + stats);
+	List<OVXFlowStatisticsReply> result = new ArrayList<OVXFlowStatisticsReply>();
+        if (stats != null) {
+	    for (List<OVXFlowStatisticsReply> replyList : stats.values()) {
+		log.info("replyList = " + replyList);
+		for (OVXFlowStatisticsReply reply : replyList) {
+		    log.info("reply.getCookie() = " + reply.getCookie());
+		    if (cookies.contains(reply.getCookie())) {
+			log.info("this stat is requested");
+			result.add(reply);
+		    }
+		}
+	    }
+	}
+	log.info("returning " + result);
+	return result;
     }
 
     public OVXPortStatisticsReply getPortStat(short portNumber) {

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
+import java.util.Set;
 
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 
@@ -69,6 +70,10 @@ public class PlumbingGraph {
 	public PlumbingSwitch getNode(int id) {
 		return this.nodes.get(id);
 	}
+
+    public Set<Integer> getNodeIds() {
+	return this.nodes.keySet();
+    }
 	
 	public PolicyUpdateTable update(OFFlowMod ofm, PlumbingSwitch node) {
         if (this.nodes.size() == 1) {
