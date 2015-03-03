@@ -44,8 +44,6 @@ import edu.princeton.cs.policy.adv.PolicyTree;
 public class QueryManager {
     private Logger logger = LogManager.getLogger(QueryManager.class.getName());
     private PlumbingSwitch plumbingSwitch;
-    // Most recent stats reply for each OFFlowMod, keyed by cookie.
-    private Map<Long, OVXFlowStatisticsReply> cookieToStatsMap;
     private PlumbingGraph graph;
     private PhysicalSwitch physicalSwitch;
 
@@ -56,7 +54,6 @@ public class QueryManager {
 	this.plumbingSwitch = plumbingSwitch;
 	this.graph = this.plumbingSwitch.getPlumbingGraph();
 	this.physicalSwitch = this.graph.getPhysicalSwitch();
-	this.cookieToStatsMap = new HashMap<Long, OVXFlowStatisticsReply>();
 
 	this.logHeader = "PlumbingSwitch " + this.plumbingSwitch.id + "  ";
     }

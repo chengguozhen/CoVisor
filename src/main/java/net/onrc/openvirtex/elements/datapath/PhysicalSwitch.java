@@ -369,33 +369,11 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
     public List<OVXFlowStatisticsReply> getFlowStats(int plumbingSwitchId) {
 	log.info("getFlowStats(" + String.valueOf(plumbingSwitchId) + ")");
         Map<Integer, List<OVXFlowStatisticsReply>> stats = this.flowStats.get();
-	if (stats == null) {
-	    log.info("stats = null");
-	}
-	else {
-	    log.info("stats = " + stats);
-	    log.info("stats.containsKey(" + plumbingSwitchId + ") = " +
-		     stats.containsKey(plumbingSwitchId));
-	}
         if (stats != null && stats.containsKey(plumbingSwitchId)) {
-	    log.info("stats != null && stats.containsKey(" + String.valueOf(plumbingSwitchId) + ")");
-	    log.info("returning" + Collections.unmodifiableList(stats.get(plumbingSwitchId)).toString());
             return Collections.unmodifiableList(stats.get(plumbingSwitchId));
         }
 	log.info("returning null");
         return null;
-    }
-
-    private String cookieSetString(Set<Long> cookies) {
-	String s = "{";
-	for (Long cookie : cookies) {
-	    s += cookie + ", ";
-	}
-	if (cookies.size() > 0) {
-	    s = s.substring(0, s.length() - 2);
-	}
-	s += "}";
-	return s;
     }
 
     // Flow stats for set of specific cookies of physical flow mods.
@@ -406,11 +384,11 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
 	List<OVXFlowStatisticsReply> result = new ArrayList<OVXFlowStatisticsReply>();
         if (stats != null) {
 	    for (List<OVXFlowStatisticsReply> replyList : stats.values()) {
-		log.info("replyList = " + replyList);
+		//log.info("replyList = " + replyList);
 		for (OVXFlowStatisticsReply reply : replyList) {
-		    log.info("reply.getCookie() = " + reply.getCookie());
+		    //log.info("reply.getCookie() = " + reply.getCookie());
 		    if (cookies.contains(reply.getCookie())) {
-			log.info("this stat is requested");
+			//log.info("this stat is requested");
 			result.add(reply);
 		    }
 		}
@@ -485,6 +463,19 @@ public class PhysicalSwitch extends Switch<PhysicalPort> {
             final int cookie = this.cookieCounter.getAndIncrement();
             return (long) plumbingSwitchId << 32 | cookie;
         }
+    }
+
+    // Utility for debugging.
+    private String cookieSetString(Set<Long> cookies) {
+	String s = "{";
+	for (Long cookie : cookies) {
+	    s += cookie + ", ";
+	}
+	if (cookies.size() > 0) {
+	    s = s.substring(0, s.length() - 2);
+	}
+	s += "}";
+	return s;
     }
 
 }

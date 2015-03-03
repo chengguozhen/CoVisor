@@ -198,7 +198,7 @@ def exprParallel():
     start_iperf(net)
     # Give time for CoVisor to start queries.
     for i in range(1):
-        time.sleep(SLEEP_TIME)
+        time.sleep(STATS_TIME)
         app1.send_query("flow")
     #net.stop()
     CLI(net)
