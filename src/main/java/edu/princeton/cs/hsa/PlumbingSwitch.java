@@ -248,58 +248,67 @@ public class PlumbingSwitch implements OVXSendMsg {
 	// Flow mods from after composition that generated this physicalFm.
 	List<OFFlowMod> composedFms = this.flowTable.getVirtualFlowMods(physicalFm);
 	logger.info("composedFms:  " + composedFms);
-	if (composedFms != null) {
-	    for (OFFlowMod composedFm : composedFms) {
-		/*
-		 * Get all virtual flow mods from controller that generated this
-		 * composedFm.
-		 */
-		for (OFFlowMod virtualFm : this.virtualToBeforePlumbingFMMap.keySet()) {
-		    List<OFFlowMod> maybeSiblingComposedFms =
-			this.virtualToBeforePlumbingFMMap.get(virtualFm);
-		    /*
-		     * composedFm responsible for generating this physicalFm was generated
-		     * by this virtualFm.
-		     */		
+	/*
+	 * composedFms is null if there isn't any devirtualization; physicalFm is
+	 * a composed flow mod local to this PlumbingSwitch.
+	 */
+	if (composedFms == null) {
+	    composedFms = new ArrayList<OFFlowMod>();
+	    composedFms.add(physicalFm);
+	}
+	for (OFFlowMod composedFm : composedFms) {
+	    for (OFFlowMod virtualFm : getVirtualFromComposedFm(composedFm)) {
+		List<OFFlowMod> siblingPhysicalFms = new ArrayList<OFFlowMod>();
+		if (this.virtualToPhysicalFMMap.keySet().contains(virtualFm)) {
+		    siblingPhysicalFms = this.virtualToPhysicalFMMap.get(virtualFm);
+		}
 		    
-		    /*
-		     * composedFm has xid = 0 and length = 72, so regular .equals
-		     * method of OFFlowMod doesn't work to determine if composedFm
-		     * is in maybeSiblingComposedFms.
-		     */
-		    if (this.queryManager.fmListContains(composedFm,
-							 maybeSiblingComposedFms)) {
-			List<OFFlowMod> siblingPhysicalFms = new ArrayList<OFFlowMod>();
-			if (this.virtualToPhysicalFMMap.keySet().contains(virtualFm)) {
-			siblingPhysicalFms = this.virtualToPhysicalFMMap.get(virtualFm);
-			}
-			
-			if (op == this.ADD) {
-			    try {
-				OFFlowMod clone = physicalFm.clone();
-				if (!siblingPhysicalFms.contains(physicalFm)) {
-				    siblingPhysicalFms.add(clone);
-				    //logger.info("Adding " + clone + " to siblingPhysicalFms.");
-				}
-			    }
-			    catch (CloneNotSupportedException e) {
-				e.printStackTrace();
-			    }
-			}
-			else if (op == this.DELETE) {
-			    siblingPhysicalFms.remove(composedFm);
-			    logger.info("Removing " + composedFm + " from siblingPhysicalFms.");
+		if (op == this.ADD) {
+		    try {
+			OFFlowMod clone = physicalFm.clone();
+			if (!siblingPhysicalFms.contains(physicalFm)) {
+			    siblingPhysicalFms.add(clone);
+			    //logger.info("Adding " + clone + " to siblingPhysicalFms.");
 			}
 		    }
+		    catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+		    }
+		}
+		else if (op == this.DELETE) {
+		    siblingPhysicalFms.remove(composedFm);
+			logger.info("Removing " + composedFm + " from siblingPhysicalFms.");
 		}
 	    }
 	}
+
 	
 	logger.info("END updateVirtualToPhysicalFMMap(" + physicalFm + ", " +
 		    op);
 	logger.info("PlumbingSwitch " + this.id);
 	logger.info("***************************************************");
+	
+    }
 
+    // Virtual flow mods that generated this composedFm.
+    public List<OFFlowMod> getVirtualFromComposedFm(OFFlowMod composedFm) {
+	ArrayList<OFFlowMod> virtualFms = new ArrayList<OFFlowMod>();
+	for (OFFlowMod virtualFm : this.virtualToBeforePlumbingFMMap.keySet()) {
+	    List<OFFlowMod> maybeSiblingComposedFms =
+		this.virtualToBeforePlumbingFMMap.get(virtualFm);
+
+	    // This is one of the virtualFms that generated composedFm.
+	    /*
+	     * composedFm has xid = 0 and length = 72, so regular equals
+	     * method of OFFlowMod doesn't work to determine if composedFm
+	     * is in maybeSiblingComposedFms.
+	     */
+	    if (this.queryManager.fmListContains(composedFm,
+						 maybeSiblingComposedFms)) {
+		virtualFms.add(virtualFm);
+	    }
+	}
+	return virtualFms;
     }
 
     
