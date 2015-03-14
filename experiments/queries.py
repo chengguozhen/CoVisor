@@ -250,6 +250,31 @@ def exprVirt():
     CLI(net)
 
 #********************************************************************
+# Ryu
+#********************************************************************
+# 13 March this doesn't work -- need to configure Mininet differently
+def ryu():
+    cleanAll()
+    (topo, net) = startMininet()
+    cmd = "sudo ryu-manager ryu_flow_stats.py"
+    subprocess.call(cmd, shell=True)
+    #time.sleep(SLEEP_TIME)
+    #virtCreatePlumbingGraph()
+    #virtAddController1(topo)
+    #virtAddController2(topo)
+    #virtAddController3(topo)
+    #createACL('1 dltype:exact,dstip:prefix output')
+    #createACL('2 dltype:exact,dstip:prefix output,mod:dstip')
+    #createACL('3 dltype:exact,dstip:prefix output')
+    #virtCreatePolicy()
+    #app = DemoVirtApp(topo)
+    #app.installRules()
+    start_iperf(net)
+    #time.sleep(STATS_TIME)
+    #app.send_query("flow")
+    CLI(net)
+
+#********************************************************************
 # main
 #********************************************************************
    
@@ -286,8 +311,10 @@ if __name__ == '__main__':
             exprSequential()
         elif sys.argv[1] == "expr-virt":
             exprVirt()
-        #elif sys.argv[1] == "expr-sequential-parallel":
-        #    exprSequentialParallel()
+        elif sys.argv[1] == "expr-sequential-parallel":
+            exprSequentialParallel()
+        elif sys.argv[1] == "ryu":
+            ryu()
         else:
             printHelp()
 

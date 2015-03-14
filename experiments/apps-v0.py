@@ -30,13 +30,6 @@ class DemoMonitorApp():
             '"active":"true", "actions":""}'
         self.rules.append(rule)
 
-        rule = '{"switch":"%s", ' % self.dpid + \
-            '"name":"ARP", ' + \
-            '"priority":"1", ' + \
-            '"ether-type":"2054", ' + \
-            '"active":"true", "actions":"output=flood"}'
-        self.rules.append(rule)
-
     def send_query(self, stat_type):
         cmd = "curl http://localhost:10001/wm/core/switch/%s/%s/json" \
               % (self.dpid, stat_type)
@@ -80,13 +73,6 @@ class DemoRouterApp():
             '"active":"true", "actions":"output=2"}'
         self.rules.append(rule)
 
-        rule = '{"switch":"%s", ' % self.dpid + \
-            '"name":"ARP", ' + \
-            '"priority":"1", ' + \
-            '"ether-type":"2054", ' + \
-            '"active":"true", "actions":"output=flood"}'
-        self.rules.append(rule)
-
     def installRules(self):
         for rule in self.rules:
             print rule
@@ -123,13 +109,6 @@ class DemoLoadBalancerApp():
             '"ether-type":"2048", ' + \
             '"dst-ip":"3.0.0.0", ' + \
             '"active":"true", "actions":"set-dst-ip=2.0.0.2"}'
-        self.rules.append(rule)
-
-        rule = '{"switch":"%s", ' % self.dpid + \
-            '"name":"ARP", ' + \
-            '"priority":"1", ' + \
-            '"ether-type":"2054", ' + \
-            '"active":"true", "actions":"output=flood"}'
         self.rules.append(rule)
 
     def installRules(self):
@@ -199,15 +178,6 @@ class DemoVirtApp():
             '"dst-ip":"2.0.0.0/16", ' + \
             '"active":"true", "actions":"output=2"}'
         self.rules3.append(rule)
-
-        arp = '{"switch":"%s", ' % self.dpid + \
-            '"name":"ARP", ' + \
-            '"priority":"1", ' + \
-            '"ether-type":"2054", ' + \
-            '"active":"true", "actions":"output=flood"}'
-        self.rules1.append(arp)
-        self.rules2.append(arp)
-        self.rules3.append(arp)
 
     def installRules(self):
         for rule in self.rules1:
