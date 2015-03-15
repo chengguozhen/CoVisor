@@ -5,6 +5,7 @@ import subprocess
 from subprocess import Popen
 import random
 from ExprTopo.querytopo import *
+from ExprTopo.parallel_querytopo import *
 from apps import *
 import os.path
 from ctrl import *
@@ -20,7 +21,7 @@ STATS_TIME = 32
 # mininet: start, kill
 #********************************************************************
 def startMininet():
-    topo = QueryTopo(sw_number = SWNUMBER)
+    topo = QueryTopo(sw_number=SWNUMBER)
     net = Mininet(topo, autoSetMacs=True, xterms=False,
         controller=RemoteController)
     net.addController('c', ip="127.0.0.1")
@@ -28,6 +29,19 @@ def startMininet():
         "switches pointing to OpenVirteX at 127.0.0.1 port 6633\n"
     net.start()
     return (topo, net)
+
+def startMininet(topo_string):
+    topo = QueryTopo(sw_number=SWNUMBER)
+    if topo_string == "par":
+        topo = ParallelQueryTopo(sw_number=SWNUMBER)
+    net = Mininet(topo, autoSetMacs=True, xterms=False,
+        controller=RemoteController)
+    net.addController('c', ip="127.0.0.1")
+    print "\nHosts configured with IPs, " + \
+        "switches pointing to OpenVirteX at 127.0.0.1 port 6633\n"
+    net.start()
+    return (topo, net)
+    
 
 def killMininet():
     print "kill mininet"
@@ -157,14 +171,14 @@ def killFloodlight():
 # iperf
 #********************************************************************
 
-def start_iperf(net):
-    h_s1_2 = net.getNodeByName('h_s1_2')
-    print "Starting iperf server on host with IP = %s." % h_s1_2.IP()
-    server = h_s1_2.popen("iperf -s -u")
-    h_s1_1 = net.getNodeByName("h_s1_1")
-    print "Starting iperf client on host with IP = %s." % h_s1_1.IP()
-    cmd = "iperf -t %s -c %s -u" % (4*SLEEP_TIME, h_s1_2.IP())
-    client = h_s1_1.popen(cmd)
+def start_iperf(net, serverHostName='h_s1_2', clientHostName='h_s1_1'):
+    serverHost = net.getNodeByName(serverHostName)
+    print "Starting iperf server on host with IP = %s." % serverHost.IP()
+    server = serverHost.popen("iperf -s -u")
+    clientHost = net.getNodeByName(clientHostName)
+    print "Starting iperf client on host with IP = %s." % clientHost.IP()
+    cmd = "iperf -t %s -c %s -u" % (1.5*STATS_TIME, serverHost.IP())
+    client = clientHost.popen(cmd)
 
 #********************************************************************
 # utils
@@ -183,7 +197,7 @@ def exprParallel():
     cleanAll()
     startFloodlight(2)
     startOVX()
-    (topo, net) = startMininet()
+    (topo, net) = startMininet("par")
     time.sleep(SLEEP_TIME)
     createPlumbingGraph()
     addController1(topo)
@@ -197,7 +211,7 @@ def exprParallel():
     app2.installRules()
     start_iperf(net)
     # Give time for CoVisor to start queries.
-    for i in range(1):
+    for i in range(3):
         time.sleep(STATS_TIME)
         app1.send_query("flow")
     #net.stop()

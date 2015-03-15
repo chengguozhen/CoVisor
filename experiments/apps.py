@@ -64,23 +64,31 @@ class DemoRouterApp():
                 '"active":"true", "actions":""}'
         self.rules.append(rule)
 
-        rule = '{"switch":"%s", ' % dpid + \
-            '"name":"DemoRouter1", ' + \
-            '"priority":"1", ' + \
-            '"ether-type":"2048", ' + \
-            '"dst-ip":"2.0.0.1", ' + \
-            '"active":"true", "actions":"output=1"}'
-        self.rules.append(rule)
+        #rule = '{"switch":"%s", ' % dpid + \
+        #    '"name":"DemoRouter1", ' + \
+        #    '"priority":"1", ' + \
+        #    '"ether-type":"2048", ' + \
+        #    '"dst-ip":"2.0.0.1", ' + \
+        #    '"active":"true", "actions":"output=1"}'
+        #self.rules.append(rule)
+
+        #rule = '{"switch":"%s", ' % dpid + \
+        #    '"name":"DemoRouter2", ' + \
+        #    '"priority":"1", ' + \
+        #    '"ether-type":"2048", ' + \
+        #    '"dst-ip":"2.0.0.2", ' + \
+        #    '"active":"true", "actions":"output=2"}'
+        #self.rules.append(rule)
+        for i in range(topo.hostPerSw):
+            rule = '{"switch":"%s", ' % dpid + \
+                   '"name":"DemoRouter%s", ' % (i + 1) + \
+                   '"priority":"1", ' + \
+                   '"ether-type":"2048", ' + \
+                   '"dst-ip":"1.0.0.%s", ' % (i + 1) + \
+                   '"active":"true", "actions":"output=%d"}' % (i + 1)
+            self.rules.append(rule)
 
         rule = '{"switch":"%s", ' % dpid + \
-            '"name":"DemoRouter2", ' + \
-            '"priority":"1", ' + \
-            '"ether-type":"2048", ' + \
-            '"dst-ip":"2.0.0.2", ' + \
-            '"active":"true", "actions":"output=2"}'
-        self.rules.append(rule)
-
-        rule = '{"switch":"%s", ' % self.dpid + \
             '"name":"ARP", ' + \
             '"priority":"1", ' + \
             '"ether-type":"2054", ' + \
@@ -125,7 +133,7 @@ class DemoLoadBalancerApp():
             '"active":"true", "actions":"set-dst-ip=2.0.0.2"}'
         self.rules.append(rule)
 
-        rule = '{"switch":"%s", ' % self.dpid + \
+        rule = '{"switch":"%s", ' % dpid + \
             '"name":"ARP", ' + \
             '"priority":"1", ' + \
             '"ether-type":"2054", ' + \
@@ -204,7 +212,7 @@ class DemoVirtApp():
             '"name":"ARP", ' + \
             '"priority":"1", ' + \
             '"ether-type":"2054", ' + \
-            '"active":"true", "actions":"output=flood"}'
+            '"active":"true", "actions":"output=controller"}'
         self.rules1.append(arp)
         self.rules2.append(arp)
         self.rules3.append(arp)
