@@ -7,6 +7,7 @@ import random
 from ExprTopo.querytopo import *
 from ExprTopo.parallel_querytopo import *
 from apps import *
+from ryu_apps import *
 import os.path
 from ctrl import *
 
@@ -16,6 +17,13 @@ OVXCTLPY = "%s/OpenVirteX/utils/ovxctl.py" % WORKDIR
 SWNUMBER = 1
 SLEEP_TIME = 20
 STATS_TIME = 32
+
+
+#********************************************************************
+# 23 March
+# None of the Ryu stuff works.  See Notes document for description of
+# the errors caused by each function.
+#********************************************************************
 
 #********************************************************************
 # mininet: start, kill
@@ -30,7 +38,7 @@ def startMininet():
     net.start()
     return (topo, net)
 
-def startMininet(topo_string):
+def startMininet(topo_string=""):
     topo = QueryTopo(sw_number=SWNUMBER)
     if topo_string == "par":
         topo = ParallelQueryTopo(sw_number=SWNUMBER)
@@ -168,6 +176,44 @@ def killFloodlight():
         "| xargs kill -9 > /dev/null 2>&1", shell=True)
 
 #********************************************************************
+# ryu: start, show, kill
+#********************************************************************
+def startOneRyu(index):
+    with open("ctrl%d.log" % index, "w") as logfile:
+        listen_port = index * 10000
+        api_port = listen_port + 1
+        cmd = "sudo ryu-manager --verbose --ofp-tcp-listen-port %d --wsapi-port %d &" \
+              % (listen_port, api_port)
+        subprocess.call(cmd, shell=True, stdout=logfile, stderr=
+                        subprocess.STDOUT)
+
+def startRyuStats():
+    with open("ryustats.log", "w") as logfile:
+        listen_port = "--ofp-tcp-listen-port 10000 "
+        #app = "simple_isolation.SimpleIsolation,ryu.app.rest.restapi,ryu.app.event_dumper.EventDumper "
+        #app = "--app-lists ryu.app.simple_isolation.SimpleIsolation"
+        cmd = "sudo ryu-manager --verbose " + listen_port + app + "&"
+        subprocess.call(cmd, shell=True, stdout=logfile, stderr=
+                        subprocess.STDOUT)
+
+def startRyu(count):
+    if count > 3:
+        print "warning: bigger than 3 controllers, only start 3 controllers"
+        count = 3
+    for i in range(count):
+        print "starting Ryu " + str(i + 1)
+        startOneRyu(i+1)
+
+def showRyu():
+    subprocess.call("ps ax | grep ryu | grep -v grep", shell=True)
+
+def killRyu():
+    print "kill ryu"
+    subprocess.call("ps ax | grep ryu | grep -v grep | awk '{print $1}' " +
+        "| xargs kill -9 > /dev/null 2>&1", shell=True)
+    #                "| xargs kill -9", shell=True)
+    print "end of killRyu"
+#********************************************************************
 # iperf
 #********************************************************************
 
@@ -189,6 +235,59 @@ def cleanAll():
     killOVX()
     showOVX()
     showFloodlight()
+
+def cleanAllRyu():
+    #cleanAll()
+    killMininet()
+    killRyu()
+    killOVX()
+    showOVX()
+    showRyu()
+
+#********************************************************************
+# expr: Ryu stats
+#********************************************************************
+# 23 March this doesn't work.
+def ryuStats():
+    startRyuStats()
+    startOVX()
+    (topo, net) = startMininet()
+    time.sleep(SLEEP_TIME)
+    createPlumbingGraph()
+    start_iperf(net)
+    CLI(net)
+
+#********************************************************************
+# Ryu
+#********************************************************************
+# 23 March this doesn't work.
+def ryu():
+    #cleanAllRyu()
+    startRyu(2)
+    startOVX()
+    (topo, net) = startMininet("par")
+    print "starting sleep"
+    time.sleep(SLEEP_TIME)
+    print "aking up, aking up"
+    createPlumbingGraph()
+    print "about to add controllers"
+    addController1(topo)
+    addController2(topo)
+    createACL('1 dltype:exact,srcip:prefix,dstip:prefix output')
+    createACL('2 dltype:exact,dstip:prefix output')
+    createPolicy('"1+2"')
+    app1 = RyuMonitorApp(topo)
+    print "about to install rules"
+    app1.installRules()
+    app2 = RyuRouterApp(topo)
+    app2.installRules()
+    start_iperf(net)
+    # Give time for CoVisor to start queries.
+    for i in range(3):
+        time.sleep(STATS_TIME)
+        app1.send_query("flow")
+    #net.stop()
+    CLI(net)
 
 #********************************************************************
 # expr: parallel
@@ -241,7 +340,6 @@ def exprSequential():
 #********************************************************************
 # expr: virt
 #********************************************************************
-
 def exprVirt():
     cleanAll()
     startFloodlight(3)
@@ -264,31 +362,6 @@ def exprVirt():
     CLI(net)
 
 #********************************************************************
-# Ryu
-#********************************************************************
-# 13 March this doesn't work -- need to configure Mininet differently
-def ryu():
-    cleanAll()
-    (topo, net) = startMininet()
-    cmd = "sudo ryu-manager ryu_flow_stats.py"
-    subprocess.call(cmd, shell=True)
-    #time.sleep(SLEEP_TIME)
-    #virtCreatePlumbingGraph()
-    #virtAddController1(topo)
-    #virtAddController2(topo)
-    #virtAddController3(topo)
-    #createACL('1 dltype:exact,dstip:prefix output')
-    #createACL('2 dltype:exact,dstip:prefix output,mod:dstip')
-    #createACL('3 dltype:exact,dstip:prefix output')
-    #virtCreatePolicy()
-    #app = DemoVirtApp(topo)
-    #app.installRules()
-    start_iperf(net)
-    #time.sleep(STATS_TIME)
-    #app.send_query("flow")
-    CLI(net)
-
-#********************************************************************
 # main
 #********************************************************************
    
@@ -298,6 +371,7 @@ def printHelp():
     print "\t\tstart-ovx show-ovx kill-ovx"
     print "\t\tstart-fl show-fl kill-fl"
     print "\t\texpr-sequential expr-virt clean"
+    print "\t\tclean-ryu"
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
@@ -329,6 +403,10 @@ if __name__ == '__main__':
             exprSequentialParallel()
         elif sys.argv[1] == "ryu":
             ryu()
+        elif sys.argv[1] == "ryu-stats":
+            ryuStats()
+        elif sys.argv[1] == "clean-ryu":
+            cleanAllRyu()
         else:
             printHelp()
 
