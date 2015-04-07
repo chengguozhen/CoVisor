@@ -1,7 +1,6 @@
 #!/usr/bin/python
 import sys
 import time
-import os
 import subprocess
 from subprocess import Popen
 import random
@@ -18,14 +17,12 @@ OVXCTLPY = "%s/OpenVirteX/utils/ovxctl.py" % WORKDIR
 SWNUMBER = 1
 SLEEP_TIME = 20
 STATS_TIME = 32
-TIME_LOG = "time.txt"
-TIME_LOG1 = "time-v1.txt"
 
 
 #********************************************************************
-# 30 March
-# This script is for evaluating stats queries.  See queries-v1.py for
-# attempts to connect Ryu to CoVisor and send iperf traffic.
+# 23 March
+# None of the Ryu stuff works.  See Notes document for description of
+# the errors caused by each function.
 #********************************************************************
 
 #********************************************************************
@@ -178,18 +175,119 @@ def killFloodlight():
     subprocess.call("ps ax | grep floodlight | grep -v grep | awk '{print $1}' " +
         "| xargs kill -9 > /dev/null 2>&1", shell=True)
 
+#********************************************************************
+# ryu: start, show, kill
+#********************************************************************
+def startOneRyu(index):
+    with open("ctrl%d.log" % index, "w") as logfile:
+        listen_port = index * 10000
+        api_port = listen_port + 1
+        cmd = "sudo ryu-manager --verbose --ofp-tcp-listen-port %d --wsapi-port %d &" \
+              % (listen_port, api_port)
+        subprocess.call(cmd, shell=True, stdout=logfile, stderr=
+                        subprocess.STDOUT)
+
+def startRyuStats():
+    with open("ryustats.log", "w") as logfile:
+        listen_port = "--ofp-tcp-listen-port 10000 "
+        #app = "simple_isolation.SimpleIsolation,ryu.app.rest.restapi,ryu.app.event_dumper.EventDumper "
+        #app = "--app-lists ryu.app.simple_isolation.SimpleIsolation"
+        cmd = "sudo ryu-manager --verbose " + listen_port + app + "&"
+        subprocess.call(cmd, shell=True, stdout=logfile, stderr=
+                        subprocess.STDOUT)
+
+def startRyu(count):
+    if count > 3:
+        print "warning: bigger than 3 controllers, only start 3 controllers"
+        count = 3
+    for i in range(count):
+        print "starting Ryu " + str(i + 1)
+        startOneRyu(i+1)
+
+def showRyu():
+    subprocess.call("ps ax | grep ryu | grep -v grep", shell=True)
+
+def killRyu():
+    print "kill ryu"
+    subprocess.call("ps ax | grep ryu | grep -v grep | awk '{print $1}' " +
+        "| xargs kill -9 > /dev/null 2>&1", shell=True)
+    #                "| xargs kill -9", shell=True)
+    print "end of killRyu"
+#********************************************************************
+# iperf
+#********************************************************************
+
+def start_iperf(net, serverHostName='h_s1_2', clientHostName='h_s1_1'):
+    serverHost = net.getNodeByName(serverHostName)
+    print "Starting iperf server on host with IP = %s." % serverHost.IP()
+    server = serverHost.popen("iperf -s -u")
+    clientHost = net.getNodeByName(clientHostName)
+    print "Starting iperf client on host with IP = %s." % clientHost.IP()
+    cmd = "iperf -t %s -c %s -u" % (1.5*STATS_TIME, serverHost.IP())
+    client = clientHost.popen(cmd)
 
 #********************************************************************
 # utils
 #********************************************************************
-def cleanAll(time_log=TIME_LOG):
+def cleanAll():
     killMininet()
     killFloodlight()
     killOVX()
     showOVX()
     showFloodlight()
-    if os.path.exists(time_log):
-        os.remove(time_log)
+
+def cleanAllRyu():
+    #cleanAll()
+    killMininet()
+    killRyu()
+    killOVX()
+    showOVX()
+    showRyu()
+
+#********************************************************************
+# expr: Ryu stats
+#********************************************************************
+# 23 March this doesn't work.
+def ryuStats():
+    startRyuStats()
+    startOVX()
+    (topo, net) = startMininet()
+    time.sleep(SLEEP_TIME)
+    createPlumbingGraph()
+    start_iperf(net)
+    CLI(net)
+
+#********************************************************************
+# Ryu
+#********************************************************************
+# 23 March this doesn't work.
+def ryu():
+    #cleanAllRyu()
+    startRyu(2)
+    startOVX()
+    (topo, net) = startMininet("par")
+    print "starting sleep"
+    time.sleep(SLEEP_TIME)
+    print "aking up, aking up"
+    createPlumbingGraph()
+    print "about to add controllers"
+    addController1(topo)
+    addController2(topo)
+    createACL('1 dltype:exact,srcip:prefix,dstip:prefix output')
+    createACL('2 dltype:exact,dstip:prefix output')
+    createPolicy('"1+2"')
+    app1 = RyuMonitorApp(topo)
+    print "about to install rules"
+    app1.installRules()
+    app2 = RyuRouterApp(topo)
+    app2.installRules()
+    start_iperf(net)
+    # Give time for CoVisor to start queries.
+    for i in range(3):
+        time.sleep(STATS_TIME)
+        app1.send_query("flow")
+    #net.stop()
+    CLI(net)
 
 #********************************************************************
 # expr: parallel
@@ -210,33 +308,13 @@ def exprParallel():
     app1.installRules()
     app2 = DemoRouterApp(topo)
     app2.installRules()
-    for i in range(30000):
-        app1.send_query("flow", time_log=TIME_LOG)
-    net.stop()
-    #CLI(net)
-
-#********************************************************************
-# expr: parallel-v1
-#********************************************************************
-def exprParallel1():
-    cleanAll(time_log=TIME_LOG1)
-    startFloodlight(2)
-    startOVX()
-    (topo, net) = startMininet("par")
-    time.sleep(SLEEP_TIME)
-    createPlumbingGraph()
-    addController1(topo)
-    addController2(topo)
-    createACL('1 dltype:exact,srcip:prefix,dstip:prefix output')
-    createACL('2 dltype:exact,dstip:prefix output')
-    createPolicy('"1+2"')
-    app1 = DemoMonitorApp(topo)
-    app1.installRules()
-    app2 = DemoRouterApp(topo)
-    app2.installRules()
-    app1.send_queries("flow", time_log=TIME_LOG1)   
-    net.stop()
-    #CLI(net)
+    start_iperf(net)
+    # Give time for CoVisor to start queries.
+    for i in range(3):
+        time.sleep(STATS_TIME)
+        app1.send_query("flow")
+    #net.stop()
+    CLI(net)
 
 #********************************************************************
 # expr: sequential
@@ -321,8 +399,14 @@ if __name__ == '__main__':
             exprSequential()
         elif sys.argv[1] == "expr-virt":
             exprVirt()
-        elif sys.argv[1] == "expr-par1":
-            exprParallel1()
+        elif sys.argv[1] == "expr-sequential-parallel":
+            exprSequentialParallel()
+        elif sys.argv[1] == "ryu":
+            ryu()
+        elif sys.argv[1] == "ryu-stats":
+            ryuStats()
+        elif sys.argv[1] == "clean-ryu":
+            cleanAllRyu()
         else:
             printHelp()
 

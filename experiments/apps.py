@@ -37,11 +37,29 @@ class DemoMonitorApp():
             '"active":"true", "actions":"output=flood"}'
         self.rules.append(rule)
 
-    def send_query(self, stat_type):
-        cmd = "curl http://localhost:10001/wm/core/switch/%s/%s/json" \
+    # Trying to record time to execute the command.
+    def send_query(self, stat_type, time_log="time.txt"):
+        ending = "1> /dev/null 2>> %s" # print just time output
+        # ending = ">> %s 2>&1" # also print stats response
+        cmd = "(time curl http://localhost:10001/wm/core/switch/%s/%s/json) " \
               % (self.dpid, stat_type)
-        #cmd = "curl http://localhost:10001/wm/topology/links/json"
+        cmd = cmd + ending % time_log
         subprocess.call(cmd, shell=True)
+
+    def send_queries(self, stat_type, time_log="time.txt", n=300000):
+        for i in range(n):
+            cmd = "curl http://localhost:10001"
+            cmd = cmd + "/wm/core/switch/%s/%s/json > /dev/null" \
+                  % (self.dpid, stat_type)
+            # Print one of each 1000.
+            if (i % 1000) == 0:
+                ending = "1> /dev/null 2>> %s"  # print just time output
+                # ending = ">> %s 2>&1"  # also print stats response
+                cmd = "(time curl http://localhost:10001"
+                cmd = cmd + "/wm/core/switch/%s/%s/json) " \
+                      % (self.dpid, stat_type)
+                cmd = cmd + ending % time_log
+            subprocess.call(cmd, shell=True)
 
     def installRules(self):
         for rule in self.rules:
