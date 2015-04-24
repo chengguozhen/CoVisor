@@ -1,0 +1,27 @@
+2014-10-22 20:27:49,850 DEBUG Generated plugins in 0.000031000 seconds
+2014-10-22 20:27:49,852 DEBUG Found Plugin Map at jar:file:/Users/xinjin/.m2/repository/org/apache/logging/log4j/log4j-core/2.0-rc1/log4j-core-2.0-rc1.jar!/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat
+2014-10-22 20:27:50,059 DEBUG Generated plugins in 0.209055000 seconds
+2014-10-22 20:27:50,144 DEBUG Generated plugins in 0.082743000 seconds
+2014-10-22 20:27:50,153 DEBUG Calling createLayout on class org.apache.logging.log4j.core.layout.PatternLayout for element PatternLayout with params(pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{1} - %msg%n", Configuration(/Users/xinjin/Documents/FlowMaster/OpenVirteX/config/log4j2.xml), null, charset="null", alwaysWriteExceptions="null", noConsoleNoAnsi="null")
+2014-10-22 20:27:50,243 DEBUG Generated plugins in 0.089891000 seconds
+2014-10-22 20:27:50,246 DEBUG Calling createAppender on class org.apache.logging.log4j.core.appender.ConsoleAppender for element Console with params(PatternLayout(%d{HH:mm:ss.SSS} [%t] %-5level %logger{1} - %msg%n), null, target="SYSTEM_OUT", name="Console", follow="null", ignoreExceptions="null")
+2014-10-22 20:27:50,247 DEBUG Calling createAppenders on class org.apache.logging.log4j.core.config.plugins.AppendersPlugin for element appenders with params(Appenders={Console})
+2014-10-22 20:27:50,247 DEBUG Calling createAppenderRef on class org.apache.logging.log4j.core.config.AppenderRef for element appender-ref with params(ref="Console", level="null", null)
+2014-10-22 20:27:50,249 DEBUG Calling createLogger on class org.apache.logging.log4j.core.config.LoggerConfig$RootLogger for element root with params(additivity="null", level="INFO", includeLocation="false", AppenderRef={Console}, Properties={}, Configuration(/Users/xinjin/Documents/FlowMaster/OpenVirteX/config/log4j2.xml), null)
+2014-10-22 20:27:50,249 DEBUG Calling createLoggers on class org.apache.logging.log4j.core.config.plugins.LoggersPlugin for element loggers with params(Loggers={root})
+2014-10-22 20:27:50,305 DEBUG Registering MBean org.apache.logging.log4j2:type=sun.misc.Launcher$AppClassLoader@4821e115
+2014-10-22 20:27:50,307 DEBUG Registering MBean org.apache.logging.log4j2:type=sun.misc.Launcher$AppClassLoader@4821e115,component=StatusLogger
+2014-10-22 20:27:50,308 DEBUG Registering MBean org.apache.logging.log4j2:type=sun.misc.Launcher$AppClassLoader@4821e115,component=ContextSelector
+2014-10-22 20:27:50,309 DEBUG Registering MBean org.apache.logging.log4j2:type=sun.misc.Launcher$AppClassLoader@4821e115,component=Loggers,name=
+2014-10-22 20:27:50,310 DEBUG Registering MBean org.apache.logging.log4j2:type=sun.misc.Launcher$AppClassLoader@4821e115,component=Appenders,name=Console
+2014-10-22 20:27:50,310 DEBUG Reconfiguration completed
+20:27:50.405 [main] INFO  OpenVirteX - Starting OpenVirteX...
+20:27:50.411 [main] INFO  PhysicalNetwork - Starting network discovery...
+20:27:50.413 [main] INFO  MongoConnection - Connecting to MongoDB at 127.0.0.1:27017
+20:27:50.487 [main] ERROR MongoConnection - Error connecting to database
+20:27:50.496 [main] ERROR DBManager - Failed to set database index: null
+20:27:50.506 [main] ERROR DBManager - Failed to load virtual networks from db: Read operation to server /127.0.0.1:27017 failed on database OVX
+20:27:50.572 [main] INFO  JettyServer - Initializing API WebServer on port 8080
+20:27:50.643 [Thread-4] INFO  Server - jetty-9.0.5.v20130815
+20:27:50.680 [Thread-4] INFO  ServerConnector - Started ServerConnector@2b36546e{HTTP/1.1}{0.0.0.0:8080}
+20:27:50.902 [Thread-4] INFO  ServerConnector - Started ServerConnector@32b196b2{SSL-http/1.1}{0.0.0.0:8443}

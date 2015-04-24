@@ -1,19 +1,20 @@
 in = 'res_parallel_all'
 
-set terminal pdf dashed font "Helvetica, 16" size 5,4 # monochrome
+set terminal pdf dashed font "Helvetica, 20" size 5,4 # monochrome
 set datafile separator '\t'
 set border lw 3
 
-set xlabel 'Size of L2 Router Policy (# of Rules)'
+#set xlabel 'L2 Router Policy Size (# of Rules)' offset -2
 set xtics nomirror
 
 set style data histogram
 set style histogram errorbars lw 3
 set style fill solid border -1
 
-set tmargin at screen 0.77
+set tmargin at screen 0.71
+set bmargin at screen 0.12
 set key outside c t
-set key width -6
+set key width -10
 
 # plot compile time
 set output 'Eval_parallel_compile.pdf'
