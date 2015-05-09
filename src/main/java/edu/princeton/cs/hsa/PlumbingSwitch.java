@@ -74,7 +74,6 @@ public class PlumbingSwitch implements OVXSendMsg {
     private String logHeader = "";
     private QueryManager queryManager;
 
-
     public PlumbingSwitch(int id, PlumbingGraph graph) {
 	this.id = id;
 	this.graph = graph;
@@ -372,8 +371,7 @@ public class PlumbingSwitch implements OVXSendMsg {
 		for (Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer>
 			 fmTuple : fmTuples) {
 		    OFFlowMod flowMod = fmTuple.first.first;
-		    flowMod.setCookie(this.graph.getPhysicalSwitch().
-				      generateCookie(this.id));
+		    flowMod.setCookie(this.graph.generateCookie(this.id));
 		    updateTable.addFlowMods.add(flowMod);
 		    //System.out.println("checkpoint 1:" + flowMod);
 		    this.flowTable.addPhysicalToVirtualFm(flowMod, pmod);
@@ -401,8 +399,7 @@ public class PlumbingSwitch implements OVXSendMsg {
 		    for (Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer>
 			     fmTuple : fmTuples) {
 			OFFlowMod flowMod = fmTuple.first.first;
-			flowMod.setCookie(this.graph.getPhysicalSwitch().
-					  generateCookie(this.id));
+			flowMod.setCookie(this.graph.generateCookie(this.id));
 			updateTable.addFlowMods.add(flowMod);
 			//System.out.println("checkpoint 2:" + flowMod);
 			this.flowTable.addPhysicalToVirtualFm(flowMod, pmod);
@@ -441,8 +438,7 @@ public class PlumbingSwitch implements OVXSendMsg {
 		    for (Tuple<Tuple<OFFlowMod, List<PlumbingFlowMod>>, Integer>
 			     fmTuple : fmTuples) {
 			OFFlowMod flowMod = fmTuple.first.first;
-			flowMod.setCookie(this.graph.getPhysicalSwitch().
-					  generateCookie(this.id));
+			flowMod.setCookie(this.graph.generateCookie(this.id));
 			updateTable.addFlowMods.add(flowMod);
 			//System.out.println("checkpoint 3:" + flowMod);
 			this.flowTable.addPhysicalToVirtualFm(flowMod, pmod);

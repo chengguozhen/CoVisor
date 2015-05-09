@@ -38,6 +38,7 @@ public class PolicyFlowTable {
     private PolicyFlowModStore flowModStore;
     // (fm in this flow table, flow mods from controller responsible for generating this fm)
     private ConcurrentHashMap<OFFlowMod, List<OFFlowMod>> physicalToVirtualFlowModsMap;
+    public int helperSize;
     
     public PolicyFlowTable() {
 	this.generatedParentFlowModsDictionary = new ConcurrentHashMap<OFFlowMod,
@@ -48,6 +49,7 @@ public class PolicyFlowTable {
     	List<PolicyFlowModStoreKey> storeKeys = new ArrayList<PolicyFlowModStoreKey>();
     	storeKeys.add(PolicyFlowModStoreKey.ALL);
     	this.flowModStore = PolicyFlowModStore.createFlowModStore(storeTypes, storeKeys, false);
+	this.helperSize = 0;
     }
     
     public PolicyFlowTable(List<PolicyFlowModStoreType> storeTypes,
@@ -59,7 +61,16 @@ public class PolicyFlowTable {
 	this.flowModStore = PolicyFlowModStore.createFlowModStore(storeTypes,
 								  storeKeys,
 								  isLeftInSequentialComposition);
+	this.helperSize = 0;
     }
+
+	public PolicyFlowTable(List<PolicyFlowModStoreType> storeTypes,
+			List<PolicyFlowModStoreKey> storeKeys) {
+		this.generatedParentFlowModsDictionary = new ConcurrentHashMap<OFFlowMod, List<OFFlowMod>>();
+		this.flowModStore = PolicyFlowModStore.createFlowModStore(storeTypes, storeKeys, false);
+
+		this.helperSize = 0;
+	}
 	
 	public void addFlowMod(OFFlowMod fm) {
 		this.flowModStore.add(fm);
@@ -78,6 +89,7 @@ public class PolicyFlowTable {
 	public PolicyUpdateTable update (OFFlowMod fm) {
 		switch (fm.getCommand()) {
         case OFFlowMod.OFPFC_ADD:
+	    this.helperSize++;
             return doFlowModAdd(fm);
         case OFFlowMod.OFPFC_MODIFY:
         case OFFlowMod.OFPFC_MODIFY_STRICT:

@@ -1,16 +1,13 @@
 #!/usr/bin/python
 import sys
 import time
-import os
 import subprocess
 from subprocess import Popen
 import random
 from ExprTopo.querytopo import *
 from ExprTopo.parallel_querytopo import *
-from apps import *
-from ryu_apps import *
+from apps_iperf import *
 import os.path
-from ctrl import *
 
 WORKDIR = "/home/covisor"
 CONTROLLER_IP = "localhost"
@@ -18,18 +15,12 @@ OVXCTLPY = "%s/OpenVirteX/utils/ovxctl.py" % WORKDIR
 SWNUMBER = 1
 SLEEP_TIME = 20
 STATS_TIME = 32
-TIME_LOG = "query_time.txt"
-# Number of queries to send.
-NUMBER = 100
-# dpid of switch to send queries to
-dpid = "00a4230500000001"
-
 
 #********************************************************************
-# 30 March
-# This script is for evaluating stats queries.  See queries-v1.py for
-# attempts to connect Ryu to CoVisor and send iperf traffic.
+# 5 May
 #********************************************************************
+# This script (exprParallel()) for use with apps_iperf to demonstrate
+# correctness.
 
 #********************************************************************
 # mininet: start, kill
@@ -181,23 +172,33 @@ def killFloodlight():
     subprocess.call("ps ax | grep floodlight | grep -v grep | awk '{print $1}' " +
         "| xargs kill -9 > /dev/null 2>&1", shell=True)
 
+#********************************************************************
+# iperf
+#********************************************************************
+
+def start_iperf(net, serverHostName='h_s1_2', clientHostName='h_s1_1'):
+    serverHost = net.getNodeByName(serverHostName)
+    print "Starting iperf server on host with IP = %s." % serverHost.IP()
+    server = serverHost.popen("iperf -s -u")
+    clientHost = net.getNodeByName(clientHostName)
+    print "Starting iperf client on host with IP = %s." % clientHost.IP()
+    cmd = "iperf -t %s -c %s -u" % (1.5*STATS_TIME, serverHost.IP())
+    client = clientHost.popen(cmd)
 
 #********************************************************************
 # utils
 #********************************************************************
-def cleanAll(time_log=TIME_LOG):
+def cleanAll():
     killMininet()
     killFloodlight()
     killOVX()
     showOVX()
     showFloodlight()
-    if os.path.exists(time_log):
-        os.remove(time_log)
 
 #********************************************************************
 # expr: parallel
 #********************************************************************
-def exprParallel(number=NUMBER):
+def exprParallel():
     cleanAll()
     startFloodlight(2)
     startOVX()
@@ -213,45 +214,13 @@ def exprParallel(number=NUMBER):
     app1.installRules()
     app2 = DemoRouterApp(topo)
     app2.installRules()
-
-    # Query timing evaluation.
-    time_log = open(TIME_LOG, "w")
-    for i in range(1000):
-        elapsed = send_query("flow")
-        time_log.write(str(elapsed) + "\n")
-    time_log.close()
-    net.stop()
-    #CLI(net)
-
-
-#********************************************************************
-# expr: query evaluation
-#********************************************************************
-
-# Trying to record time to execute the command.
-def send_query(stat_type):
-    start = time.clock()
-    cmd = "curl --silent http://localhost:10001/wm/core/switch/%s/%s/json > /dev/null" \
-          % (dpid, stat_type)
-    subprocess.call(cmd, shell=True)
-    finish = time.clock()
-    elapsed = finish - start
-    return elapsed
-
-def send_queries(number=NUMBER):
-    for i in range(number):
-        send_query("flow")
-
-# Send queries and create time log file.
-def send_queries1(output_number, number=NUMBER):
-    log_name = str(output_number) + TIME_LOG
-    time_log = open(log_name, "w")
-    print log_name + " opened."
-    for i in range(NUMBER):
-        elapsed = send_query("flow")
-        time_log.write(str(elapsed) + "\n")
-    time_log.close()
-    print log_name + " closed."
+    start_iperf(net)
+    # Give time for CoVisor to start queries.
+    for i in range(3):
+        time.sleep(STATS_TIME)
+        app1.send_query("flow")
+    #net.stop()
+    CLI(net)
 
 #********************************************************************
 # expr: sequential
@@ -336,18 +305,14 @@ if __name__ == '__main__':
             exprSequential()
         elif sys.argv[1] == "expr-virt":
             exprVirt()
-        elif sys.argv[1] == "expr-par":
-            if len(sys.argv) == 3:
-                exprParallel(int(sys.argv[2]))
-            else:
-                exprParallel()
-        elif sys.argv[1] == "query":
-            if len(sys.argv) == 3:
-                send_queries(int(sys.argv[2]))
-            else:
-                send_queries()
-        elif sys.argv[1] == "query1":
-            send_queries1(sys.argv[2])
+        elif sys.argv[1] == "expr-sequential-parallel":
+            exprSequentialParallel()
+        elif sys.argv[1] == "ryu":
+            ryu()
+        elif sys.argv[1] == "ryu-stats":
+            ryuStats()
+        elif sys.argv[1] == "clean-ryu":
+            cleanAllRyu()
         else:
             printHelp()
 

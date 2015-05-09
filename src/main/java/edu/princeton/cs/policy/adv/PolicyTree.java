@@ -47,6 +47,15 @@ public class PolicyTree {
 		this.tenantId = -1;
 		this.plumbingSwitch = null;
 	}
+
+	public PolicyTree(List<PolicyFlowModStoreType> storeTypes,
+			List<PolicyFlowModStoreKey> storeKeys) {
+		this.operator = PolicyOperator.Tenant;
+		this.leftChild = null;
+		this.rightChild = null;
+		this.flowTable = new PolicyFlowTable(storeTypes, storeKeys);
+		this.tenantId = -1;
+	}
 	
 	public PolicyTree(Character ch) {
 		switch(ch){
@@ -103,7 +112,8 @@ public class PolicyTree {
 	    break;
 	case Tenant: // this is leaf, directly add to flow table
 	    if (tenantId == this.tenantId) {
-		if (this.policyACL.checkACL(fm)) {
+		// Ignore possible ACL violation for stats queries evaluation
+		if (true || this.policyACL.checkACL(fm)) {
 		    // TODO: special case: 1+(1+2), process by 1 with two times
 		    updateTable = this.flowTable.update(fm);
 		    // Base case.  fm is directly from controller.
@@ -227,6 +237,9 @@ public class PolicyTree {
 		    }
 		    if (composedFm != null) {
 			setCookieForComposedFm(composedFm);
+			if (this.flowTable == null) {
+			    this.flowTable = new PolicyFlowTable();
+			}
 			this.flowTable.addFlowMod(composedFm);
 			List<OFFlowMod> virtualFms = new ArrayList<OFFlowMod>();
 			virtualFms.addAll(leftChild.flowTable.getVirtualFlowMods(fm1));

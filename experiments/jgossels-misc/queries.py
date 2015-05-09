@@ -18,11 +18,8 @@ OVXCTLPY = "%s/OpenVirteX/utils/ovxctl.py" % WORKDIR
 SWNUMBER = 1
 SLEEP_TIME = 20
 STATS_TIME = 32
-TIME_LOG = "query_time.txt"
-# Number of queries to send.
-NUMBER = 100
-# dpid of switch to send queries to
-dpid = "00a4230500000001"
+TIME_LOG = "time.txt"
+TIME_LOG1 = "time-v1.txt"
 
 
 #********************************************************************
@@ -197,7 +194,7 @@ def cleanAll(time_log=TIME_LOG):
 #********************************************************************
 # expr: parallel
 #********************************************************************
-def exprParallel(number=NUMBER):
+def exprParallel():
     cleanAll()
     startFloodlight(2)
     startOVX()
@@ -213,45 +210,33 @@ def exprParallel(number=NUMBER):
     app1.installRules()
     app2 = DemoRouterApp(topo)
     app2.installRules()
-
-    # Query timing evaluation.
-    time_log = open(TIME_LOG, "w")
-    for i in range(1000):
-        elapsed = send_query("flow")
-        time_log.write(str(elapsed) + "\n")
-    time_log.close()
+    for i in range(30000):
+        app1.send_query("flow", time_log=TIME_LOG)
     net.stop()
     #CLI(net)
 
-
 #********************************************************************
-# expr: query evaluation
+# expr: parallel-v1
 #********************************************************************
-
-# Trying to record time to execute the command.
-def send_query(stat_type):
-    start = time.clock()
-    cmd = "curl --silent http://localhost:10001/wm/core/switch/%s/%s/json > /dev/null" \
-          % (dpid, stat_type)
-    subprocess.call(cmd, shell=True)
-    finish = time.clock()
-    elapsed = finish - start
-    return elapsed
-
-def send_queries(number=NUMBER):
-    for i in range(number):
-        send_query("flow")
-
-# Send queries and create time log file.
-def send_queries1(output_number, number=NUMBER):
-    log_name = str(output_number) + TIME_LOG
-    time_log = open(log_name, "w")
-    print log_name + " opened."
-    for i in range(NUMBER):
-        elapsed = send_query("flow")
-        time_log.write(str(elapsed) + "\n")
-    time_log.close()
-    print log_name + " closed."
+def exprParallel1():
+    cleanAll(time_log=TIME_LOG1)
+    startFloodlight(2)
+    startOVX()
+    (topo, net) = startMininet("par")
+    time.sleep(SLEEP_TIME)
+    createPlumbingGraph()
+    addController1(topo)
+    addController2(topo)
+    createACL('1 dltype:exact,srcip:prefix,dstip:prefix output')
+    createACL('2 dltype:exact,dstip:prefix output')
+    createPolicy('"1+2"')
+    app1 = DemoMonitorApp(topo)
+    app1.installRules()
+    app2 = DemoRouterApp(topo)
+    app2.installRules()
+    app1.send_queries("flow", time_log=TIME_LOG1)   
+    net.stop()
+    #CLI(net)
 
 #********************************************************************
 # expr: sequential
@@ -336,18 +321,8 @@ if __name__ == '__main__':
             exprSequential()
         elif sys.argv[1] == "expr-virt":
             exprVirt()
-        elif sys.argv[1] == "expr-par":
-            if len(sys.argv) == 3:
-                exprParallel(int(sys.argv[2]))
-            else:
-                exprParallel()
-        elif sys.argv[1] == "query":
-            if len(sys.argv) == 3:
-                send_queries(int(sys.argv[2]))
-            else:
-                send_queries()
-        elif sys.argv[1] == "query1":
-            send_queries1(sys.argv[2])
+        elif sys.argv[1] == "expr-par1":
+            exprParallel1()
         else:
             printHelp()
 

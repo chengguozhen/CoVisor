@@ -6,6 +6,12 @@ import random
 from ExprTopo.mtopo import *
 
 #********************************************************************
+# 5 May
+#********************************************************************
+# This script for use with queries_iperf.py exprParallel() to
+# demonstrate correctness.
+
+#********************************************************************
 # Demo App
 #********************************************************************
 class DemoMonitorApp():
@@ -30,16 +36,16 @@ class DemoMonitorApp():
             '"active":"true", "actions":""}'
         self.rules.append(rule)
 
-        rule = '{"switch":"%s", ' % self.dpid + \
-            '"name":"ARP", ' + \
-            '"priority":"1", ' + \
-            '"ether-type":"2054", ' + \
-            '"active":"true", "actions":"output=flood"}'
-        self.rules.append(rule)
+    def send_query(self, stat_type):
+        cmd = "curl http://localhost:10001/wm/core/switch/%s/%s/json" \
+              % (self.dpid, stat_type)
+        #cmd = "curl http://localhost:10001/wm/topology/links/json"
+        subprocess.call(cmd, shell=True)
 
     def installRules(self):
+        print 
         for rule in self.rules:
-            print rule
+            print "HI!!!!!!!!!!!!!!!\n" + rule
             cmd = "curl -d '%s' http://localhost:10001/wm/staticflowentrypusher/json" % rule
             subprocess.call(cmd, shell=True)
             print ""
@@ -58,35 +64,20 @@ class DemoRouterApp():
                 '"active":"true", "actions":""}'
         self.rules.append(rule)
 
-        #rule = '{"switch":"%s", ' % dpid + \
-        #    '"name":"DemoRouter1", ' + \
-        #    '"priority":"1", ' + \
-        #    '"ether-type":"2048", ' + \
-        #    '"dst-ip":"2.0.0.1", ' + \
-        #    '"active":"true", "actions":"output=1"}'
-        #self.rules.append(rule)
-
-        #rule = '{"switch":"%s", ' % dpid + \
-        #    '"name":"DemoRouter2", ' + \
-        #    '"priority":"1", ' + \
-        #    '"ether-type":"2048", ' + \
-        #    '"dst-ip":"2.0.0.2", ' + \
-        #    '"active":"true", "actions":"output=2"}'
-        #self.rules.append(rule)
-        for i in range(topo.hostPerSw):
-            rule = '{"switch":"%s", ' % dpid + \
-                   '"name":"DemoRouter%s", ' % (i + 1) + \
-                   '"priority":"1", ' + \
-                   '"ether-type":"2048", ' + \
-                   '"dst-ip":"1.0.0.%s", ' % (i + 1) + \
-                   '"active":"true", "actions":"output=%d"}' % (i + 1)
-            self.rules.append(rule)
+        rule = '{"switch":"%s", ' % dpid + \
+            '"name":"DemoRouter1", ' + \
+            '"priority":"1", ' + \
+            '"ether-type":"2048", ' + \
+            '"dst-ip":"2.0.0.1", ' + \
+            '"active":"true", "actions":"output=1"}'
+        self.rules.append(rule)
 
         rule = '{"switch":"%s", ' % dpid + \
-            '"name":"ARP", ' + \
+            '"name":"DemoRouter2", ' + \
             '"priority":"1", ' + \
-            '"ether-type":"2054", ' + \
-            '"active":"true", "actions":"output=flood"}'
+            '"ether-type":"2048", ' + \
+            '"dst-ip":"2.0.0.2", ' + \
+            '"active":"true", "actions":"output=2"}'
         self.rules.append(rule)
 
     def installRules(self):
@@ -125,13 +116,6 @@ class DemoLoadBalancerApp():
             '"ether-type":"2048", ' + \
             '"dst-ip":"3.0.0.0", ' + \
             '"active":"true", "actions":"set-dst-ip=2.0.0.2"}'
-        self.rules.append(rule)
-
-        rule = '{"switch":"%s", ' % dpid + \
-            '"name":"ARP", ' + \
-            '"priority":"1", ' + \
-            '"ether-type":"2054", ' + \
-            '"active":"true", "actions":"output=flood"}'
         self.rules.append(rule)
 
     def installRules(self):
@@ -201,15 +185,6 @@ class DemoVirtApp():
             '"dst-ip":"2.0.0.0/16", ' + \
             '"active":"true", "actions":"output=2"}'
         self.rules3.append(rule)
-
-        arp = '{"switch":"%s", ' % self.dpid + \
-            '"name":"ARP", ' + \
-            '"priority":"1", ' + \
-            '"ether-type":"2054", ' + \
-            '"active":"true", "actions":"output=controller"}'
-        self.rules1.append(arp)
-        self.rules2.append(arp)
-        self.rules3.append(arp)
 
     def installRules(self):
         for rule in self.rules1:

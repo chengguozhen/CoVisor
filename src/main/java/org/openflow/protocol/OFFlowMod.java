@@ -84,6 +84,7 @@ public class OFFlowMod extends OFMessage implements OFActionFactoryAware,
     protected List<OFAction> actions;
     
     protected OFMatch actApplyMatch;
+    public int helperId;
 
     public OFFlowMod() {
         super();

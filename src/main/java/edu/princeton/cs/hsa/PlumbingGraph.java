@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.Set;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import net.onrc.openvirtex.elements.datapath.PhysicalSwitch;
 
 import org.apache.logging.log4j.LogManager;
@@ -26,11 +27,16 @@ public class PlumbingGraph {
 	private PhysicalSwitch physicalSwitch;
 	private Map<Integer, PlumbingSwitch> nodes;
 	public PolicyFlowTable flowTable;
+
+    // To support evaluation with VirtualTopology.java.  this.physicalSwitch might be null.
+    // Cookies for mapping flow mods to stats replies.
+    private AtomicInteger cookieCounter;
 	
 	public PlumbingGraph(PhysicalSwitch physicalSwitch) {
 		this.physicalSwitch = physicalSwitch;
 		this.nodes = new HashMap<Integer, PlumbingSwitch>();
 		this.flowTable = new PolicyFlowTable();
+		this.cookieCounter = new AtomicInteger(1);
 	}
 	
 	public PhysicalSwitch getPhysicalSwitch() {
@@ -54,6 +60,13 @@ public class PlumbingGraph {
 		PlumbingSwitch node = new PlumbingSwitch(id, this);
 		this.nodes.put(id, node);
 	}
+
+    public void addNode(int id, List<PolicyFlowModStoreType> storeTypes,
+			List<PolicyFlowModStoreKey> storeKeys) {
+	PlumbingSwitch node = new PlumbingSwitch(id, this, storeTypes,
+						 storeKeys);
+	this.nodes.put(id, node);
+    }
 	
 	public void addPort(int id, Short physicalPort) {
 		this.nodes.get(id).addPort(physicalPort);
@@ -109,5 +122,18 @@ public class PlumbingGraph {
 		}*/
 		return str;
 	}
+
+
+    // To support evaluation with VirtualTopology.java.  this.physicalSwitch might be null.
+    public long generateCookie(int plumbingSwitchId) {
+	// TODO double-check that there's no duplicate in flowmod map.
+	if (getPhysicalSwitch() == null) {
+	    final int cookie = this.cookieCounter.getAndIncrement();
+	    return (long) plumbingSwitchId << 32 | cookie;
+	}
+	else {
+	    return getPhysicalSwitch().generateCookie(plumbingSwitchId);
+	}
+    }
 
 }
